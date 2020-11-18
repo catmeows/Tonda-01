@@ -7,7 +7,7 @@ Fantasy computer based on 6809 cpu
 * ROM: 16KB
 * RAM: 64KB
 * Video: 
-  * Mode 0: 256x192 bitmap with 32x24 16 color overlay (two memoery locations with double available)
+  * Mode 0: 256x192 bitmap with 32x24 16 color overlay (two memory locations with double buffer available)
   * Mode 1: 512x192 bitmap 
 * Audio:
   * Custom 4 channel PSG with editable wave form, 8 volume levels. Two channels can be switched to noise mode
