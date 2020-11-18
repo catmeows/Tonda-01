@@ -18,7 +18,7 @@ Fantasy computer based on 6809 cpu
   * Tape in/out connector
   * TV out 
   * Edge connector
-  * <TODO>
+  * TODO
 
 
 
