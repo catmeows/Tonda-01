@@ -1,0 +1,19 @@
+Frida
+Frida is custom chip that cares about i/o and sound in Tonda 01 computer.
+
+I/O
+
+Keyboard
+Tonda 01 has 56 key keyboard
+
+Audio
+Frida provides 4 channels: A, B, C, D
+All four channels are mixed together and sent to internal speaker.
+Connecting 3.5mm jack into AUDIO connector disables internal speaker. In such case, channels A,B are routed to left output and channels C,D are routed to right output.
+
+Each channel is controlled by 5 registers:
+FREQL - lower 8 bits of frequency (pitch) control
+FREQH - higher 
+WAVEL - low wave form bits
+WAVEH - high wave form bits
+CTRL - control port with bits ....NVVV
