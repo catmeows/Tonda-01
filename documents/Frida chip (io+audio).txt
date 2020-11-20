@@ -16,4 +16,16 @@ FREQL - lower 8 bits of frequency (pitch) control
 FREQH - higher 
 WAVEL - low wave form bits
 WAVEH - high wave form bits
-CTRL - control port with bits ....NVVV
+CTRL - control port with bits ....NVVV where N is Noise flag, VVV is volume.
+
+FREQL and FREQH forms frequency divider (higher value means higher frequency/tone pitch) that gives pace at which two wave register, WAVEL and WAVEH registers are shifted.
+When FREQL and FREQH are both zeroed, there is n
+Most significatnt bits of WAVEL and WAVEH forms value 0..3 that gives output level for the particular channel.
+This output level is multiplied by value VVV from control register.
+When N bit is reset, most significant bit shifted out from WAVEL/WAVEH register is put into bit 0. Effectively, the values in WAVEL/WAVEH registers are rotated.
+When N bit is set, the shift register is turned into linear feedback register producing pseudorandom stream of bits.
+
++----+    clock     +-----+
+|FREQ|   ---+-->    |WAVEL| ------+---->
++----+      |
+
