@@ -55,10 +55,38 @@ To set a channel
    
 3) set FREQL, FREQH
             
-   pitch = 1.75MHz / (32 * 8 * FREQ)
+   pitch = 1.75MHz / (16 * FREQ)
    
-   FREQ = 1.75MHz / (32 * 8 * pitch)
+   FREQ = 1.75MHz / (16 * pitch)
    
+   Example:
+   Note  Freq[Hz] FREQ
+         26.71    4095
+   A0    27.50    3977
+   A#0   29.14    3753
+   B0    30.87    3543
+   C1    32.70    3345
+   C2    65.41    1672
+   C3   130.8      836
+   C4   261.6      418
+   C5   523.3      209
+   C6  1047        104
+   C#6 1109         99
+   D6  1175         93
+   D#6 1245         88
+   E6  1319         83
+   F6  1397         78 
+   F#6 1480         74
+   G   1568         70
+   G#6 1661         66
+   A6  1760         62
+   A#6 1865         59
+   B6  1976         55
+   C7  2093         52
+   C#7 2217         49         
+   D7  2349         47
+   D#7 2489         44
+   E7  2637         42
    
  
 4) set volume 0..7 in VVV of CTRL port
