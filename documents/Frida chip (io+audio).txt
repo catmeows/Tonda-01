@@ -47,7 +47,9 @@ To set a channel
 5) (optional) enable LFSR by setting N in CTRL port
 
 
-FRIDA ADRESSING:
+FRIDA PORT ADRESSING:
+
+Note: Due incomplete address decoding, ports are mirrored at $C000, $C020, $C040 and $C060
 
 $C000 - MUX CTRL (W)
 $C001 - DIR CTRL (W)
