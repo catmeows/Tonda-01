@@ -4,28 +4,77 @@ Frida is custom chip that cares about i/o and sound in Tonda 01 computer.
 I/O
 
 Keyboard
-Tonda 01 has 56 key keyboard
+Tonda 01 has 56 key keyboards.
+In addition, Frida chip controls single Atari joystick port (including two A/D converters, two 8 bit ports and tape input and output.   
 
-Audio
+AUDIO
 Frida provides 4 channels: A, B, C, D
 All four channels are mixed together and sent to internal speaker.
 Connecting 3.5mm jack into AUDIO connector disables internal speaker. In such case, channels A,B are routed to left output and channels C,D are routed to right output.
 
 Each channel is controlled by 5 registers:
 FREQL - lower 8 bits of frequency (pitch) control
-FREQH - higher 
+FREQH - higher 4 bits of frequency (pitch) control
 WAVEL - low wave form bits
 WAVEH - high wave form bits
-CTRL - control port with bits ....NVVV where N is Noise flag, VVV is volume.
+CTRL - control port with bits ....NVVV where E is enabled, N is Noise flag, VVV is volume.
 
-FREQL and FREQH forms frequency divider (higher value means higher frequency/tone pitch) that gives pace at which two wave register, WAVEL and WAVEH registers are shifted.
-When FREQL and FREQH are both zeroed, there is n
-Most significatnt bits of WAVEL and WAVEH forms value 0..3 that gives output level for the particular channel.
-This output level is multiplied by value VVV from control register.
+FREQL and FREQH forms frequency divider (higher value means lower frequency/tone pitch) that gives pace at which two wave register, WAVEL and WAVEH registers are shifted.
+When FREQL and FREQH are both zeroed, there is clock is stopped
+Most significant bits of WAVEL and WAVEH forms value 0..3 that gives output level for the particular channel.
+This output level is multiplied by value VVV from SOUND CTRL register.
 When N bit is reset, most significant bit shifted out from WAVEL/WAVEH register is put into bit 0. Effectively, the values in WAVEL/WAVEH registers are rotated.
 When N bit is set, the shift register is turned into linear feedback register producing pseudorandom stream of bits.
 
-+----+    clock     +-----+
-|FREQ|   ---+-->    |WAVEL| ------+---->
-+----+      |
+To set a channel
+1) disable channel, set FREQL=0, then FREQH=0
+2) set WAVEL, WAVEH 
+   e.g. to set triangle wave 
+   WAVEL = %10101000 
+   WAVEH = %01110000
+   
+   3 ..X.....
+   2 .XXX....
+   1 XXXXX...
+   
+3) set FREQL, FREQH
+            
+   pitch = 1.75MHz / (32 * 8 * FREQ)
+   
+   FREQ = 1.75MHz / (32 * 8 * pitch)
+ 
+4) set volume 0..7 in VVV of CTRL port
+5) (optional) enable LFSR by setting N in CTRL port
+
+
+FRIDA ADRESSING:
+
+$C000 - MUX CTRL (W)
+$C001 - DIR CTRL (W)
+$C002 - DATA (W/R)
+$C003 - KEYB CTRL (W)
+$C004 - TAPE CTRL (W/R)
+$C005 - POTX TIMER (R)
+$C006 - POTY TIMER (R)
+
+$C008 - channel A FREQL (W)
+$C009 - channel A FREQH (W)
+$C00A - channel A WAVEL (W)
+$C00B - channel A WAVEH (W)
+$C00C - channel A AUDIO CTRL (W)
+
+$C010 - channel A FREQL (W)
+$C011 - channel A FREQH (W)
+$C012 - channel A WAVEL (W)
+$C013 - channel A WAVEH (W)
+$C014 - channel A AUDIO CTRL (W)
+
+$C018 - channel A FREQL (W)
+$C019 - channel A FREQH (W)
+$C01A - channel A WAVEL (W)
+$C01B - channel A WAVEH (W)
+$C01C - channel A AUDIO CTRL (W)
+   
+   
+
 
