@@ -14,13 +14,29 @@ DATA register is used to read/write bits from/to device.
 
 
 
-Keyboard
+KEYBOARD
 Tonda 01 has 56 key keyboards.
 
-Atari joystick port
-Joystick is read by MUX registert
+ATARI JOYSTICK PORT
+Joystick port has 5 digital pins and 2 analog pins. As for digital pins, they can be used either as input or output.
+Analog pins can be read only.
 
+Reading digital pins:
+1) Write value %00000001 to MUX CTRL port to select joystick/tape
+2) Write value %00000000 (all READ) to DIR CTRL port
+3) Read value from DATA port
+   
+Now value has lower 5 bits set according values on pins: ???64321. With standard joystick wiring it is translanted as ???FRLUD (Fire, Right, Left, Up, Down).
+Bit is set if when direction/fire is triggered.   
 
+Reading analog pins:
+1) Read port POTX (POTY) to get 
+
+TAPE
+Reading tape input
+1) Write value %00000001 to MUX CTRL port to select joystick/tape
+2) Write value %00000000 (all READ) to DIR CTRL port
+3) Read value form DATA port
 
 
 AUDIO
