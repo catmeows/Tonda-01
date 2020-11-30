@@ -63,13 +63,13 @@ FREQL - lower 8 bits of frequency (pitch) control
 FREQH - higher 4 bits of frequency (pitch) control
 WAVEL - low wave form bits
 WAVEH - high wave form bits
-CTRL - control port with bits ....NVVV where E is enabled, N is Noise flag, VVV is volume.
+AUD CTRL - control port with bits ....NVVV where E is enabled, N is Noise flag, VVV is volume.
 
 FREQL and FREQH forms frequency divider (higher value means lower frequency/tone pitch) that gives pace at which two wave register, WAVEL and WAVEH registers are shifted.
 When FREQL and FREQH are both zeroed, there is clock is stopped
 Most significant bits of WAVEL and WAVEH forms value 0..3 that gives output level for the particular channel.
-This output level is multiplied by value VVV from SOUND CTRL register.
-When N bit is reset, most significant bit shifted out from WAVEL/WAVEH register is put into bit 0. Effectively, the values in WAVEL/WAVEH registers are rotated.
+This output level is multiplied by value VVV from AUD CTRL register.
+When N bit is reset, most significant bit shifted out from WAVEL/WAVEH register and is put into bit 0. Effectively, the values in WAVEL/WAVEH registers are rotated.
 When N bit is set, the shift register is turned into linear feedback register producing pseudorandom stream of bits.
 
 To set a channel
@@ -119,8 +119,8 @@ To set a channel
    E7  2637         42
    
  
-4) set volume 0..7 in VVV of CTRL port
-5) (optional) enable LFSR by setting N in CTRL port
+4) set volume 0..7 in VVV of AUD CTRL port
+5) (optional) enable LFSR by setting N in AUD CTRL port
 
 
 FRIDA PORT ADRESSING:
@@ -154,7 +154,7 @@ $C015 - channel B WAVEH (W)
 $C016 - channel C WAVEH (W)
 $C017 - channel D WAVEH (W)
 
-$C018 - channel A AUDIO CTRL (W)
-$C019 - channel B AUDIO CTRL (W)
-$C01A - channel C AUDIO CTRL (W)
-$C01B - channel D AUDIO CTRL (W)
+$C018 - channel A AUD CTRL (W)
+$C019 - channel B AUD CTRL (W)
+$C01A - channel C AUD CTRL (W)
+$C01B - channel D AUD CTRL (W)
