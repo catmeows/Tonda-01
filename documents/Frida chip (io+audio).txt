@@ -30,19 +30,33 @@ Now value has lower 5 bits set according values on pins: ???64321. With standard
 Bit is set if when direction/fire is triggered.   
 
 Reading analog pins:
-1) Read port POTX (POTY) to get 
+1) Read port POTX (POTY) to get time from last edge 
 
 TAPE
 Reading tape input
 1) Write value %00000001 to MUX CTRL port to select joystick/tape
 2) Write value %00000000 (all READ) to DIR CTRL port
-3) Read value form DATA port
+3) Read value from DATA port
+4) Isolate bit 5, that is reading on tape input
 
+Writing to tape output
+1) Write value %00000001 to MUX CTRL port to select joystick/tape
+2) Write value %01000000 (bit 6 to WRITE) to DIR CTRL port
+3) Write value to DATA port, bit 6 will be send to tape
+
+Note on jostick/tape port
+Joystick and tape wires are connected to single port. Low five bits (b0,b1,b2,b3,b4) represent digital pins of joystick, bit 5 is tape input (ear), bit 6 is tape output (mic).
+Bit 7 connected to keyboard LED.
+Depending on DIR CTRL value (direction control), it is possible to read or write to any combination of the 7 bits. However, result of reading or writing really depends on device connected to atari/tape connector.
+For example you can send data to bit 5 (ear) but tape recorder simply do not monitor voltage on its ear connector. But it is possible to connect some other device to ear connector and that device may react on data sent trough ear bit. 
+
+USER PORT 1, 2
+Are just two 8-bit bidirectional ports. Depending on setting of DIR CTRL, each bit can act as input or output.
 
 AUDIO
 Frida provides 4 channels: A, B, C, D
-All four channels are mixed together and sent to internal speaker.
-Connecting 3.5mm jack into AUDIO connector disables internal speaker. In such case, channels A,B are routed to left output and channels C,D are routed to right output.
+Channels A,B are mixed together as first output and C,D are mixed together as second audio output. In normal circumstancies, these two audio lines are connected to internal speaker.  
+Connecting 3.5mm stereo jack into AUDIO connector disables internal speaker. In such case, channels A,B are routed to left output and channels C,D are routed to right output.
 
 Each channel is controlled by 5 registers:
 FREQL - lower 8 bits of frequency (pitch) control
