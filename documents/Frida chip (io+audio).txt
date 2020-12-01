@@ -3,7 +3,14 @@ Frida is custom chip that cares about i/o and sound in Tonda 01 computer.
 
 I/O
 Frida chip controls keyboard, single Atari joystick port (including two A/D converters), two 8 bit ports and tape input and output. 
-There are six registers dedicated to interfacing.
+There are six registers dedicated to interfacing:
+ - MUX CTRL
+ - DIR CTRL
+ - DATA
+ - KEYB CTRL
+ - POTX
+ - POTY
+ 
 Bits 0 and 1 of MUX CTRL port select device
    ......00 keyboard
    ......01 joystick/tape
@@ -13,9 +20,46 @@ Bits of DIR CTRL select what bit in DATA register is input or output. 0 is for i
 DATA register is used to read/write bits from/to device.
 
 
-
 KEYBOARD
-Tonda 01 has 56 key keyboards.
+Tonda 01 has 55 key keyboards.
+
+Physical layout looks like this
++----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+|    |  ! |  @ |  # |  $ |  % |  ^ |  & |  * |  ( |  ) |  _ |  { |  } |    |
+| up |  1 |  2 |  3 |  4 |  5 |  6 |  7 |  8 |  9 |  0 |  - |  [ |  ] |del |
++----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+  |    |  ~ |  ` |    |    |    |    |    |    |    |    |  + |    |    |
+  |down|  Q |  W |  E |  R |  T |  Y |  U |  I |  O |  P |  = |left|rght|
+  +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+    |    |    |    |    |    |    |    |    |  \ |  | |  : |  " |    |
+    |ctrl|  A |  S |  D |  F |  G |  H |  J |  K |  L |  ; |  ' |ent |
+    +----+----+----+----+----+----+----+----+----+----+----+----+----+
+      |    |    |    |    |    |    |  £ |  © |  < |  > |  ? |    |
+      |shft|  Z |  X |  C |  V |  B |  N |  M |  , |  . |  / |shft|
+      +----+----+----+----+----+----+----+----+----+----+----+----+
+                   |                                 |
+                   |    space                        |
+                   +---------------------------------+
+                   
+ In hardware, keyboard is matrix of seven columns and eight rows. 7x8 = 56 so one position in matrix is unused (indicated as <none> in table)
+ 
+ Column  KeybCtrl    bits 7   6     5     4      3       2        1      0
+ 0       %10111111        up  down  ctrl  lshft  <none>  delete   right  ]    
+ 1       %11011111        1   Q     A     Z      space   enter    left   [
+ 2       %11101111        2   W     S     X      rshft   apostrf  =      -
+ 3       %11110111        3   E     D     C      /       semicol  P      0
+ 4       %11111011        4   R     F     V      period  L        O      9
+ 5       %11111101        5   T     G     B      comma   K        I      8
+ 6       %11111110        6   Y     H     N      M       J        U      7
+                   
+ Reading keyboard:
+ 1) Write value %00000000 to MUX CTRL port to select keyboard
+ 2) Write value %00000000 (all read) to DIR CTRL port
+ 3) Write keyboard column bits to KEYB CTRL port (see table)
+ 4) Read from DATA port - if key is pressed the bit reset
+ 
+ It is possible read more columns at once. For example if %11000111 (columns 1 to 5) is written into KEYB CTRL, bit 7 will be reset if any of keys '1' or '2' or '3' is pressed. 
+                   
 
 ATARI JOYSTICK PORT
 Joystick port has 5 digital pins and 2 analog pins. As for digital pins, they can be used either as input or output.
