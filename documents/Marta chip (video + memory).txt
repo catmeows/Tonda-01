@@ -1,6 +1,12 @@
 
 
 
+
+interrupts
+IRQ 
+FIRQ - programmable horizontal refresh
+
+
 adress decoding
 
 FEDCBA98 76543210
@@ -38,5 +44,17 @@ $FFFF +-------+
 $C000 +-------+ 
       | MAIN  |
 $4000 +-------+ +-------+   $4000 +-----------+
-      | BANK0 | | BANK1 |        | BANKS 2-7 |
+      | BANK0 | | BANK1 |         | BANKS 2-7 |
 $0000 +-------+ +-------+   $0000 +-----------+
+
+
+port $C080
+
+0000xxxx - border color
+0001xxxx - extra color
+0010xxxx - extra color
+0011xxxx - extra color
+01.0xxxx - bank select
+01.1...x - screen select
+10....xx - video mode
+11..xxxx - IRQ counter
