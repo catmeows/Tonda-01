@@ -1,1 +1,42 @@
 
+
+
+adress decoding
+
+FEDCBA98 76543210
+00xxxxxx xxxxxxxx - selected memory bank mapped to $0000 - $3FFF
+01xxxxxx xxxxxxxx - RAM $4000 - RAM $7FFF mapped to $4000 - $7FFF
+10xxxxxx xxxxxxxx - RAM $4000 - RAM $7FFF mapped to $4000 - $7FFF
+11000000 0xxxxxxx - Frida I/O
+11000000 1xxxxxxx - Marta I/0
+11xxxxxx xxxxxxxx - ROM
+
+
+
+
+
+video modes
+
+mode  memory resolution  colors
+0     6912   256*192     16 of 16 (each group of 8*8 pixels displays 2 colors selected from 16 color palete) 
+1     6912   128*192     16 of 16 (each group of 4*8 pixels displays 2 colors selected from 16 color and 2 global colors selected from 16. 
+2     12288  256*192     4 of 16  
+3     12288  512*192     2 of 16 
+
+
+
+
+
+
+
+memory map
+
+BUILT-IN                    EXTERNAL 
+                              
+$FFFF +-------+             
+      | ROM   |
+$C000 +-------+ 
+      | MAIN  |
+$4000 +-------+ +-------+   $4000 +-----------+
+      | BANK0 | | BANK1 |        | BANKS 2-7 |
+$0000 +-------+ +-------+   $0000 +-----------+
