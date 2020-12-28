@@ -1,0 +1,42 @@
+
+
+
+VARIABLES
+Pointer to line table
+Pointer to procedure table
+Pointer to 
+
+Line table:
+Is generated whenever BASIC enters execution mode.
+1) Scan whole program and find highest line number
+2) Scan whole program again and store lines that divide program into 8 parts
+8 x [line number, adress of line] 
+
+Procedure table:
+Is cleared whenever BASIC enters execution mode
+Is updated during runtime whenever not yet known procedure is called
+[offset to next entry, entry name, adress of procedure, number of parameters, types]
+
+
+
+PROCEDURES
+
+PROC foo:PARAM 
+
+Procedures are called by name.
+
+  1) Check procedure name in table
+  2) If name exists, jump to line number
+  3) Search program for procedure declaration (line starting with PROC name)
+  4) If found, add procedure name into table and go to step 1)
+  5) Throw error "P Procedure not found"
+  
+Executing procedure
+  1) Skip procedure declaration
+  2) Create variable frame
+  3) Create space for parameters inside procedure frame
+  4) Copy parameters from stack and check 
+  
+  
+
+
