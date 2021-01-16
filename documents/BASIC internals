@@ -34,6 +34,35 @@ Procedures are called by name.
   4) If found, add procedure name into table and go to step 1)
   5) Throw error "P Procedure not found"
   
+  set Y to procedure table
+@nextentry
+  read uint8 into B from Y and increment Y
+  B==0 ? return
+  set U to zero terminated string
+@nextchar
+  read char into A from stack U and increment U
+  A==0 ? jump @found
+  cmp byte at Y with A and increment Y
+  if equals jump to @nextchar
+@falsefound  
+  add B to Y
+  jump @nextentry
+@found
+  is next character at Y string terminator and increment Y
+  jump @falsefound
+  read uint16 into D from Y and return
+  
+  ----------------------------------------------------
+  
+  set Y to start of program
+  skip line number
+  read line length
+  check first token on line
+  is it PROC ?
+  if it is then compare with string at U
+    
+  
+  
 Executing procedure
   1) Skip procedure declaration
   2) Create variable frame
