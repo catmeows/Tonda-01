@@ -1,0 +1,49 @@
+Tonda01 uses 40 track single density single drive.
+Tracks are numbered 0 to 39.
+Each track has single sector of 2816 bytes.
+Track 0 contains disk catalogue, tracks 1-39 contains data.
+
+Track structure:
+ Header: 16*pilot byte + 3 bytes $D5 $F5 $B5 + 1 byte with track id + 1 byte with track id (for verification) + 1*byte $D5
+ Data: 16*pilot byte + 3 bytes $D5 $F5 $AS + 2816 bytes of data + 2 bytes of CRC + 1*byte $D5
+ 
+Controller has following properties:
+ Reading disk:
+ Setting ReadDisk line low.
+ It reads bits and shift them into 8 bit shift register until b7 (most significant bit) of shift register is set to '1'.
+ When b7 is set, incoming zeroes are ignored.
+ When next bit is '1', controller waits for another bit X then shift clears shift register, shift '1' and then X into shift register.
+ That allows CPU to poll shift register content until b7 is set and then read a byte.
+ Using pilot "byte" b111111110b (9bits) controller can synchronize. It takes 7 pilot bytes to be fully synchronized.
+ 
+ Regular bytes are encode as in FM scheme: 1D1D1D1D, where D are data bits. So it takes two bytes on disk to store single data bit.
+ Values $D5, $F5, $B5, $AD cannot occur in regular data so they are used as mark bytes to identify header and data sections.
+ 
+ Pseudo code for reading data from single track/sector:
+ 
+ _read_sector
+          set ReadDisk line low
+ _read_header
+          read pilot subroutine
+          check if next byte is $B5
+          if not $B5 jump back to read header
+          read 3 bytes into temporary area
+          check that 3rd byte is $D5
+          check that 1st byte xor 2nd byte is zero
+          now, 1st byte is current track
+          check we are on correct track, exit if no
+ _read_data
+          read pilot subroutine
+          check if next byte is $AD
+          if not go back to _read_data
+          read 2816 bytes of data + 2 bytes of crc + 1 byte $D5
+          compute crc, check last byte is $D5
+          
+ timeout mechanism:
+         fail read pilot after reading 65535 bytes (little bit more than eleven revolutions)
+          
+ 
+ Writing disk:
+ Setting WriteDisk line low.
+ Controller reads byte (8 bits) from data latch and reads 1 bit from 
+ 
