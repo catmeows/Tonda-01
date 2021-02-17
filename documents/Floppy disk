@@ -1,7 +1,9 @@
-Tonda01 uses 40 track single density single drive.
-Tracks are numbered 0 to 39.
+Tonda01 uses 35 track single density single drive.
+Tracks are numbered 0 to 34.
 Each track has single sector of 2816 bytes.
-Track 0 contains disk catalogue, tracks 1-39 contains data.
+Track 0 contains disk catalogue, tracks 1-34 contains data.
+Single side of disk can store 
+
 
 Track structure:
  Header: 16*pilot byte + 3 bytes $D5 $F5 $B5 + 1 byte with track id + 1 byte with track id (for verification) + 1*byte $D5
@@ -12,9 +14,9 @@ Controller has following properties:
  Setting ReadDisk line low.
  It reads bits and shift them into 8 bit shift register until b7 (most significant bit) of shift register is set to '1'.
  When b7 is set, incoming zeroes are ignored.
- When next bit is '1', controller waits for another bit X then shift clears shift register, shift '1' and then X into shift register.
+ When next bit is '1', controller waits for another bit X then clears shift register, shift '1' and then X into shift register.
  That allows CPU to poll shift register content until b7 is set and then read a byte.
- Using pilot "byte" b111111110b (9bits) controller can synchronize. It takes 7 pilot bytes to be fully synchronized.
+ Using pilot "byte" 111111110b (9bits) controller can synchronize. It takes 7 pilot bytes to be fully synchronized.
  
  Regular bytes are encode as in FM scheme: 1D1D1D1D, where D are data bits. So it takes two bytes on disk to store single data bit.
  Values $D5, $F5, $B5, $AD cannot occur in regular data so they are used as mark bytes to identify header and data sections.
@@ -38,6 +40,23 @@ Controller has following properties:
           if not go back to _read_data
           read 2816 bytes of data + 2 bytes of crc + 1 byte $D5
           compute crc, check last byte is $D5
+          end
+          
+ _read_pilot
+         read byte subroutine
+         if byte is not $FF jump back to _read_pilot
+ _read_pilot_sync        
+         read byte subroutine
+         if byte is $FF jump back to _read_pilot_sync
+         if byte is not $D5 jump back to _read_pilot
+         read byte subroutine
+         if byte is not $F5 jump back to _read_pilot
+         exit
+         
+ _read_byte
+         poll shift register
+         if bit 7 is set then increase byte_read_count and exit
+         otherwise jump back to _read_byte
           
  timeout mechanism:
          fail read pilot after reading 65535 bytes (little bit more than eleven revolutions)
@@ -45,5 +64,38 @@ Controller has following properties:
  
  Writing disk:
  Setting WriteDisk line low.
- Controller reads byte (8 bits) from data latch and reads 1 bit from 
+ When controller finds out WriteDisk line is low, it reads byte (8 bits) from data latch and reads 1 bit from signal pilot latch.
+ Controller shifts all 8 bits to disk, if bit in signal pilot latch is set, it will write additional '0'. After last bit written, controller reads another byte from data latch and bit from signal pilot latch.
+ 
+ Pseudo code
+ 
+ _write_sector (assuming we are on correct track)
+        jump to read header subroutine
+        set read line high
+        set write line low
+        repeat 16 times:
+          put $FF into data latch
+          put '1' into pilot signal latch
+          read shift register
+          wait until lower 7 bits are reset: that means controller is going to output either 
+                        1D (data byte with lowest bit reset) or 
+                        D (data byte with lowest bit set) or 
+                        10 (pilot signal)
+                        in all cases controller will read data/pilot latch within no more than 2*4us ~ 14 cycles
+                        wait some time and jump to repeat
+        
+        
+Interfacing
+-select drive line
+-step motor line 0
+-step motor line 1
+-step motor line 2
+-step motor line 3
+-head on track 0 signal
+-write protect signal
+-8xdata latch
+-pilot signal latch
+-write signal
+-read signal
+        
  
