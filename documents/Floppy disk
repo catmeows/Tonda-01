@@ -20,6 +20,9 @@ Catalogue:
   17
  
 Controller has following properties:
+ Reading/writing one bit takes 4us ~ 7 cycles.
+ Reading/writing one byte takes 32us ~ 56 cycles
+
  Reading disk:
  Setting ReadDisk line low.
  It reads bits and shift them into 8 bit shift register until b7 (most significant bit) of shift register is set to '1'.
@@ -70,6 +73,9 @@ Controller has following properties:
           
  timeout mechanism:
          fail read pilot after reading 65535 bytes (little bit more than eleven revolutions)
+         
+         
+         
           
  
  Writing disk:
