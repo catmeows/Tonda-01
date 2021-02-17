@@ -27,7 +27,7 @@ mode  memory resolution  colors
 0     6912   256*192     16 of 16 (each group of 8*8 pixels displays 2 colors selected from 16 color palete) 
 1     6912   128*192     16 of 16 (each group of 4*8 pixels displays 2 colors selected from 16 color and 2 global colors selected from 16. 
 2     12288  256*192     4 of 16  
-3     12288  512*192     2 of 16 
+3     12288  256*192     16 of 16 (each group of 8*1 pixels displays 2 colors selected from 16 color palete
 
 
 
