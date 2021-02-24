@@ -12,8 +12,24 @@ There are six registers dedicated to interfacing:
  - POTY
  
  Atari joystick - J0-J4 (left,right,up,down,fire)
- Tape           - T0-T1 (tape in, tape out)
- Disk           - K
+ Tape           - Ti..tape input, To..tape output
+ Keyboard       - R0-R7..keyboard row select, K0-K7
+ Disk           - FD0-FD7..floppy data, FPI..floppy data pilot, FR..floppy read, FW..floppy write, FWP..floppy write protect, FDS..floppy disk select
+                - FM0-FM3..floppy step motor, FT0..floppy track zero  
+ Printer        - PD0-PD7..printer data, PBS..busy, P/A../ACK, P/S../STROBE
+ 
+ 
+ +-----+-----++-----+-----+-----+-----+-----+-----+-----+-----++-----+-----+-----+-----+-----+-----+-----+-----+
+ | PC0 | PC1 || PA0 | PA1 | PA2 | PA3 | PA4 | PA5 | PA6 | PA7 || PB0 | PB1 | PB2 | PB3 | PB4 | PB5 | PB6 | PB7 |
+ +=====+=====++=====+=====+=====+=====+=====+=====+=====+=====++=====+=====+=====+=====+=====+=====+=====+=====+
+ |  0  |  0  || J0  | J1  | J2  | J3  | J4  | Ti  | To  |     ||     |     |     |     |     |     |     |     | 
+ +-----+-----++-----+-----+-----+-----+-----+-----+-----+-----++-----+-----+-----+-----+-----+-----+-----+-----+
+ |  0  |  1  || R0  | R1  | R2  | R3  | R4  | R5  | R6  | R7  || K0  | K1  | K2  | K3  | K4  | K5  | K6  |     |
+ +-----+-----++-----+-----+-----+-----+-----+-----+-----+-----++-----+-----+-----+-----+-----+-----+-----+-----+
+ |  1  |  0  || FD0 | FD1 | FD2 | FD3 | FD4 | FD5 | FD6 | FD7 || FPI | FR  | FW  | FWP | FDS |     |     |     |
+ +-----+-----++-----+-----+-----+-----+-----+-----+-----+-----++-----+-----+-----+-----+-----+-----+-----+-----+
+ |  1  |  1  || PD0 | PD1 | PD2 | PD3 | PD4 | PD5 | PD6 | PD7 || PBS | P/A | P/S | FM0 | FM1 | FM2 | FM3 | FT0 |
+ +-----+-----++-----+-----+-----+-----+-----+-----+-----+-----++-----+-----+-----+-----+-----+-----+-----+-----+
  
  
  
