@@ -70,10 +70,11 @@ $0000 +-------+ +-------+   $0000 +-----------+
 port $C080
 
 0000xxxx - border color
-0001xxxx - extra color
-0010xxxx - extra color
-0011xxxx - extra color
-01.0xxxx - bank select
-01.1...x - screen select
-10....xx - video mode
-11..xxxx - IRQ counter
+0100xxxx - extra color 0
+0101xxxx - extra color 1
+0110xxxx - extra color 2
+0111xxxx - extra color 3
+1000..XB - memory mapping - X-external, B-bank 0/1 
+1001.PMM - video mode - P-page displayed, MM-video mode
+1100xxxx - FIRQTIMER
+
