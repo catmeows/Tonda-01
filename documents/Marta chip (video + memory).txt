@@ -32,14 +32,22 @@ mode  memory resolution  colors
 
 Colors:
 
-Black     Dark Green Gray (Mud)
-Blue      Scarlet
-Red       Dark Brown Red
-Magenta   Orange
-Green     Dark Green
-Cyan      Mid Gray
-Yellow    Dark Yellow
-White     Light Gray
+ 0-Black    00 00 00 (RGB)
+ 1-Magenta  AA 00 AA
+ 2-Red      FF 00 00
+ 3-Blue     00 55 FF
+ 4-DkGray   55 55 55
+ 5-Green    00 AA 00
+ 6-Brown    AA 55 00
+ 7-LtBlue   55 AA FF
+ 8-LtGray   AA AA AA
+ 9-Orange   FF AA 00
+10-LtGreen  55 FF 55
+11-Pink     FF AA AA
+12-Cyan     55 FF FF
+13-Yellow   FF FF 00
+14-Tan      FF FF AA
+15-White    FF FF FF
 
 
 
@@ -53,10 +61,10 @@ $FFFF +-------+
 $C000 +-------+ 
       | MAIN  |
 $4000 +-------+ +-------+   $4000 +-----------+
-      | BANK0 | | BANK1 |         | BANKS 2-15|
+      | BANK0 | | BANK1 |         | EXTERNAL  |
 $0000 +-------+ +-------+   $0000 +-----------+
 
-It is possible to add at most 240KB of RAM/ROM (total available memory 304KB)
+
 
 
 port $C080
