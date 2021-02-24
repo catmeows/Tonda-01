@@ -11,6 +11,13 @@ There are six registers dedicated to interfacing:
  - POTX
  - POTY
  
+ Atari joystick - J0-J4 (left,right,up,down,fire)
+ Tape           - T0-T1 (tape in, tape out)
+ Disk           - K
+ 
+ 
+ 
+ 
 Bits 0 and 1 of MUX CTRL port select device
    ......00 keyboard
    ......01 joystick/tape
