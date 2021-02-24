@@ -12,22 +12,19 @@ adress decoding
 FEDCBA98 76543210
 00xxxxxx xxxxxxxx - selected memory bank mapped to $0000 - $3FFF
 01xxxxxx xxxxxxxx - RAM $4000 - RAM $7FFF mapped to $4000 - $7FFF
-10xxxxxx xxxxxxxx - RAM $4000 - RAM $7FFF mapped to $4000 - $7FFF
-11000000 0xxxxxxx - Frida I/O
-11000000 1xxxxxxx - Marta I/0
-11xxxxxx xxxxxxxx - ROM
+10xxxxxx xxxxxxxx - RAM $8000 - RAM $BFFF mapped to $8000 - $BFFF
+11000000 0.....xx - Marta I/O
+11000000 1xxxxxxx - Frida I/O
+11xxxxxx xxxxxxxx - ROM - mapped to $C100 - $FFFF
 
 
+Video modes
 
-
-
-video modes
-
-mode  memory resolution  colors
-0     6912   256*192     16 of 16 (each group of 8*8 pixels displays 2 colors selected from 16 color palete) 
-1     6912   128*192     16 of 16 (each group of 4*8 pixels displays 2 colors selected from 16 color and 2 global colors selected from 16. 
-2     12288  256*192     4 of 16  
-3     12288  512*192     2 of 16 
+mode  memory resolution  buffers  colors   
+0     6912   256*192     2        16 of 16 (each group of 8*8 pixels displays 2 colors selected from 16 color palete) 
+1     6912   128*192     2        16 of 16 (each group of 4*8 pixels displays 2 colors selected from 16 color and 2 global colors selected from 16, extra color 0,1) 
+2     12288  256*192     1        4 of 16  (extra color 0-3)
+3     12288  512*192     1        2 of 16  (extra color 0,1)
 
 
 Colors:
@@ -60,21 +57,33 @@ $FFFF +-------+
       | ROM   |
 $C000 +-------+ 
       | MAIN  |
-$4000 +-------+ +-------+   $4000 +-----------+
-      | BANK0 | | BANK1 |         | EXTERNAL  |
-$0000 +-------+ +-------+   $0000 +-----------+
+$4000 +-------+ +-------+   $4000 +---------------+
+      | BANK0 | | BANK1 |         | EXTERNAL 0-3  |
+$0000 +-------+ +-------+   $0000 +---------------+
 
 
 
+Marta registers
+port $C000 - BBBBFFFF BBBB..border color, FFFF..FIRQTIMER (every 1-15 line, 0-never)
+port $C001 - ..XXBMMP XX..external bank 0/1/2/3, B..RAM bank at $0000-$3FFF, MM..video mode, P-page used for video buffer i.e. bank 0/1 
+port $C002 - CCCCcccc CCCC..extra color 0, cccc..extra color 1
+port $C003 - CCCCcccc CCCC..extra color 2, cccc..extra color 2
 
-port $C080
 
-0000xxxx - border color
-0100xxxx - extra color 0
-0101xxxx - extra color 1
-0110xxxx - extra color 2
-0111xxxx - extra color 3
-1000..XB - memory mapping - X-external, B-bank 0/1 
-1001.PMM - video mode - P-page displayed, MM-video mode
-1100xxxx - FIRQTIMER
+Pins:
+0-6   Out: Red0,Red1,Green0,Green1,Blue0,Blue1,Sync (RGB video + sync)
+7-8   Out: CAS,RAS (DRAM timing + DRAM refresh)
+9     Out: RVE (DRAM read/write)
+10-17 Out: RA0-RA7 (DRAM adressing)
+18    Out: IRQ (IRQ signal when starting
+19    Out: FIRQ (FIRQ signal at the end of pixel area)
+20-27 In:  D0-D7 (data in)
+28-29 Out: Q,E (6809 clock)
+30    In:  RW (6809 read/write)
+31    In:  Clock (15 MHz main clock)
+32    In:  ROM/IO (A15 and A14, low indicates access to area $0000-$C000, i.e. RAM, and RAS+CAS has to be generated)
+33    In:  CS (A13 and A12 and A11 and A10 and A9 and A8 and A7 = low together with ROM/IO hi indicates IO access to Marta chip )
+34-35 Out: EX0-EX1 (external memory page 0-3, depending on internal page register)
+36-37 In:  A0,A1 - Marta register select
+38,39 In:  Vss, Vcc (ground, 5V)
 
