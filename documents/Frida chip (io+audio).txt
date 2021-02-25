@@ -2,45 +2,44 @@ Frida
 Frida is custom chip that cares about i/o and sound in Tonda 01 computer.
 
 I/O
-Frida chip controls keyboard, single Atari joystick port (including two A/D converters), two 8 bit ports and tape input and output. 
-There are six registers dedicated to interfacing:
- - MUX CTRL
- - DIR CTRL
- - DATA
- - KEYB CTRL
- - POTX
- - POTY
  
- Atari joystick - J0-J4 (left,right,up,down,fire)
- Tape           - Ti..tape input, To..tape output
+ Atari joy 1    - J1U..joystick 1 up, J1D..joystick 1 down, J1L..joystick 1 left, J1R..joystick 1 right, J1F..joystick 1 fire
+ Atari joy 2    - J2U..joystick 1 up, J2D..joystick 1 down, J2L..joystick 1 left, J2R..joystick 1 right, J2F..joystick 1 fire
+ Tape           - TI..tape input, TO..tape output
  Keyboard       - R0-R7..keyboard row select, K0-K7
  Disk           - FD0-FD7..floppy data, FPI..floppy data pilot, FR..floppy read, FW..floppy write, FWP..floppy write protect, FDS..floppy disk select
                 - FM0-FM3..floppy step motor, FT0..floppy track zero  
- Printer        - PD0-PD7..printer data, PBS..busy, P/A../ACK, P/S../STROBE
- 
+ Parallel       - PD0-PD7..printer data, PBS..busy, P/A../ACK, P/S../STROBE
+  
  
  +-----+-----++-----+-----+-----+-----+-----+-----+-----+-----++-----+-----+-----+-----+-----+-----+-----+-----+
  | PC0 | PC1 || PA0 | PA1 | PA2 | PA3 | PA4 | PA5 | PA6 | PA7 || PB0 | PB1 | PB2 | PB3 | PB4 | PB5 | PB6 | PB7 |
  +=====+=====++=====+=====+=====+=====+=====+=====+=====+=====++=====+=====+=====+=====+=====+=====+=====+=====+
- |  0  |  0  || J0  | J1  | J2  | J3  | J4  | Ti  | To  |     ||     |     |     |     |     |     |     |     | 
+ |  0  |  0  || J1U | J1D | J1L | J1R | J1F | TI  | TO  | n/a || J2U | J2D | J2L | J2R | J2F | n/a | n/a | n/a | 
  +-----+-----++-----+-----+-----+-----+-----+-----+-----+-----++-----+-----+-----+-----+-----+-----+-----+-----+
- |  0  |  1  || R0  | R1  | R2  | R3  | R4  | R5  | R6  | R7  || K0  | K1  | K2  | K3  | K4  | K5  | K6  |     |
+ |  0  |  1  || R0  | R1  | R2  | R3  | R4  | R5  | R6  | R7  || K0  | K1  | K2  | K3  | K4  | K5  | K6  | n/a |
  +-----+-----++-----+-----+-----+-----+-----+-----+-----+-----++-----+-----+-----+-----+-----+-----+-----+-----+
- |  1  |  0  || FD0 | FD1 | FD2 | FD3 | FD4 | FD5 | FD6 | FD7 || FPI | FR  | FW  | FWP | FDS |     |     |     |
+ |  1  |  0  || FD0 | FD1 | FD2 | FD3 | FD4 | FD5 | FD6 | FD7 || FPI | FR  | FW  | FWP | FDS | n/a | n/a | n/a |
  +-----+-----++-----+-----+-----+-----+-----+-----+-----+-----++-----+-----+-----+-----+-----+-----+-----+-----+
  |  1  |  1  || PD0 | PD1 | PD2 | PD3 | PD4 | PD5 | PD6 | PD7 || PBS | P/A | P/S | FM0 | FM1 | FM2 | FM3 | FT0 |
  +-----+-----++-----+-----+-----+-----+-----+-----+-----+-----++-----+-----+-----+-----+-----+-----+-----+-----+
  
- 
- 
- 
-Bits 0 and 1 of MUX CTRL port select device
-   ......00 keyboard
-   ......01 joystick/tape
-   ......10 user port 1
-   ......11 user port 2
-Bits of DIR CTRL select what bit in DATA register is input or output. 0 is for input, 1 is for output.
-DATA register is used to read/write bits from/to device.
+Register
+
+$C080 - IOCTRL
+$C081 - POTX
+$C082 - POTY
+$C083 - DIRA
+$C084 - DIRB
+$C085 - PA
+$C086 - PB
+
+$C088 - SNDCTRL
+$C089 - WAVELO
+$C08A - WAVEHI
+$C08B - FREQLO
+$C08C - FREQHI
+$C08D - MODE
 
 
 KEYBOARD
@@ -190,38 +189,3 @@ To set a channel
 5) (optional) enable LFSR by setting N in AUD CTRL port
 
 
-FRIDA PORT ADRESSING:
-
-Note: Due incomplete address decoding, ports are mirrored at $C000, $C020, $C040 and $C060
-
-$C000 - MUX CTRL (W)
-$C001 - DIR CTRL (W)
-$C002 - DATA (W/R)
-$C003 - KEYB CTRL (W)
-$C004 - POTX TIMER (R)
-$C005 - POTY TIMER (R)
-
-$C008 - channel A FREQL (W)
-$C009 - channel B FREQL (W)
-$C00A - channel C FREQL (W)
-$C00B - channel D FREQL (W)
-
-$C00C - channel A FREQH (W)
-$C00D - channel B FREQH (W)
-$C00E - channel C FREQH (W)
-$C00F - channel D FREQH (W)
-
-$C010 - channel A WAVEL (W)
-$C011 - channel B WAVEL (W)
-$C012 - channel C WAVEL (W)
-$C013 - channel D WAVEL (W)
-
-$C014 - channel A WAVEH (W)
-$C015 - channel B WAVEH (W)
-$C016 - channel C WAVEH (W)
-$C017 - channel D WAVEH (W)
-
-$C018 - channel A AUD CTRL (W)
-$C019 - channel B AUD CTRL (W)
-$C01A - channel C AUD CTRL (W)
-$C01B - channel D AUD CTRL (W)
