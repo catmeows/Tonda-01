@@ -26,7 +26,7 @@ I/O
  
 Register
 
-$C080 - IOCTRL
+$C080 - IOCTRL (MM
 $C081 - POTX
 $C082 - POTY
 $C083 - DIRA
@@ -34,12 +34,12 @@ $C084 - DIRB
 $C085 - PA
 $C086 - PB
 
-$C088 - SNDCTRL
-$C089 - WAVELO
+$C088 - SNDCTRL (xxxx3210..bit selects channel(s) to write.)
+$C089 - WAVELO  (fetched and loaded when WAVEHI written)
 $C08A - WAVEHI
-$C08B - FREQLO
+$C08B - FREQLO  (fetched and loaded when FREQHI written)
 $C08C - FREQHI
-$C08D - MODE
+$C08D - MODE    (xxxxNVVV..N selects noise on/off, VVV selects volume 0-7)
 
 
 KEYBOARD
