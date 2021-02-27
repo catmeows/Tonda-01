@@ -7,6 +7,12 @@ Variable table - pointed BAS_PROG_VAR_TABLE
 
 
 
+Find variable by Id
+Search local
+Search global
+
+
+
 
 RUN -> CLEAR, GOTO
 CLEAR -> clear variables, id table garbage collection
@@ -139,7 +145,111 @@ Executing procedure
   
   
 
-COMMANDS
+*COMMANDS
+
+BEEP(C) - two integer numbers
+CLS(A) - no argument
+CLSW(A) - no argument
+MODE(B) - one integer number
+WINDOW - nothing or four integer numbers
+CLEAR - nothing, or one integer or variableId
+BORDER(B) - one integer number
+PAPER(B) - one integer number
+INK(B) - one integer number
+PAUSE(B) - one integer number
+GOTO - label
+RUN nothing or label
+STOP(A) nothing
+LIST nothing or integer or label
+LET vaiableId
+
+PLOT(C) - two integers
+DRAW(C) - two integers
+PAINT(D) - three integers
+CIRCLE(D) - three integers
+
+POKE(C) - two integers
+DOKE(C) - two integers
+MEMFILL(D) three integers
+MEMCOPY(D) three integers
+
+RANDOMIZE(I) nothing or one integer
+RESTORE - nothing or label
+SWAP - two variableIds
+TRON - label
+TROFF(A) - nothing
+PLAY - string
+
+DO(A) - nothing
+WHILE - one integer
+REPEAT(A) - nothing
+EXIT(A) - nothing
+CONTINUE(A) - nothing
+RESUME(A) - nothing
+
+FOR TO STEP 
+NEXT variableId
+
+LOAD, VERIFY, MERGE DATA/CODE- device, filename
+SAVE device, filename DATA/CODE/LINE
+ERASE device, filename
+COPY device, filename TO device, filename
+PROC label
+RETURN - variable or constant list
+CONST
+
+STYLE(B) - one integer (light, dark, classic)
+
+*FUNCTIONS
+
+ABS(E) - number: absolute value
+CODE(F) - string: ascii code of first character
+INT(G) - number:
+SGN(G) - number:
+SQR(G) - number:
+PI(A) - nothing: pi 
+EUL(A) - nothing: euler
+ISUCASE(F) - string: is upper case
+ISLCASE(F) - string: is lower case
+ISALPHA(F) - string: is alpha
+ISDIGIT(F) - string: is digit
+UCASE$(F) - string
+LCASE$(F) - string
+STR$(E) - one number:conver number to string
+RND(I) - nothing or one integer
+TIME(A) - nothing
+STICK(B) - what to read (joy 1/2 direction/fire
+SPACE$(B) - return string of n spaces
+HEX$(B) - return number in hexadecimal format
+HEX(F) - parse hexadecimal string
+MAX
+MIN
+MAT
+
+
+class:
+A - no argument
+B - one integer number
+C - two integer numbers
+D - three integers
+E - one number
+F - one string
+G - one number
+H - one string, one number
+I - nothing or one integer
+
+
+Errors:
+
+numberOfLine:numberOfStatement errorMessage token,value
+
+0-OK
+1-Invalid argument
+2-Variable not found:
+3-Integer out of range
+4-Number is too big
+
+
 
 PENCOLOUR 0-3, 0-15
 
