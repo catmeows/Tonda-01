@@ -1,4 +1,72 @@
 
+Memory layout
+basic line 1 - pointed BAS_PROG
+basic line X
+Id table - pointed BAS_PROG_ID_TABLE
+Variable table - pointed BAS_PROG_VAR_TABLE
+
+
+
+
+RUN -> CLEAR, GOTO
+CLEAR -> clear variables, id table garbage collection
+
+id table garbage collection:
+ projdi vsechny radky a pokazde kdyz najdes v radku id, tak ho najdi i v tabulce a posun ho na x-te misto v tabulce
+ pokud je konec programu smaz vsechna id ktera jeste zustala (nejsou v programu pouzita)
+ resize oblasti -> znovuziskani pameti
+
+
+
+
+Editor
+
+
+Id
+ len, name
+
+Variable
+ Global loops
+ Global integer (
+ Global float
+ Global integer array
+ Global float array
+ String (Type, Id, Size,Len, content)
+ String array
+ List
+
+
+
+Types:
+Integer
+Float
+String
+Integer array:
+
+Float array:
+String array
+
+
+
+
+
+Array:
+
+
+
+
+
+
+Special tokens:
+  LABEL
+  DEFPROC
+
+
+
+
+
+
+
 TYPES
 
 Integer - 32bit signed integer
