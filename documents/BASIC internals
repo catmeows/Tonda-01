@@ -225,6 +225,9 @@ HEX(F) - parse hexadecimal string
 MAX
 MIN
 MAT
+INDEXOF - string, string
+LASTINDEX - string, string
+COMPSTR - 
 
 
 class:
