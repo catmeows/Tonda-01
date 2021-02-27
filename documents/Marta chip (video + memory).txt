@@ -65,7 +65,7 @@ $0000 +-------+ +-------+   $0000 +---------------+
 
 Marta registers
 port $C000 - BBBBFFFF BBBB..border color, FFFF..FIRQTIMER (every 1-15 line, 0-never)
-port $C001 - ..XXBMMP XX..external bank 0/1/2/3, B..RAM bank at $0000-$3FFF, MM..video mode, P-page used for video buffer i.e. bank 0/1 
+port $C001 - ...XBMMP X..external bank, B..RAM bank at $0000-$3FFF, MM..video mode, P-page used for video buffer i.e. bank 0/1 
 port $C002 - CCCCcccc CCCC..extra color 0, cccc..extra color 1
 port $C003 - CCCCcccc CCCC..extra color 2, cccc..extra color 2
 
@@ -83,7 +83,7 @@ Pins:
 31    In:  Clock (15 MHz main clock)
 32    In:  ROM/IO (A15 and A14, low indicates access to area $0000-$C000, i.e. RAM, and RAS+CAS has to be generated)
 33    In:  CS (A13 and A12 and A11 and A10 and A9 and A8 and A7 = low together with ROM/IO hi indicates IO access to Marta chip )
-34-35 Out: EX0-EX1 (external memory page 0-3, depending on internal page register)
-36-37 In:  A0,A1 - Marta register select
+34    Out: EX (external chip select, depending on internal page register)
+36-37 In:  A0,A1,A2 - Marta register select
 38,39 In:  Vss, Vcc (ground, 5V)
 
