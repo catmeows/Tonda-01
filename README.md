@@ -3,7 +3,7 @@ Fantasy computer based on 6809 cpu
 
 ## Hardware
 
-* CPU: 6809 @ 1.75 Mhz
+* CPU: 6809 @ 1.612225
 * ROM: 16KB
 * RAM: 64KB
 * Video: 
