@@ -73,15 +73,15 @@ port $C003 - CCCCcccc CCCC..extra color 2, cccc..extra color 2
 Pins:
 0-6   Out: Red0,Red1,Green0,Green1,Blue0,Blue1,Sync (RGB video + sync)
 7-8   Out: CAS,RAS (DRAM timing + DRAM refresh)
-9     Out: RVE (DRAM read/write)
+9     Out: RWE (DRAM read/write)
 10-17 Out: RA0-RA7 (DRAM adressing)
 18    Out: IRQ (IRQ signal when starting
 19    Out: FIRQ (FIRQ signal at the end of pixel area)
 20-27 In:  D0-D7 (data in)
 28-29 Out: Q,E (6809 clock)
 30    In:  RW (6809 read/write)
-31    In:  Clock (15 MHz main clock)
-32    In:  ROM/IO (A15 and A14, low indicates access to area $0000-$C000, i.e. RAM, and RAS+CAS has to be generated)
+31    In:  Clock (17.734475 MHz main clock)
+32    In:  ROM/IO (A15 AndOperator A14, low indicates access to area $0000-$C000, i.e. RAM)
 33    In:  CS (A13 and A12 and A11 and A10 and A9 and A8 and A7 = low together with ROM/IO hi indicates IO access to Marta chip )
 34    Out: EX (external chip select, depending on internal page register)
 36-37 In:  A0,A1,A2 - Marta register select
