@@ -44,7 +44,7 @@ $C08D - MODE    (xxxxNVVV..N selects noise on/off, VVV selects volume 0-7)
 
 
 KEYBOARD
-Tonda 01 has 55 key keyboards.
+Tonda 01 has 55 key keyboards. TODO: add TAB key as 56th key
 
 Physical layout looks like this
 +----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
