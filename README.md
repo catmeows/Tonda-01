@@ -17,8 +17,12 @@ Fantasy computer based on 6809 cpu
   * 2x Atari joystick connector
   * Tape in/out connector
   * TV out 
+  * Analog (4 level) RGB
+  * Composite video
   * Edge connector
-  * TODO
+  * Disk interface connector
+  * Parallel port
+  
 
 
 
