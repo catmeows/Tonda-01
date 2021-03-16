@@ -15,7 +15,7 @@ FEDCBA98 76543210
 10xxxxxx xxxxxxxx - RAM $8000 - RAM $BFFF mapped to $8000 - $BFFF
 11000000 0.....xx - Marta I/O
 11000000 1xxxxxxx - Frida I/O
-11xxxxxx xxxxxxxx - ROM - mapped to $C100 - $FFFF
+11xxxxxx xxxxxxxx - 16KB ROM - mapped to $C100 - $FFFF ($C000 - $C0FF are overlayed by IO)
 
 
 Video modes
@@ -29,7 +29,7 @@ mode  memory resolution  buffers  colors
 
 Colors:
 
- 0-Black    00 00 00 (RGB)
+ 0-Black    00 00 00 (6bit RGB)
  1-Magenta  AA 00 AA
  2-Red      FF 00 00
  3-Blue     00 55 FF
