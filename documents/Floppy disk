@@ -20,8 +20,8 @@ Catalogue:
   17
  
 Controller has following properties:
- Reading/writing one bit takes 4us ~ 7 cycles.
- Reading/writing one byte takes 32us ~ 56 cycles
+ Reading/writing one bit takes 4us ~ 6.5 cycles.
+ Reading/writing one byte takes 32us ~ 51.6 cycles
 
  Reading disk:
  Setting ReadDisk line low.
