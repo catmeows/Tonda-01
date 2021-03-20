@@ -14,18 +14,38 @@ TAPE and DISK operations
 Tape and disk operations use concept of device priority.
 First drive has number 1 and has highest priority, second drive has number 2, etc. Tape has number 9. 
 
-LOAD <filename> - load Basic program from default mass storage
-LOAD <filename> CODE - load binary file from default mass storage to memory location stated in file header
-LOAD <filename> DATA <variable name> - load variable file from default mass storage and store it to a variable
-LOAD <drive>,<filename> - load Basic program from mass storage device <drive>
+LOAD <filename> - load Basic program from default drive
+LOAD <filename> CODE - load binary file from default drive to memory location stated in file header
+LOAD <filename> DATA <variable name> - load variable file from drive storage and store it to a variable
+LOAD <drive>,<filename> - load Basic program from <drive>
 
-SAVE <filename> - save Basic program to default mass storage
-SAVE <filename> CODE <address>,<length> - save binary file to default mass storage from memory address, length gives number of bytes
-SAVE <filename> DATA <variable> - save variable to default mass storage
-SAVE <drive>,<filename> - save Basic program to mass storage device <drive>
-
+SAVE <filename> - save Basic program to drive
+SAVE <filename> CODE <address>,<length> - save binary file to default drive from memory address, length gives number of bytes
+SAVE <filename> DATA <variable> - save variable to default drive
+SAVE <drive>,<filename> - save Basic program to <drive>
+SAVE <filename> TO <new filename> - copy <filename> to <new filename> 
 VERIFY <filename>
 MERGE <filename>
 
-CAT
-FORMAT
+FREE - returns empty sectors on default drive
+FREE <drive> - returns empty sectors on <drive>
+LOCK <filename>, <lock> - locks/unlocks <filename> for writing, <lock>!=0 for read only files
+
+ERASE <filename> - erase <filename>
+
+RENAME <filename>, <new filename> - rename filename
+RENAME <drive>, filename
+CAT - print catalog of default drive
+CAT <filename mask> - print list of files matching <filename_mask>, wildcards '*' and '?' are allowed
+CAT TO <string variable> - redirect output to <string variable>
+CAT <drive> - print catalog of specified drive
+FORMAT <drive> - format drive specified 
+DRIVE <drive> - change default drive to drive specified
+
+Error messages:
+"Drive not found"
+"Disk is full"
+"Invalid filename"
+"Invalid argument"
+"Disk error"
+"Loading error"
