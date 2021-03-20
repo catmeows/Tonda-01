@@ -3,7 +3,7 @@
 
 
 
-LOOPS
+=Loops=
 
 FOR <variable>=<initial value> TO <end value> STEP <increment> : ... :NEXT <variable> 
 DO: ... :WHILE <condition>: ... :REPEAT
@@ -12,10 +12,22 @@ DO: ... :WHILE <condition>: ... :REPEAT
 CONTINUE
 EXIT 
 
+=Conditional=
+
+IF <condition> THEN ... :ENDIF
+IF <condition> THEN ... :ELSE ... :ENDIF
+
+
+=Math functions=
+
+ABS <expression>
+SGN <expression>
+INT <expression>
+RND
 
 
 
-TAPE and DISK operations
+=TAPE and DISK operations=
 
 Tape and disk operations use concept of device priority.
 First drive has number 1 and has highest priority, second drive has number 2, etc. Tape has number 9. 
@@ -29,6 +41,7 @@ SAVE <filename> - save Basic program to drive
 SAVE <filename> CODE <address>,<length> - save binary file to default drive from memory address, length gives number of bytes
 SAVE <filename> DATA <variable> - save variable to default drive
 SAVE <drive>,<filename> - save Basic program to <drive>
+SAVE <filename> DIR
 SAVE <filename> TO <new filename> - copy <filename> to <new filename> 
 VERIFY <filename>
 MERGE <filename>
@@ -47,6 +60,7 @@ CAT TO <string variable> - redirect output to <string variable>
 CAT <drive> - print catalog of specified drive
 FORMAT <drive> - format drive specified 
 DRIVE <drive> - change default drive to drive specified
+DIR <filename>
 
 Error messages:
 "Drive not found"
