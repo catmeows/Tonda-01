@@ -130,7 +130,7 @@ FREQL - lower 8 bits of frequency (pitch) control
 FREQH - higher 4 bits of frequency (pitch) control
 WAVEL - low wave form bits
 WAVEH - high wave form bits
-AUD CTRL - control port with bits E...NVVV where E is enabled, N is Noise flag, VVV is volume.
+AUD CTRL - control port with bits E...NVVV where E is enabled, N is Noise flag, VVV is volume. VVV has valid values 0..4.
 
 FREQL and FREQH forms frequency divider (higher value means lower frequency/tone pitch) that gives pace at which two wave register, WAVEL and WAVEH registers are shifted.
 When FREQL and FREQH are both zeroed, there is clock is stopped
