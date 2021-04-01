@@ -1,6 +1,10 @@
+line number 1-9999
 
+LIST <number> - list starting from line number
+LIST - list from start
+LIST ? - list starting last error
 
-
+TRON 0|1|2 - trace off/on/interactive - prints line number and command token at 0,0 (LLLL TOKEN), in mode 2 prints LLLL TOKEN next? 
 
 
 =Loops=
