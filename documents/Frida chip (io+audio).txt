@@ -11,12 +11,13 @@ I/O
                 - FM0-FM3..floppy step motor, FT0..floppy track zero  
                 - FX1,FX2,FX3,FX4..additional lines to floppy drive, could be used for simplified, software driven RS232 serial interface built in floppy unit
  Parallel       - PD0-PD7..printer data, PBS..busy, P/A../ACK, P/S../STROBE
+ Led Diode      - LD Programmable led diode, used to indicate Caps Lock
   
  
  +-----+-----++-----+-----+-----+-----+-----+-----+-----+-----++-----+-----+-----+-----+-----+-----+-----+-----+
  | PC0 | PC1 || PA0 | PA1 | PA2 | PA3 | PA4 | PA5 | PA6 | PA7 || PB0 | PB1 | PB2 | PB3 | PB4 | PB5 | PB6 | PB7 |
  +=====+=====++=====+=====+=====+=====+=====+=====+=====+=====++=====+=====+=====+=====+=====+=====+=====+=====+
- |  0  |  0  || J1U | J1D | J1L | J1R | J1F | TI  | TO  | n/a || J2U | J2D | J2L | J2R | J2F | FX3 | FX4 |(FT0)| 
+ |  0  |  0  || J1U | J1D | J1L | J1R | J1F | TI  | TO  | LD  || J2U | J2D | J2L | J2R | J2F | FX3 | FX4 |(FT0)| 
  +-----+-----++-----+-----+-----+-----+-----+-----+-----+-----++-----+-----+-----+-----+-----+-----+-----+-----+
  |  0  |  1  || R0  | R1  | R2  | R3  | R4  | R5  | R6  | R7  || K0  | K1  | K2  | K3  | K4  | K5  | K6  |(FT0)|
  +-----+-----++-----+-----+-----+-----+-----+-----+-----+-----++-----+-----+-----+-----+-----+-----+-----+-----+
@@ -44,7 +45,7 @@ $C08D - MODE    (xxxxNVVV..N selects noise on/off, VVV selects volume 0-7)
 
 
 KEYBOARD
-Tonda 01 has 55 key keyboards. TODO: add TAB key as 56th key
+Tonda 01 has 55 key keyboards. TODO: add TAB key as 56th key ?
 
 Physical layout looks like this
 +----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
@@ -66,7 +67,7 @@ Physical layout looks like this
                    
  In hardware, keyboard is matrix of seven columns and eight rows. 7x8 = 56 so one position in matrix is unused (indicated as <none> in table)
  
- Column  KeybCtrl    bits 7   6     5     4      3       2        1      0
+ Column  KeybSelect    bits 7   6     5     4      3       2        1      0
  0       %10111111        up  down  ctrl  lshft  <none>  delete   right  ]    
  1       %11011111        1   Q     A     Z      space   enter    left   [
  2       %11101111        2   W     S     X      rshft   apostrf  =      -
@@ -76,10 +77,11 @@ Physical layout looks like this
  6       %11111110        6   Y     H     N      M       J        U      7
                    
  Reading keyboard:
- 1) Write value %00000000 to MUX CTRL port to select keyboard
- 2) Write value %00000000 (all read) to DIR CTRL port
- 3) Write keyboard column bits to KEYB CTRL port (see table)
- 4) Read from DATA port - if key is pressed the bit reset
+ 1) Write value %00000001 to IOCTRL port to select keyboard
+ 2) Write value %11111111 (all write) to DIRA port
+ 3) Write value %00000000 (all read) to DIRB port
+ 4) Write keyboard column bits to PA port (see table)
+ 4) Read from PB port - if key is pressed the bit is reset
  
  It is possible read more columns at once. For example if %11000111 (columns 1 to 5) is written into KEYB CTRL, bit 7 will be reset if any of keys '1' or '2' or '3' is pressed. 
                    
@@ -88,37 +90,31 @@ ATARI JOYSTICK PORT
 Joystick port has 5 digital pins and 2 analog pins. As for digital pins, they can be used either as input or output.
 Analog pins can be read only.
 
-Reading digital pins:
-1) Write value %00000001 to MUX CTRL port to select joystick/tape
-2) Write value %00000000 (all READ) to DIR CTRL port
-3) Read value from DATA port
+Reading digital pins of Joy1:
+1) Write value %00000000 to IOCTRL port to select joystick/tape/led
+2) Write value %00000000 (all READ) to DIRA port
+3) Read value from PA port
    
 Now value has lower 5 bits set according values on pins: ???64321. With standard joystick wiring it is translanted as ???FRLUD (Fire, Right, Left, Up, Down).
 Bit is set if when direction/fire is triggered.   
 
 Reading analog pins:
-1) Read port POTX (POTY) to get time from last edge 
+1) Read port POTX (POTY) to get time from last edge TODO: timing
 
 TAPE
 Reading tape input
-1) Write value %00000001 to MUX CTRL port to select joystick/tape
-2) Write value %00000000 (all READ) to DIR CTRL port
-3) Read value from DATA port
+1) Write value %00000000 to IOCTRL port to select joystick/tape/led
+2) Write value %00000000 (all READ) to DIRA port
+3) Read value from PA port
 4) Isolate bit 5, that is reading on tape input
 
 Writing to tape output
-1) Write value %00000001 to MUX CTRL port to select joystick/tape
-2) Write value %01000000 (bit 6 to WRITE) to DIR CTRL port
-3) Write value to DATA port, bit 6 will be send to tape
+1) Write value %00000000 to IOCTRL port to select joystick/tape
+2) Write value %01000000 (bit 6 to WRITE) to DIRA port
+3) Write value to PA port, bit 6 will be send to tape
 
-Note on jostick/tape port
-Joystick and tape wires are connected to single port. Low five bits (b0,b1,b2,b3,b4) represent digital pins of joystick, bit 5 is tape input (ear), bit 6 is tape output (mic).
-Bit 7 connected to keyboard LED.
-Depending on DIR CTRL value (direction control), it is possible to read or write to any combination of the 7 bits. However, result of reading or writing really depends on device connected to atari/tape connector.
-For example you can send data to bit 5 (ear) but tape recorder simply do not monitor voltage on its ear connector. But it is possible to connect some other device to ear connector and that device may react on data sent trough ear bit. 
-
-USER PORT 1, 2
-Are just two 8-bit bidirectional ports. Depending on setting of DIR CTRL, each bit can act as input or output.
+PARALLEL PORT
+This is minimal parallel port with 8 data lines and Busy, /Ack, /Strobe lines
 
 AUDIO
 Frida provides 4 channels: A, B, C, D
@@ -133,7 +129,7 @@ WAVEH - high wave form bits
 AUD CTRL - control port with bits E...NVVV where E is enabled, N is Noise flag, VVV is volume. VVV has valid values 0..4.
 
 FREQL and FREQH forms frequency divider (higher value means lower frequency/tone pitch) that gives pace at which two wave register, WAVEL and WAVEH registers are shifted.
-When FREQL and FREQH are both zeroed, there is clock is stopped
+When FREQL and FREQH are both zeroed, the clock is stopped
 Most significant bits of WAVEL and WAVEH forms value 0..3 that gives output level for the particular channel.
 This output level is multiplied by value VVV from AUD CTRL register.
 When N bit is reset, most significant bit shifted out from WAVEL/WAVEH register and is put into bit 0. Effectively, the values in WAVEL/WAVEH registers are rotated.
