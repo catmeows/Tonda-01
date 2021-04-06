@@ -12,7 +12,7 @@ Fantasy computer based on 6809 cpu
   * Mode 2: 256x192 bitmap with 4 colors from 16
   * Mode 3: 512x192 bitmap with 2 colors from 16 
 * Audio:
-  * Custom 4 channel PSG with editable wave form, 4 volume levels. Any channels can be switched to noise mode
+  * Custom 4 channel PSG with editable wave form, 8 volume levels. Any channels can be switched to noise mode
   * Output to internal speaker or stereo 3.5 mm jack
 * I/O
   * Keyboard with 56 keys
