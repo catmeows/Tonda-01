@@ -29,6 +29,12 @@ Controller has following properties:
  When b7 is set, incoming zeroes are ignored.
  When next bit is '1', controller waits for another bit X then clears shift register, shift '1' and then X into shift register.
  That allows CPU to poll shift register content until b7 is set and then read a byte.
+
+   read_floppy
+      LDA #PA_PORT      ;5 floppy data port
+      BPL read_floppy   ;3 wait till byte is complete (bit 7 set)
+                        ;after b7 is set, controller will wait for '1' and 'X' bits before clearing register, giving at most 13 cycles for read
+                        
  Using pilot "byte" 111111110b (9bits) controller can synchronize. It takes 7 pilot bytes to be fully synchronized.
  
  Regular bytes are encode as in FM scheme: 1D1D1D1D, where D are data bits. So it takes two bytes on disk to store single data bit.
