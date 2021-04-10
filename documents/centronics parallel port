@@ -1,0 +1,10 @@
+D0-D7
+/STROBE
+/ACK
+BUSY
+
+1. Put data on D0-D7
+2. Check if prinster is not busy i.e. BUSY is low.
+3. Signal strobe i.e. bring /STROBE low for at least 1us
+4. Printer will indicate it is busy by setting BUSY high.
+5. Printer will indicate it finished job by setting /ACK for about 5 us. 
