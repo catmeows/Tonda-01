@@ -1,0 +1,29 @@
+Mockup:
+
+1 first_line first_line first_line
+  first_line
+2 second_line second_line
+3 third_line third_line third_line
+  third_line third_line third_line
+  third_line
+4 fourth_line  
+
+
+cursor left, cursor right
+cursor up, down
+
+>MERGE line,"filename"
+>SAVE 
+>ERASE line
+>ERASE line-line
+>LIST
+>LIST line
+>LIST line-line
+>FIND "string"
+>FIND line-line, "string"
+>REPLACE "string"
+>REPLACE line-line,"string"
+>UNDO
+
+
+  
