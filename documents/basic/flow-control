@@ -1,0 +1,26 @@
+int FOR-TO-STEP-NEXT
+fp FOR-TO-STEP-NEXT
+IF-ELSE-ENDIF
+DO-WHILE-REPEAT-EXIT
+GOTO @label
+
+
+FOR-TO-STEP
+-> put FOR structure on data stack: varid, limit, step, adress of next line after FOR
+
+IF-ELSE-ENDIF
+IF -> put IF structure and set true/false flag
+IF -> branch taken: continue to next command
+IF -> branch skipped: find ELSE or ENDIF on same level
+ELSE -> check IF structure, if branch taken, find ENDIF on same level and discard IF structure
+ENDIF -> check IF structure, discard IF
+
+DO-WHILE-REPEAT
+DO -> put DO structure on data stack: address of next line after DO, address of next line after REPEAT (default unknown)
+WHILE -> branch taken, check DO structure, continue to next command
+WHILE -> branch skipped, check DO structure, if 
+EXIT -> check DO structure, if it has REPEAT address, use it otherwise find REPEAT
+REPEAT -> 
+
+GOTO @label
+
