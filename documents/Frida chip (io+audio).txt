@@ -186,3 +186,15 @@ To set a channel
 5) (optional) enable LFSR by setting N in AUD CTRL port
 
 
+0,1 - Vcc, Vss
+2..9 - in,out: Data D0..D7
+10..17 - in,out: Port PA0..PA7
+18..25 - in,out: Port PB0..PB7
+26 - in: chip select CS
+27..30 - in: address A0..A3
+31 - in: clock
+32,33 - out: port selector PC0,PC1
+34,35 - out: audio left/right
+36,37 - in: potentiometr PX,PY
+38 - in: RW
+39 - GND
