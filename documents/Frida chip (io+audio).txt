@@ -6,13 +6,25 @@ I/O
  Atari joy 1    - J1U..joystick 1 up, J1D..joystick 1 down, J1L..joystick 1 left, J1R..joystick 1 right, J1F..joystick 1 fire
  Atari joy 2    - J2U..joystick 1 up, J2D..joystick 1 down, J2L..joystick 1 left, J2R..joystick 1 right, J2F..joystick 1 fire
  Tape           - TI..tape input, TO..tape output
- Keyboard       - R0-R7..keyboard row select, K0-K7
+ Keyboard       - R0-R7..keyboard row select, K0-K6
  Disk           - FD0-FD7..floppy data, FPI..floppy data pilot, FR..floppy read, FW..floppy write, FWP..floppy write protect, FDS..floppy disk select
                 - FM0-FM3..floppy step motor, FT0..floppy track zero  
                 - FX1,FX2,FX3,FX4..additional lines to floppy drive, could be used for simplified, software driven RS232 serial interface built in floppy unit
  Parallel       - PD0-PD7..printer data, PBS..busy, P/A../ACK, P/S../STROBE
  Led Diode      - LD Programmable led diode, used to indicate Caps Lock
   
+ 
+ TODO: Group ports by directions - read, write, bidirectional
+ 
+ Read(22): TI, K0-K6, FWP, PBS, P/A, FT0, J1(5), J2(5) 
+ Write(26): TO, R0-R7, FPI, FR, FW, FDS, PD0-PD7, P/S, FM0-FM3, LD 
+ Bi(8): FD0-FD7
+ FX?
+ 
+ READ:   TI  K0  K1  K2  K3  K4  K5  K6
+       
+ WRITE:  R0  R1  R2  R3  R4  R5  R6  R7
+ 
  
  +-----+-----++-----+-----+-----+-----+-----+-----+-----+-----++-----+-----+-----+-----+-----+-----+-----+-----+
  | PC0 | PC1 || PA0 | PA1 | PA2 | PA3 | PA4 | PA5 | PA6 | PA7 || PB0 | PB1 | PB2 | PB3 | PB4 | PB5 | PB6 | PB7 |
