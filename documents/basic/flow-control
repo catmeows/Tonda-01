@@ -6,7 +6,7 @@ GOTO @label
 
 
 FOR-TO-STEP
--> put FOR structure on data stack: varid, limit, step, adress of next line after FOR
+FOR -> put FOR structure on data stack: varid, limit, step, adress of next line after FOR
 
 IF-ELSE-ENDIF
 IF -> put IF structure and set true/false flag
@@ -20,7 +20,7 @@ DO -> put DO structure on data stack: address of next line after DO, address of 
 WHILE -> branch taken, check DO structure, continue to next command
 WHILE -> branch skipped, check DO structure, if 
 EXIT -> check DO structure, if it has REPEAT address, use it otherwise find REPEAT
-REPEAT -> 
+REPEAT -> check DO structure, if the REPEAT address is empty put it into DO structure, jump to line after DO
 
 GOTO @label
 
