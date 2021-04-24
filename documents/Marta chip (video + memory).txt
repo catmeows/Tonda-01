@@ -64,11 +64,15 @@ $0000 +-------+ +-------+   $0000 +---------------+
 
 
 Marta registers
-port $C000 - BBBBFFFF BBBB..border color, FFFF..FIRQTIMER (every 1-15 line, 0-never)
-port $C001 - XX..BMMP X..external bank, B..RAM bank at $0000-$3FFF, MM..video mode, P-page used for video buffer i.e. bank 0/1 
-port $C002 - CCCCcccc CCCC..extra color 0, cccc..extra color 1
-port $C003 - CCCCcccc CCCC..extra color 2, cccc..extra color 2
+port $C000 - register select
+port $C001 - value
 
+00 - ....BBBB -> BBBB..border color
+01 - XX..BMMP -> X..external bank, B..RAM bank at $0000-$3FFF, MM..video mode, P-page used for video buffer i.e. bank 0/1 
+02 - CCCCcccc CCCC..extra color 0, cccc..extra color 1
+03 - CCCCcccc CCCC..extra color 2, cccc..extra color 2
+04 - FFFFFFFF -> FFFFFFFF..FIRQTIMER (every 1-255 line, 0-never)
+16-31 - pallette entry ..RRGGBB
 
 Pins:
 0-6   Out: Red0,Red1,Green0,Green1,Blue0,Blue1,Sync (RGB video + sync)
