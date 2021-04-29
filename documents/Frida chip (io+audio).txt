@@ -199,14 +199,24 @@ To set a channel
 
 
 0,1 - Vcc, Vss
-2..9 - in,out: Data D0..D7
-10..17 - in,out: Port PA0..PA7
-18..25 - in,out: Port PB0..PB7
-26 - in: chip select CS
-27..30 - in: address A0..A3
-31 - in: clock
-32,33 - out: port selector PC0,PC1
+2..12 - out: PR0|KR0, PR1|KR1, PR2|KR2, PR3|TO, PR4|JS0, PR5|JS1, PR6, PR7, P/S, KS, LED
+13..20 - in: K0|J0, K1|J1, K2|J2, K3|J3, K4|J4, K5, K6|PA, TI|P/A
+28 - in: chip select CS
+29..32 - in: address A0..A3
+33 - in: clock
 34,35 - out: audio left/right
 36,37 - in: potentiometr PX,PY
 38 - in: RW
-39 - GND
+39 - in: RESET
+
+WRITE:
+00 01 02 03 04 05 06 07 08 09 10
+P0 P1 P2 P3 P4 P5 P6 P7 PS RS LED
+R0 R1 R3 TO J0 J1
+
+READ:
+11 12 13 14 15 16 17 18
+K0 K1 K2 K3 K4 K5 K6 TI
+J0 J1 J2 J3 J4 -- PA PB
+
+
