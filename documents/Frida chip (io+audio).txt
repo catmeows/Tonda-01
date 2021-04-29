@@ -4,9 +4,9 @@ Frida is custom chip that cares about i/o and sound in Tonda 01 computer.
 Pins:
 0,1 - Vcc, Vss
 2..12 - out: PR0|KR0, PR1|KR1, PR2|KR2, PR3|TO, PR4|JS0, PR5|JS1, PR6, PR7, P/S, KS, LED
-13..20 - in: K0|J0, K1|J1, K2|J2, K3|J3, K4|J4, K5, K6|PA, TI|P/A
+13..20 - in: K0|J0, K1|J1, K2|J2, K3|J3, K4|J4, K5, K6|PB, TI|P/A
 21..28 - in/out: D0..D7
-29 - in: chip select CS
+29 - in: chip select /CS
 30..32 - in: address A0..A2
 33 - in: clock
 34,35 - out: audio left/right
@@ -14,31 +14,40 @@ Pins:
 38 - in: RW
 39 - in: RESET
 
-
+Registers:
+$C040 CONTROL  - LSK.cccc - L..led, S..printer /strobe, K..keyboard/other select, cccc..sound channel select 3210
+$C041 PX       - value reading from potentiometer
+$C042 PY       - value reading from potentiometer
+$C043 DATA     - write to PR0..PR7, JS0..JS1, KR0..KR2, TO 
+               - read K0..K6, J0..J4, TI, P/A, PBS 
+$C044          - FREQHI - NVVVFFFF - N..noise on/off, VVV..volume 0..7, FFFF..high 4 bits of frequency
+$C045          - FREQLO - low 8 bit of frequency
+$C046          - WAVEHI - high wave sample 
+$C047          - WAVELO - low wave sample 
 
 I/O
  
  Atari joy 1    - J1U..joystick 1 up, J1D..joystick 1 down, J1L..joystick 1 left, J1R..joystick 1 right, J1F..joystick 1 fire
  Atari joy 2    - J2U..joystick 1 up, J2D..joystick 1 down, J2L..joystick 1 left, J2R..joystick 1 right, J2F..joystick 1 fire
  Tape           - TI..tape input, TO..tape output
- Keyboard       - R0-R7..keyboard row select, K0-K6
- Disk           - FD0-FD7..floppy data, FPI..floppy data pilot, FR..floppy read, FW..floppy write, FWP..floppy write protect, FDS..floppy disk select
-                - FM0-FM3..floppy step motor, FT0..floppy track zero  
-                - FX1,FX2,FX3,FX4..additional lines to floppy drive, could be used for simplified, software driven RS232 serial interface built in floppy unit
- Parallel       - PD0-PD7..printer data, PBS..busy, P/A../ACK, P/S../STROBE
+ Keyboard       - KR0-KR2..keyboard row select, K0-K6 row read
+ Parallel       - PR0-PR7..printer data, PBS..busy, P/A../ACK, P/S../STROBE
  Led Diode      - LD Programmable led diode, used to indicate Caps Lock
-  
+ Analog 2x      - PX, PY
+ Keyboard Slct  - KS Select reading 
  
- TODO: Group ports by directions - read, write, bidirectional
+
+00 01  02 03 04 05 06 07 08 09 10
+P0 P1 P2 P3 P4 P5 P6 P7 PS RS LED
+R0 R1 R3 TO J0 J1 -- -- -- -- --
+
+READ:
+11 12 13 14 15 16 17 18
+K0 K1 K2 K3 K4 K5 K6 TI
+J0 J1 J2 J3 J4 -- PA PB
  
- Read(22): TI, K0-K6, FWP, PBS, P/A, FT0, J1(5), J2(5) 
- Write(26): TO, R0-R7, FPI, FR, FW, FDS, PD0-PD7, P/S, FM0-FM3, LD 
- Bi(8): FD0-FD7
- FX?
  
- READ:   TI  K0  K1  K2  K3  K4  K5  K6
-       
- WRITE:  R0  R1  R2  R3  R4  R5  R6  R7
+ 
  
  
  +-----+-----++-----+-----+-----+-----+-----+-----+-----+-----++-----+-----+-----+-----+-----+-----+-----+-----+
@@ -225,14 +234,6 @@ To set a channel
 38 - in: RW
 39 - in: RESET
 
-WRITE:
-00 01 02 03 04 05 06 07 08 09 10
-P0 P1 P2 P3 P4 P5 P6 P7 PS RS LED
-R0 R1 R3 TO J0 J1
 
-READ:
-11 12 13 14 15 16 17 18
-K0 K1 K2 K3 K4 K5 K6 TI
-J0 J1 J2 J3 J4 -- PA PB
 
 
