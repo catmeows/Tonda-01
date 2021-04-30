@@ -15,7 +15,7 @@ Pins:
 39 - in: RESET
 
 Registers:
-$C040 CONTROL  - LSK.cccc - L..led, S..printer /strobe, K..keyboard/other select(KS), cccc..sound channel select 3210
+$C040 CONTROL  - LSK.CCCC - L..led, S..printer /strobe, K..keyboard/other select(KS), CCCC..sound channel select 3210
 $C041 PX       - value reading from potentiometer
 $C042 PY       - value reading from potentiometer
 $C043 DATA     - write to PR0..PR7, JS0..JS1, KR0..KR2, TO 
@@ -108,140 +108,84 @@ Send character to printer:
 
 TAPE IN/OUT
 
+Read tape:
+1) Write to CONTROL ($C040) bit 5 (KS) with bit reset
+2) Poll bit 7 (TI) from DATA ($C043)
+
+Write tape:
+1) Write to DATA ($C043) with bit 2 (TO) set/reset
 
 
+LED
+Led diode is used to indicate CAPS lock but is fully programmable.
 
+Setting Led diode on/off:
+1) Write to CONTROL ($C040) bit 7 (LED), 0 for off, 1 for on
 
- 
- 
- 
- Atari joy 1    - J1U..joystick 1 up, J1D..joystick 1 down, J1L..joystick 1 left, J1R..joystick 1 right, J1F..joystick 1 fire
- Atari joy 2    - J2U..joystick 1 up, J2D..joystick 1 down, J2L..joystick 1 left, J2R..joystick 1 right, J2F..joystick 1 fire
- Tape           - TI..tape input, TO..tape output
- Keyboard       - KR0-KR2..keyboard row select, K0-K6 row read
- Parallel       - PR0-PR7..printer data, PBS..busy, P/A../ACK, P/S../STROBE
- Led Diode      - LD Programmable led diode, used to indicate Caps Lock
- Analog 2x      - PX, PY
- Keyboard Slct  - KS Select reading 
- 
-
-00 01  02 03 04 05 06 07 08 09 10
-P0 P1 P2 P3 P4 P5 P6 P7 PS RS LED
-R0 R1 R3 TO J0 J1 -- -- -- -- --
-
-READ:
-11 12 13 14 15 16 17 18
-K0 K1 K2 K3 K4 K5 K6 TI
-J0 J1 J2 J3 J4 -- PA PB
- 
- 
- 
- 
- 
-
-
-
-
- 
- 
-                   
- Reading keyboard:
- 1) Write value %00000001 to IOCTRL port to select keyboard
- 2) Write value %11111111 (all write) to DIRA port
- 3) Write value %00000000 (all read) to DIRB port
- 4) Write keyboard column bits to PA port (see table)
- 4) Read from PB port - if key is pressed the bit is reset
- 
- It is possible read more columns at once. For example if %11000111 (columns 1 to 5) is written into KEYB CTRL, bit 7 will be reset if any of keys '1' or '2' or '3' is pressed. 
-                   
-
-ATARI JOYSTICK PORT
-Joystick port has 5 digital pins and 2 analog pins. As for digital pins, they can be used either as input or output.
-Analog pins can be read only.
-
-Reading digital pins of Joy1:
-1) Write value %00000000 to IOCTRL port to select joystick/tape/led
-2) Write value %00000000 (all READ) to DIRA port
-3) Read value from PA port
-   
-Now value has lower 5 bits set according values on pins: ???64321. With standard joystick wiring it is translanted as ???FRLUD (Fire, Right, Left, Up, Down).
-Bit is set if when direction/fire is triggered.   
-
-Reading analog pins:
-1) Read port POTX (POTY) to get time from last edge TODO: timing
-
-TAPE
-Reading tape input
-1) Write value %00000000 to IOCTRL port to select joystick/tape/led
-2) Write value %00000000 (all READ) to DIRA port
-3) Read value from PA port
-4) Isolate bit 5, that is reading on tape input
-
-Writing to tape output
-1) Write value %00000000 to IOCTRL port to select joystick/tape
-2) Write value %01000000 (bit 6 to WRITE) to DIRA port
-3) Write value to PA port, bit 6 will be send to tape
-
-PARALLEL PORT
-This is minimal parallel port with 8 data lines and Busy, /Ack, /Strobe lines
 
 AUDIO
 Frida provides 4 channels: A, B, C, D
 Channels A,B are mixed together as first output and C,D are mixed together as second audio output. In normal circumstancies, these two audio lines are connected to internal speaker.  
 Connecting 3.5mm stereo jack into AUDIO connector disables internal speaker. In such case, channels A,B are routed to left output and channels C,D are routed to right output.
 
-Each channel is controlled by 5 registers:
-FREQL - lower 8 bits of frequency (pitch) control
-FREQH - higher 4 bits of frequency (pitch) control
-WAVEL - low wave form bits
-WAVEH - high wave form bits
-AUD CTRL - control port with bits E...NVVV where E is enabled, N is Noise flag, VVV is volume. VVV has valid values 0..4.
+Each channel is controlled by 4 registers:
+$C044          - FREQHI - NVVVFFFF - N..noise on/off, VVV..volume 0..7, FFFF..high 4 bits of frequency
+$C045          - FREQLO - low 8 bit of frequency
+$C046          - WAVEHI - high wave sample 
+$C047          - WAVELO - low wave sample 
+
+FREQHI - channel control and 4 bits of frequency (pitch) control
+FREQLO - lower 8 bits of frequency (pitch) control (write to FREQLO is latched and loaded when FREQHI is written)
+WAVEHI - high wave form bits (write to WAVEHI is latched and loaded when FREQHI is written)
+WAVELO - low wave form bits (write to WAVELO is latched and loaded when FREQHI is written)
 
 FREQL and FREQH forms frequency divider (higher value means lower frequency/tone pitch) that gives pace at which two wave register, WAVEL and WAVEH registers are shifted.
-When FREQL and FREQH are both zeroed, the clock is stopped
+When frequency is zero the clock is stopped
 Most significant bits of WAVEL and WAVEH forms value 0..3 that gives output level for the particular channel.
-This output level is multiplied by value VVV from AUD CTRL register.
+This output level is multiplied by value VVV from FREQHI register.
 When N bit is reset, most significant bit shifted out from WAVEL/WAVEH register and is put into bit 0. Effectively, the values in WAVEL/WAVEH registers are rotated.
 When N bit is set, the shift register is turned into linear feedback register producing pseudorandom stream of bits.
 
 To set a channel
-1) disable channel, set FREQL=0, then FREQH=0
-2) set WAVEL, WAVEH 
+1) select channel by writting to CONTROL ($C040) bits b3-b0 (....CCCC), channel to be written is indicated by bit set
+2) set WAVELO ($C046), WAVEHI ($C046) 
    e.g. to set triangle wave 
-   WAVEL = %10101000 
-   WAVEH = %01110000
-   
    3 ..X.....
    2 .XXX....
    1 XXXXX...
    
-3) set FREQL, FREQH
-            
-   pitch = 1.75MHz / (16 * FREQ)
+   WAVEL = %10101000 
+   WAVEH = %01110000
    
-   FREQ = 1.75MHz / (16 * pitch)
+3) write lower 8 bits of frequency to FREQLO ($C045) 
+4) write higher 4 bits of frequency, noise mode and volume to FREQHI ($C044).
+   Bits are as follows: NVVVFFFF - N..noise, VVV..volume, FFFF..frequency
+            
+   pitch = 1.6122MHz / (8 * FREQ)
+   
+   FREQ = 1.6122MHz / (8 * pitch)
    
    Example:
    Note  Freq[Hz] FREQ RealHz
-         26.71    4095
-   A0    27.50    3977
-   A#0   29.14    3753
-   B0    30.87    3543
-   C1    32.70    3345
-   C2    65.41    1672
-   C3   130.8      836
+   (G1)  49.21    4095
+   G#1   51.91    3882
+   A1    55.00    3664
+   A#1   58.27    3458
+   B1    61.74    3264
+   C2    65.41    3081*
+   C3   130.8     1541*
    C4   261.6      418
    C5   523.3      209
-   C6  1047        104 
-   C#6 1109         99 1105 (-0.4%)
-   D6  1175         93
-   D#6 1245         88
-   E6  1319         83
-   F6  1397         78 
-   F#6 1480         74
-   G   1568         70
-   G#6 1661         66 
-   A6  1760         62 1764 (+0.2%)
+   C6  1047        192* 
+   C#6 1109        182*
+   D6  1175        172*
+   D#6 1245        162*
+   E6  1319        153*
+   F6  1397        144* 
+   F#6 1480        136*
+   G   1568        129*
+   G#6 1661        121* 
+   A6  1760        115 1764 (+0.2%)
    A#6 1865         59 1854 (-0.6%)
    B6  1976         55 1989 (+0.6%)
    C7  2093         52 2103 (+0.5%)  
