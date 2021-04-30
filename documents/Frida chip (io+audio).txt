@@ -32,7 +32,7 @@ mode/bits      b7  b6  b5  b4  b3  b2  b1  b0
 write          PR7 PR6 PR5 PR4 PR3 PR2 PR1 PR0
 write          KR2 KR1 KR0 JS0 JS1 TO  --  --
 read (KS=0)    TI  K6  K5  K4  K3  K2  K1  K0
-read (KS=1)    --  P/A PBS J4  J3  J2  J1  J0
+read (KS=1)    P/A --  PBS J4  J3  J2  J1  J0
 
 
 I/O
@@ -85,12 +85,34 @@ Joystick port J1 is standard Atari joystick port with 5 digital inputs only.
 Reading joystick digital input:
 1) Write to DATA ($C043) joystick select JS0 (...10...) or JS1 (...01...)
 2) Write to CONTROL ($C040) bit 5 (KS) with bit set
-3) Read from DATA ($C043) key state for selected row (...JJJJJ)
+3) Read from DATA ($C043) key state for selected row (...FUDLR)
 
 Reading joystick analog input:
 1) Write anything to PX ($C041) or PY ($C042)
 2) Wait at least 300 cycles
 3) Read PX ($C041) or PY ($C042) - reading will be roughly between 19 to 213, when joystick is not connected reading will be 255 
+ 
+PARALLEL PORT (PRINTER)
+
+Parallel port has connected 8 data lines, /STROBE signal, /ACK signal, BUSY signal.
+
+Send character to printer:
+1) Write to DATA ($C043) character code
+2) Write to CONTROL ($C040) bit 5 (KS) with bit set
+3) Read from DATA ($C043) bit 5 (PBS), wait until it is low
+4) Write to CONTROL ($C040) bit 6 (P/S) with bit set to signal /strobe
+5) Wait at least 1us (2 cycles)
+6) Write to CONTROL ($C040) bit 6 (P/S) with bit reset to deactivate /strobe
+7) Poll b7 (/ACK) from DATA ($C043), printer will signal /ACK for about 5us (8 cycles)
+
+
+TAPE IN/OUT
+
+
+
+
+
+ 
  
  
  Atari joy 1    - J1U..joystick 1 up, J1D..joystick 1 down, J1L..joystick 1 left, J1R..joystick 1 right, J1F..joystick 1 fire
