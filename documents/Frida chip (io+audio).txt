@@ -15,17 +15,69 @@ Pins:
 39 - in: RESET
 
 Registers:
-$C040 CONTROL  - LSK.cccc - L..led, S..printer /strobe, K..keyboard/other select, cccc..sound channel select 3210
+$C040 CONTROL  - LSK.cccc - L..led, S..printer /strobe, K..keyboard/other select(KS), cccc..sound channel select 3210
 $C041 PX       - value reading from potentiometer
 $C042 PY       - value reading from potentiometer
 $C043 DATA     - write to PR0..PR7, JS0..JS1, KR0..KR2, TO 
-               - read K0..K6, J0..J4, TI, P/A, PBS 
+               - read K0..K6, J0..J4, TI, P/A, PBS
 $C044          - FREQHI - NVVVFFFF - N..noise on/off, VVV..volume 0..7, FFFF..high 4 bits of frequency
 $C045          - FREQLO - low 8 bit of frequency
 $C046          - WAVEHI - high wave sample 
 $C047          - WAVELO - low wave sample 
 
+DATA ($C043) read/write table
+
+mode/bits      b7  b6  b5  b4  b3  b2  b1  b0
+
+write          PR7 PR6 PR5 PR4 PR3 PR2 PR1 PR0
+write          KR2 KR1 KR0 JS0 JS1 TO  --  --
+read (KS=0)    TI  K6  K5  K4  K3  K2  K1  K0
+read (KS=1)    --  P/A PBS J4  J3  J2  J1  J0
+
+
 I/O
+
+KEYBOARD
+Tonda 01 has 55 key keyboards. 
+
+Physical layout looks like this
++----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+|    |  ! |  @ |  # |  $ |  % |  ^ |  & |  * |  ( |  ) |  _ |  { |  } |    |
+| up |  1 |  2 |  3 |  4 |  5 |  6 |  7 |  8 |  9 |  0 |  - |  [ |  ] |del |
++----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+  |    |  ~ |  ` |    |    |    |    |    |    |    |    |  + |    |    |
+  |down|  Q |  W |  E |  R |  T |  Y |  U |  I |  O |  P |  = |left|rght|
+  +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+    |    |    |    |    |    |    |    |    |  \ |  | |  : |  " |    |
+    |ctrl|  A |  S |  D |  F |  G |  H |  J |  K |  L |  ; |  ' |ent |
+    +----+----+----+----+----+----+----+----+----+----+----+----+----+
+      |    |    |    |    |    |    |  £ |  © |  < |  > |  ? |    |
+      |shft|  Z |  X |  C |  V |  B |  N |  M |  , |  . |  / |shft|
+      +----+----+----+----+----+----+----+----+----+----+----+----+
+                   |                                 |
+                   |    space                        |
+                   +---------------------------------+
+                   
+ In hardware, keyboard is matrix of seven columns and eight rows. 7x8 = 56 so one position in matrix is unused (indicated as <none> in table)
+ 
+ Reading key:
+ 1) Write to DATA ($C043) row select KR2..KR0 (KKK.....)
+ 2) Write to CONTROL ($C040) bit 5 (KS) with bit reset
+ 3) Read from DATA ($C043) key state for selected row
+ 
+ Row     KR2..KR0    bits 6      5      4      3      2      1      0
+ 
+ 0       %000             up     1      2      3      4      5      6
+ 1       %001             down   Q      W      E      R      T      Y    
+ 2       %010             ctrl   A      S      D      F      G      H    
+ 3       %011             lshf   Z      X      C      V      B      N
+ 4       %100             <none> spc    rshf   /      .      ,      M     
+ 5       %101             rght   ent    '      ;      L      K      J
+ 6       %110             del    left   =      P      O      I      U
+ 7       %111             ]      [      -      0      9      8      7
+ 
+ JOYSTICK 0/1
+
  
  Atari joy 1    - J1U..joystick 1 up, J1D..joystick 1 down, J1L..joystick 1 left, J1R..joystick 1 right, J1F..joystick 1 fire
  Atari joy 2    - J2U..joystick 1 up, J2D..joystick 1 down, J2L..joystick 1 left, J2R..joystick 1 right, J2F..joystick 1 fire
@@ -50,67 +102,12 @@ J0 J1 J2 J3 J4 -- PA PB
  
  
  
- +-----+-----++-----+-----+-----+-----+-----+-----+-----+-----++-----+-----+-----+-----+-----+-----+-----+-----+
- | PC0 | PC1 || PA0 | PA1 | PA2 | PA3 | PA4 | PA5 | PA6 | PA7 || PB0 | PB1 | PB2 | PB3 | PB4 | PB5 | PB6 | PB7 |
- +=====+=====++=====+=====+=====+=====+=====+=====+=====+=====++=====+=====+=====+=====+=====+=====+=====+=====+
- |  0  |  0  || J1U | J1D | J1L | J1R | J1F | TI  | TO  | LD  || J2U | J2D | J2L | J2R | J2F | FX3 | FX4 |(FT0)| 
- +-----+-----++-----+-----+-----+-----+-----+-----+-----+-----++-----+-----+-----+-----+-----+-----+-----+-----+
- |  0  |  1  || R0  | R1  | R2  | R3  | R4  | R5  | R6  | R7  || K0  | K1  | K2  | K3  | K4  | K5  | K6  |(FT0)|
- +-----+-----++-----+-----+-----+-----+-----+-----+-----+-----++-----+-----+-----+-----+-----+-----+-----+-----+
- |  1  |  0  || FD0 | FD1 | FD2 | FD3 | FD4 | FD5 | FD6 | FD7 || FPI | FR  | FW  | FWP | FDS | FX1 | FX2 |(FT0)|
- +-----+-----++-----+-----+-----+-----+-----+-----+-----+-----++-----+-----+-----+-----+-----+-----+-----+-----+
- |  1  |  1  || PD0 | PD1 | PD2 | PD3 | PD4 | PD5 | PD6 | PD7 || PBS | P/A | P/S | FM0 | FM1 | FM2 | FM3 | FT0 |
- +-----+-----++-----+-----+-----+-----+-----+-----+-----+-----++-----+-----+-----+-----+-----+-----+-----+-----+
+
+
+
+
  
-Register
-
-$C080 - IOCTRL (MM
-$C081 - POTX
-$C082 - POTY
-$C083 - DIRA
-$C084 - DIRB
-$C085 - PA
-$C086 - PB
-
-$C088 - SNDCTRL (xxxx3210..bit selects channel(s) to write.)
-$C089 - WAVELO  (fetched and loaded when WAVEHI written)
-$C08A - WAVEHI
-$C08B - FREQLO  (fetched and loaded when FREQHI written)
-$C08C - FREQHI
-$C08D - MODE    (xxxxNVVV..N selects noise on/off, VVV selects volume 0-7)
-
-
-KEYBOARD
-Tonda 01 has 55 key keyboards. TODO: add TAB key as 56th key ?
-
-Physical layout looks like this
-+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
-|    |  ! |  @ |  # |  $ |  % |  ^ |  & |  * |  ( |  ) |  _ |  { |  } |    |
-| up |  1 |  2 |  3 |  4 |  5 |  6 |  7 |  8 |  9 |  0 |  - |  [ |  ] |del |
-+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
-  |    |  ~ |  ` |    |    |    |    |    |    |    |    |  + |    |    |
-  |down|  Q |  W |  E |  R |  T |  Y |  U |  I |  O |  P |  = |left|rght|
-  +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
-    |    |    |    |    |    |    |    |    |  \ |  | |  : |  " |    |
-    |ctrl|  A |  S |  D |  F |  G |  H |  J |  K |  L |  ; |  ' |ent |
-    +----+----+----+----+----+----+----+----+----+----+----+----+----+
-      |    |    |    |    |    |    |  £ |  © |  < |  > |  ? |    |
-      |shft|  Z |  X |  C |  V |  B |  N |  M |  , |  . |  / |shft|
-      +----+----+----+----+----+----+----+----+----+----+----+----+
-                   |                                 |
-                   |    space                        |
-                   +---------------------------------+
-                   
- In hardware, keyboard is matrix of seven columns and eight rows. 7x8 = 56 so one position in matrix is unused (indicated as <none> in table)
  
- Column  KeybSelect    bits 7   6     5     4      3       2        1      0
- 0       %10111111        up  down  ctrl  lshft  <none>  delete   right  ]    
- 1       %11011111        1   Q     A     Z      space   enter    left   [
- 2       %11101111        2   W     S     X      rshft   apostrf  =      -
- 3       %11110111        3   E     D     C      /       semicol  P      0
- 4       %11111011        4   R     F     V      period  L        O      9
- 5       %11111101        5   T     G     B      comma   K        I      8
- 6       %11111110        6   Y     H     N      M       J        U      7
                    
  Reading keyboard:
  1) Write value %00000001 to IOCTRL port to select keyboard
