@@ -63,7 +63,7 @@ Physical layout looks like this
  Reading key:
  1) Write to DATA ($C043) row select KR2..KR0 (KKK.....)
  2) Write to CONTROL ($C040) bit 5 (KS) with bit reset
- 3) Read from DATA ($C043) key state for selected row
+ 3) Read from DATA ($C043) key state for selected row (.KKKKKKK)
  
  Row     KR2..KR0    bits 6      5      4      3      2      1      0
  
@@ -76,8 +76,22 @@ Physical layout looks like this
  6       %110             del    left   =      P      O      I      U
  7       %111             ]      [      -      0      9      8      7
  
- JOYSTICK 0/1
+JOYSTICK 0/1
 
+There are two joystick ports: J0 and J1.
+Joystick port J0 is standard Atari joystick port with 5 digital inputs and two analog inputs.
+Joystick port J1 is standard Atari joystick port with 5 digital inputs only.
+
+Reading joystick digital input:
+1) Write to DATA ($C043) joystick select JS0 (...10...) or JS1 (...01...)
+2) Write to CONTROL ($C040) bit 5 (KS) with bit set
+3) Read from DATA ($C043) key state for selected row (...JJJJJ)
+
+Reading joystick analog input:
+1) Write anything to PX ($C041) or PY ($C042)
+2) Wait at least 300 cycles
+3) Read PX ($C041) or PY ($C042) - reading will be roughly between 19 to 213, when joystick is not connected reading will be 255 
+ 
  
  Atari joy 1    - J1U..joystick 1 up, J1D..joystick 1 down, J1L..joystick 1 left, J1R..joystick 1 right, J1F..joystick 1 fire
  Atari joy 2    - J2U..joystick 1 up, J2D..joystick 1 down, J2L..joystick 1 left, J2R..joystick 1 right, J2F..joystick 1 fire
