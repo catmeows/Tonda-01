@@ -1,3 +1,5 @@
 Timing:
 PAL crystal 17.734475MHz
 CPU frequency: 17.734475 / 11 = 1.612225 Mhz
+
+6809@1.61MHz ~ Z80@4.3MHz ~ 6502@2.2MHz
