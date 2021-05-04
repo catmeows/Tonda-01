@@ -1,0 +1,31 @@
+Traps for external ROM.
+External interface can monitor state of address bus and disable internal ROM when designated address or address range is selected.
+Internal ROM have a jump table for several services and also table of return points.
+
+
+
+Entry points:
+01 - List directory in: filter , out: list of files
+02 - DiskExists: in: character "A","B",..,"S", out: True/False
+03 - SelectDisk: in: character "A","B",..,"S" 
+04 - LOAD memory, len from disk file
+05 - VERIFY memory,len from disk file
+06 - SAVE memory, len to disk file
+07 - FORMAT disk
+08 - ERASE disk file
+09 - RENAME disk file
+10 - PrinterExists
+11 - PrintChar
+12 - LineExists
+14 - SendChar
+15 - GetChar
+16 - 
+
+
+Return points
+
+00 - Error "Device not found"
+01 - Return True/False
+02 - No error, void
+03 - List of files
+04 - 
