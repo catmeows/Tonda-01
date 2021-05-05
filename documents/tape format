@@ -1,0 +1,16 @@
+Tape format
+
+Header:
+00 - flag byte '$00'
+01 - type ( "B" - Basic, "C" - Code, "I" - integer array, "F" - floating point array, "S" - string array) 
+02..22 - name
+23..24 - length
+25..26 - start line / start adress
+27..28 - variable offset
+29 - checksum
+
+
+leader - X*900 (895Hz)
+bit '0' - 2*320 (2520Hz)
+bit '1' - 2*640 (1260Hz)
+sync - 250,250 (3220Hz)
