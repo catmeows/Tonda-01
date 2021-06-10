@@ -26,4 +26,5 @@ cursor up, down
 >UNDO
 
 
-  
+1) cursor left on empty line -> recall last edited line/immediate command
+
