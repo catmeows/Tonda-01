@@ -85,7 +85,7 @@ Joystick port J1 is standard Atari joystick port with 5 digital inputs only.
 Reading joystick digital input:
 1) Write to DATA ($C043) joystick select JS0 (...10...) or JS1 (...01...)
 2) Write to CONTROL ($C040) bit 5 (KS) with bit set
-3) Read from DATA ($C043) key state for selected row (...FUDLR)
+3) Read from DATA ($C043) state of selected joystick (...FUDLR)
 
 Reading joystick analog input:
 1) Write anything to PX ($C041) or PY ($C042)
