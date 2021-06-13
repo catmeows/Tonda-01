@@ -7,7 +7,13 @@ Single side of disk can store 109824 bytes.
 
 Track structure:
  Header: 16*pilot byte + 3 bytes $D5 $F5 $B5 + 1 byte with track id + 1 byte with track id (for verification) + 1*byte $D5
- Data: 16*pilot byte + 3 bytes $D5 $F5 $AS + 2816 bytes of data + 2 bytes of CRC + 1*byte $D5
+ Data: 16*pilot byte + 3 bytes $D5 $F5 $BD + 2816 bytes of data + 2 bytes of CRC + 1*byte $D5
+ 
+ regular data - 1x1x 1x1x
+ $D5 -          1101 0101
+ $F5 -          1111 0101
+ $B5 -          1011 0101
+ $BD -          1011 1101
  
 Catalogue:
  Catalogue has 88 records, each 32 bytes long.
