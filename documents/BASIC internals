@@ -52,7 +52,12 @@ Integer array:
 Float array:
 String array
 
-
+VARIABLES on stack:
+<-- lower x higher -->
+TYPE: EndOfStack $00
+      Int32      $01 xx xx xx xx
+      Float      $02 xx xx xx xx xx xx
+      String     $03 ll ll xx xx xx xx ...  
 
 
 
