@@ -1,5 +1,5 @@
 
-adress decoding
+address decoding
 
 FEDCBA98 76543210
 00xxxxxx xxxxxxxx - selected memory bank mapped to $0000 - $3FFF
