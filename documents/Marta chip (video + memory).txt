@@ -1,12 +1,4 @@
 
-
-
-
-interrupts
-IRQ 
-FIRQ - programmable horizontal refresh
-
-
 adress decoding
 
 FEDCBA98 76543210
@@ -14,7 +6,7 @@ FEDCBA98 76543210
 01xxxxxx xxxxxxxx - RAM $4000 - RAM $7FFF mapped to $4000 - $7FFF
 10xxxxxx xxxxxxxx - RAM $8000 - RAM $BEFF mapped to $8000 - $BEFF
 10111111 0xxxxxxx - Marta register
-10111111 1
+10111111 1xxxxRRR - Frida registers
 11xxxxxx xxxxxxxx - 16KB ROM - mapped to $C100 - $FFFF ($C000 - $C0FF are overlayed by IO)
 
 
@@ -26,7 +18,6 @@ mode  memory resolution  buffers  colors
 2     6912   128*192     2        16 of 16 (each group of 4*8 pixels displays 2 colors selected from 16 color and 2 global colors selected from 16, extra color 0,1) 
 3     12288  256*192     1        4 of 16  (extra color 0-3)
 4     12288  512*192     1        2 of 16  (extra color 0,1)
-
 
 Colors:
 
