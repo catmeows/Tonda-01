@@ -12,9 +12,9 @@ adress decoding
 FEDCBA98 76543210
 00xxxxxx xxxxxxxx - selected memory bank mapped to $0000 - $3FFF
 01xxxxxx xxxxxxxx - RAM $4000 - RAM $7FFF mapped to $4000 - $7FFF
-10xxxxxx xxxxxxxx - RAM $8000 - RAM $BFFF mapped to $8000 - $BFFF
-11000000 0.....xx - Marta I/O
-11000000 1xxxxxxx - Frida I/O
+10xxxxxx xxxxxxxx - RAM $8000 - RAM $BEFF mapped to $8000 - $BEFF
+10111111 0xxxxxxx - Marta register
+10111111 1
 11xxxxxx xxxxxxxx - 16KB ROM - mapped to $C100 - $FFFF ($C000 - $C0FF are overlayed by IO)
 
 
@@ -65,20 +65,24 @@ $0000 +-------+ +-------+   $0000 +---------------+
 
 
 Marta registers
-port $C000 - register select
-port $C001 - value
+port $BF00 - register
+write 0xxRRRRR -> select register RRRRR
+write 1VVVVVVV -> write register
 
-00 - ....BBBB -> BBBB..border color
-01 - XXBBMMMP -> X..external bank, B..RAM bank at $0000-$3FFF, MMM..video mode, P-page used for video buffer i.e. bank 0/1 
-02 - CCCCcccc CCCC..extra color 0, cccc..extra color 1
-03 - CCCCcccc CCCC..extra color 2, cccc..extra color 2
-04 - FFFFFFFF -> FFFFFFFF..FIRQTIMER (every 1-255 line, 0-never)
-16-31 - pallette entry ..RRGGBB
+registers:
+00     - 1xRRGGBB -> BORDERCOL (border color)
+01     - 1TTTTTTT -> FIRQTIMER (every 1-127 line, 0-never)
+02     - 1xxBPMMM -> MAP (B..RAM bank at $0000-$3FFF,  P..page used for video buffer i.e. bank 0/1, MMM..video mode)
+04     - 1xxxCCCC -> XCOLOR0 
+05     - 1xxxCCCC -> XCOLOR1
+06     - 1xxxCCCC -> XCOLOR2
+07     - 1xxxCCCC -> XCOLOR3
+16..31 - 1xRRGGBB -> COLOR0..COLORF (pallette entries)
 
 Pins:
 0-6   Out: Red0,Red1,Green0,Green1,Blue0,Blue1,Sync (RGB video + sync)
 7-8   Out: CAS,RAS (DRAM timing + DRAM refresh)
-9     Out: RWE (DRAM read/write)
+9     Out: WE (DRAM read/write)
 10-17 Out: RA0-RA7 (DRAM adressing)
 18    Out: IRQ (IRQ signal when starting frame)
 19    Out: FIRQ (FIRQ signal at the end of pixel area)
@@ -88,9 +92,9 @@ Pins:
 31    In:  Clock (17.734475 MHz main clock)
 32    In:  A15
 33    In:  A14
-34    In: (A13 and A12  
-35    
-36    In:  A5 - /chip select 
-37    In:  A0 - register select/write
+34    Out: Select1 Adress Bus
+35    Out: Select2 Adress Bus
+36    Out: /ROMCS 
+37    In:  CS  
 38,39 In:  Vss, Vcc (ground, 5V)
 
