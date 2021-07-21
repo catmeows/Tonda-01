@@ -72,20 +72,20 @@ registers:
 
 Pins:
 0-6   Out: Red0,Red1,Green0,Green1,Blue0,Blue1,Sync (RGB video + sync)
-7-8   Out: CAS,RAS (DRAM timing + DRAM refresh)
+7-8   Out: CAS,RAS (DRAM timing + DRAM refresh), delayed RAS is also used to switch address bus decoder (row/collumn)
 9     Out: WE (DRAM read/write)
 10-17 Out: RA0-RA7 (DRAM adressing)
 18    Out: IRQ (IRQ signal when starting frame)
 19    Out: FIRQ (FIRQ signal at the end of pixel area)
 20-27 In:  D0-D7 (data in)
-28-29 Out: Q,E (6809 clock)
+28-29 Out: Q,E (6809 clock), E is also used to switch address bus decoder (Marta/6809)
 30    In:  RW (6809 read/write)
 31    In:  Clock (17.734475 MHz main clock)
 32    In:  A15
 33    In:  A14
-34    Out: Select1 Adress Bus
-35    Out: Select2 Adress Bus
+34    In:  IO select (A13 and A12 and A11 and A10 and A9 and A8)
+35    In:  Marta/Frida select (A7)
 36    Out: /ROMCS 
-37    In:  CS  
+37    Out: /FRIDACS 
 38,39 In:  Vss, Vcc (ground, 5V)
 
