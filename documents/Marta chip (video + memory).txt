@@ -6,8 +6,8 @@ FEDCBA98 76543210
 01xxxxxx xxxxxxxx - RAM $4000 - RAM $7FFF mapped to $4000 - $7FFF
 10xxxxxx xxxxxxxx - RAM $8000 - RAM $BEFF mapped to $8000 - $BEFF
 10111111 110xxxxx - Marta register
-10111111 111xxRRR - Frida registers or external Dejvice
-11xxxxxx xxxxxxxx - 16KB ROM - mapped to $C100 - $FFFF ($C000 - $C0FF are overlayed by IO)
+10111111 111xxRRR - Frida registers or external device
+11xxxxxx xxxxxxxx - 16KB ROM - mapped to $C100 - $FFFF
 
 
 Video modes
