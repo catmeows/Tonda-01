@@ -15,17 +15,17 @@ Pins:
 39 - in: RESET
 
 Registers:
-$C040 CONTROL  - LSK.CCCC - L..led, S..printer /strobe, K..keyboard/other select(KS), CCCC..sound channel select 3210
-$C041 PX       - value reading from potentiometer
-$C042 PY       - value reading from potentiometer
-$C043 DATA     - write to PR0..PR7, JS0..JS1, KR0..KR2, TO 
+$BFE0 CONTROL  - LSK.CCCC - L..led, S..printer /strobe, K..keyboard/other select(KS), CCCC..sound channel select 3210
+$BFE1 PX       - value reading from potentiometer
+$BFE2 PY       - value reading from potentiometer
+$BFE3 DATA     - write to PR0..PR7, JS0..JS1, KR0..KR2, TO 
                - read K0..K6, J0..J4, TI, P/A, PBS
-$C044          - FREQHI - NVVVFFFF - N..noise on/off, VVV..volume 0..7, FFFF..high 4 bits of frequency
-$C045          - FREQLO - low 8 bit of frequency
-$C046          - WAVEHI - high wave sample 
-$C047          - WAVELO - low wave sample 
+$BFE4          - FREQHI - NVVVFFFF - N..noise on/off, VVV..volume 0..7, FFFF..high 4 bits of frequency
+$BFE5          - FREQLO - low 8 bit of frequency
+$BFE6          - WAVEHI - high wave sample 
+$BFE7          - WAVELO - low wave sample 
 
-DATA ($C043) read/write table
+DATA ($BFE3) read/write table
 
 mode/bits      b7  b6  b5  b4  b3  b2  b1  b0
 
