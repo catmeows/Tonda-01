@@ -22,7 +22,6 @@ Fantasy computer based on 6809 cpu
   * Analog (4 level) RGB
   * Composite video
   * Edge connector
-  * Disk interface connector
   * Parallel port
   
 
