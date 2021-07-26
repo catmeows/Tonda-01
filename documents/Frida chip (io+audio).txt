@@ -185,6 +185,8 @@ To set a channel
    
    FREQ = 1.6122MHz / (2 * 8 * pitch)
    
+   TODO: In reality: 1.609375 (64us / 103)
+   
    Example:
    Note  Freq[Hz] FREQ RealHz
       
