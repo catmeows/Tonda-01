@@ -1,0 +1,64 @@
+1) copy less than 256 bytes
+
+2) copy more than 256 bytes
+
+
+3) clear less than 256 bytes
+
+Z80 compact
+
+    xor a
+    ld hl, xxxx
+    ld b, yy
+  loop
+    ld (hl), a    ;7
+    inc hl        ;6
+    djnz loop     ;13 = 26ticks/byte -> 38461 bytes per MHz and second
+    
+Z80 fast
+    
+    ld de, 0
+    ld hl, xxxx
+    ld b, yy
+    ld sp, hl
+  loop
+    push de
+    push de
+    push de
+    push de
+    push de
+    push de
+    push de
+    push de
+    djnz loop    ;=6.31ticks/byte -> 158478 bytes per MHz and second
+    
+    
+6809 compact
+
+    ldx xxxx
+    ldb yy
+  loop
+    clr ,x+     ;8
+    decb        ;2
+    bne loop    ;3 = 13cycles/byte -> 76923 bytes per MHz and second
+    
+6809 compact b
+    ldd #$0000
+  loop
+    std ,x++    ;8
+    dec b       ;2
+    bne loop    ;3 = 6.5cycles/byte -> 153846 bytes per MHz and second
+    
+6809 fast
+
+  loop
+    pshs u,x,y  ;11
+    dec b       ;2
+    bne loop    ;3 = 2.67cycles/byte -> 374531 bytes per MHz and second
+    
+    
+
+    
+    
+
+4) clear more than 256 bytes
