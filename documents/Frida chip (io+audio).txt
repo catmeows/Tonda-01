@@ -15,7 +15,7 @@ Pins:
 39 - in: RESET
 
 Registers:
-$BFE0 CONTROL  - LSK.CCCC - L..led, S..printer /strobe, K..keyboard/other select(KS), CCCC..sound channel select 3210
+$BFE0 CONTROL  - LSK...CC - L..led, S..printer /strobe, K..keyboard/other select(KS), CC..sound channel select 3210
 $BFE1 PX       - value reading from potentiometer
 $BFE2 PY       - value reading from potentiometer
 $BFE3 DATA     - write to PR0..PR7, JS0..JS1, KR0..KR2, TO 
@@ -40,15 +40,34 @@ I/O
 KEYBOARD
 Tonda 01 has 55 key keyboards. 
 
-Physical layout looks like this
+Physical layout looks like this 
+Regular and shift:
 +----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
 |    |  ! |  @ |  # |  $ |  % |  ^ |  & |  * |  ( |  ) |  _ |  { |  } |    |
 | up |  1 |  2 |  3 |  4 |  5 |  6 |  7 |  8 |  9 |  0 |  - |  [ |  ] |del |
 +----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
-  |    |  ~ |  ` |    |    |    |    |    |    |    |    |  + |    |    |
+  |    |    |    |    |    |    |    |    |    |    |    |  + |    |    |
   |down|  Q |  W |  E |  R |  T |  Y |  U |  I |  O |  P |  = |left|rght|
   +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
-    |    |    |    |    |    |    |    |    |  \ |  | |  : |  " |    |
+    |    |    |    |    |    |    |    |    |    |    |  : |  " |    |
+    |ctrl|  A |  S |  D |  F |  G |  H |  J |  K |  L |  ; |  ' |ent |
+    +----+----+----+----+----+----+----+----+----+----+----+----+----+
+      |    |    |    |    |    |    |    |    |  < |  > |  ? |    |
+      |shft|  Z |  X |  C |  V |  B |  N |  M |  , |  . |  / |shft|
+      +----+----+----+----+----+----+----+----+----+----+----+----+
+                   |                                 |
+                   |    space                        |
+                   +---------------------------------+
+                   
+Regular and ctrl:
++----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+|    |edit| g1 | g2 | g3 | g4 | g5 | g6 | g7 | g8 | g9 |  _ |  { |  } |brk |
+| up |  1 |  2 |  3 |  4 |  5 |  6 |  7 |  8 |  9 |  0 |  - |  [ |  ] |del |
++----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+  |    |  ~ |  ` |    |    |    |    |    |    |find|repl|  + |    |    |
+  |down|  Q |  W |  E |  R |  T |  Y |  U |  I |  O |  P |  = |left|rght|
+  +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+    |    |copy|past|cut |    |    |    |    |  \ |  | |  : |  " |    |
     |ctrl|  A |  S |  D |  F |  G |  H |  J |  K |  L |  ; |  ' |ent |
     +----+----+----+----+----+----+----+----+----+----+----+----+----+
       |    |    |    |    |    |    |  £ |  © |  < |  > |  ? |    |
@@ -58,12 +77,13 @@ Physical layout looks like this
                    |    space                        |
                    +---------------------------------+
                    
+                   
  In hardware, keyboard is matrix of seven columns and eight rows. 7x8 = 56 so one position in matrix is unused (indicated as <none> in table)
  
  Reading key:
- 1) Write to DATA ($C043) row select KR2..KR0 (KKK.....)
- 2) Write to CONTROL ($C040) bit 5 (KS) with bit reset
- 3) Read from DATA ($C043) key state for selected row (.KKKKKKK)
+ 1) Write to DATA ($BFE3) row select KR2..KR0 (KKK.....)
+ 2) Write to CONTROL ($BFE0) bit 5 (KS) with bit reset
+ 3) Read from DATA ($BFE3) key state for selected row (.KKKKKKK)
  
  Row     KR2..KR0    bits 6      5      4      3      2      1      0
  
@@ -83,44 +103,44 @@ Joystick port J0 is standard Atari joystick port with 5 digital inputs and two a
 Joystick port J1 is standard Atari joystick port with 5 digital inputs only.
 
 Reading joystick digital input:
-1) Write to DATA ($C043) joystick select JS0 (...10...) or JS1 (...01...)
-2) Write to CONTROL ($C040) bit 5 (KS) with bit set
-3) Read from DATA ($C043) state of selected joystick (...FUDLR)
+1) Write to DATA ($BFE3) joystick select JS0 (...10...) or JS1 (...01...)
+2) Write to CONTROL ($BFE0) bit 5 (KS) with bit set
+3) Read from DATA ($BFE3) state of selected joystick (...FUDLR)
 
 Reading joystick analog input:
-1) Write anything to PX ($C041) or PY ($C042)
+1) Write anything to PX ($BFE1) or PY ($BFE2)
 2) Wait at least 300 cycles
-3) Read PX ($C041) or PY ($C042) - reading will be roughly between 19 to 213, when joystick is not connected reading will be 255 
+3) Read PX ($BFE1) or PY ($BFE2) - reading will be roughly between 19 to 213, when joystick is not connected reading will be 255 
  
 PARALLEL PORT (PRINTER)
 
 Parallel port has connected 8 data lines, /STROBE signal, /ACK signal, BUSY signal.
 
 Send character to printer:
-1) Write to DATA ($C043) character code
-2) Write to CONTROL ($C040) bit 5 (KS) with bit set
-3) Read from DATA ($C043) bit 5 (PBS), wait until it is low
-4) Write to CONTROL ($C040) bit 6 (P/S) with bit set to signal /strobe
+1) Write to DATA ($BFE3) character code
+2) Write to CONTROL ($BFE0) bit 5 (KS) with bit set
+3) Read from DATA ($BFE3) bit 5 (PBS), wait until it is low
+4) Write to CONTROL ($BFE0) bit 6 (P/S) with bit set to signal /strobe
 5) Wait at least 1us (2 cycles)
-6) Write to CONTROL ($C040) bit 6 (P/S) with bit reset to deactivate /strobe
-7) Poll b7 (/ACK) from DATA ($C043), printer will signal /ACK for about 5us (8 cycles)
+6) Write to CONTROL ($BFE0) bit 6 (P/S) with bit reset to deactivate /strobe
+7) Poll b7 (/ACK) from DATA ($BFE3), printer will signal /ACK for about 5us (8 cycles)
 
 
 TAPE IN/OUT
 
 Read tape:
-1) Write to CONTROL ($C040) bit 5 (KS) with bit reset
-2) Poll bit 7 (TI) from DATA ($C043)
+1) Write to CONTROL ($BFE0) bit 5 (KS) with bit reset
+2) Poll bit 7 (TI) from DATA ($BFE3)
 
 Write tape:
-1) Write to DATA ($C043) with bit 2 (TO) set/reset
+1) Write to DATA ($BFE3) with bit 2 (TO) set/reset
 
 
 LED
 Led diode is used to indicate CAPS lock but is fully programmable.
 
 Setting Led diode on/off:
-1) Write to CONTROL ($C040) bit 7 (LED), 0 for off, 1 for on
+1) Write to CONTROL ($BFE0) bit 7 (LED), 0 for off, 1 for on
 
 
 AUDIO
@@ -129,10 +149,10 @@ Channels A,B are mixed together as first output and C,D are mixed together as se
 Connecting 3.5mm stereo jack into AUDIO connector disables internal speaker. In such case, channels A,B are routed to left output and channels C,D are routed to right output.
 
 Each channel is controlled by 4 registers:
-$C044          - FREQHI - NVVVFFFF - N..noise on/off, VVV..volume 0..7, FFFF..high 4 bits of frequency
-$C045          - FREQLO - low 8 bit of frequency
-$C046          - WAVEHI - high wave sample 
-$C047          - WAVELO - low wave sample 
+$BFE4          - FREQHI - NVVVFFFF - N..noise on/off, VVV..volume 0..7, FFFF..high 4 bits of frequency
+$BFE5          - FREQLO - low 8 bit of frequency
+$BFE6          - WAVEHI - high wave sample 
+$BFE7          - WAVELO - low wave sample 
 
 FREQHI - channel control and 4 bits of frequency (pitch) control
 FREQLO - lower 8 bits of frequency (pitch) control (write to FREQLO is latched and loaded when FREQHI is written)
@@ -147,8 +167,8 @@ When N bit is reset, most significant bit shifted out from WAVEL/WAVEH register 
 When N bit is set, the shift register is turned into linear feedback register producing pseudorandom stream of bits.
 
 To set a channel
-1) select channel by writting to CONTROL ($C040) bits b3-b0 (....CCCC), channel to be written is indicated by bit set
-2) set WAVELO ($C046), WAVEHI ($C046) 
+1) select channel by writting to CONTROL ($BFE0) bits b1-b0 (......CC), channel to be written is indicated by bit set
+2) set WAVELO ($BFE7), WAVEHI ($BFE6) 
    e.g. to set triangle wave 
    3 ..X.....
    2 .XXX....
@@ -157,8 +177,8 @@ To set a channel
    WAVEL = %10101000 
    WAVEH = %01110000
    
-3) write lower 8 bits of frequency to FREQLO ($C045) 
-4) write higher 4 bits of frequency, noise mode and volume to FREQHI ($C044).
+3) write lower 8 bits of frequency to FREQLO ($BFE5) 
+4) write higher 4 bits of frequency, noise mode and volume to FREQHI ($BFE34).
    Bits are as follows: NVVVFFFF - N..noise, VVV..volume, FFFF..frequency
             
    pitch = 1.6122MHz / (2 * 8 * FREQ)
