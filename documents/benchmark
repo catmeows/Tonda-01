@@ -1,6 +1,31 @@
 1) copy less than 256 bytes
 
+    Z80:
+
+    ldi
+    ldi  ;16ticks/byte
+
+
+  6809:
+  
+  loop
+    lda ,x+   ;6
+    sta ,y+   ;6
+    decb      ;2
+    bne loop  ;3 = 17cycles/byte
+  
+  
+    
+  loop  
+    puls x,y,d    ;11
+    pshs x,y,d    ;11
+    dec <counter  ;6
+    bne           ;3 = 5.17cycles/byte ->
+
 2) copy more than 256 bytes
+
+
+
 
 
 3) clear less than 256 bytes
@@ -53,10 +78,16 @@ Z80 fast
 
   loop
     pshs u,x,y  ;11
-    dec b       ;2
+    decb        ;2
     bne loop    ;3 = 2.67cycles/byte -> 374531 bytes per MHz and second
     
-    
+6809 fast b
+
+  loop
+    pshs u,x,y   ;11
+    pshs u,x,y   ;11
+    decb         ;2
+    bne loop     ;3 = 2.25cycles/byte -> 444444 bytes per MHz and second
 
     
     
