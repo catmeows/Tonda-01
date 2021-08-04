@@ -1,95 +1,51 @@
-1) copy less than 256 bytes
+A) PRESHIFTED SPRITE 16x16
 
-    Z80:
-
-    ldi
-    ldi  ;16ticks/byte
-
-
-  6809:
+Z80:
   
-  loop
-    lda ,x+   ;6
-    sta ,y+   ;6
-    decb      ;2
-    bne loop  ;3 = 17cycles/byte
+loop
+  pop de                ;10
+  ld a, (hl)            ; 7
+  and e                 ; 4
+  or d                  ; 4
+  ld (hl), a            ; 7
+  inc l                 ; 4=36
+  pop de                
+  ld a, (hl)           
+  and e
+  or d
+  ld (hl), a
+  inc l                 ;=36
+  pop de                
+  ld a, (hl)
+  and e
+  or d
+  ld (hl), a            ;=32
+  ld de, 29             ;10
+  add hl, de            ;11
+  djnz loop             ;13 = 34
+  
+  138*16=2208 ~ 630us
+  
+6809:
+
+loop
+  lda ,x                ;4+0
+  anda ,y               ;4+0 
+  ora 1,y               ;4+1
+  sta ,x                ;4+0 =17
+  lda 1,x               ;4+1
+  anda 2,y              ;4+1
+  ora 3,y               ;4+1
+  sta 1,x               ;4+1 =20
+  lda 2,x               ;4+1
+  anda 4,y              ;4+1
+  ora 5,y               ;4+1
+  sta 2,x               ;4+1 =20 
+  leay 6,y              ;4+1
+  leax 29,x             ;4+1
+  decb                  ;2
+  bne loop              ;3 = 15
+  
+  72
   
   
-    
-  loop  
-    puls x,y,d    ;11
-    pshs x,y,d    ;11
-    dec <counter  ;6
-    bne           ;3 = 5.17cycles/byte ->
-
-2) copy more than 256 bytes
-
-
-
-
-
-3) clear less than 256 bytes
-
-Z80 compact
-
-    xor a
-    ld hl, xxxx
-    ld b, yy
-  loop
-    ld (hl), a    ;7
-    inc hl        ;6
-    djnz loop     ;13 = 26ticks/byte -> 38461 bytes per MHz and second
-    
-Z80 fast
-    
-    ld de, 0
-    ld hl, xxxx
-    ld b, yy
-    ld sp, hl
-  loop
-    push de
-    push de
-    push de
-    push de
-    push de
-    push de
-    push de
-    push de
-    djnz loop    ;=6.31ticks/byte -> 158478 bytes per MHz and second
-    
-    
-6809 compact
-
-    ldx xxxx
-    ldb yy
-  loop
-    clr ,x+     ;8
-    decb        ;2
-    bne loop    ;3 = 13cycles/byte -> 76923 bytes per MHz and second
-    
-6809 compact b
-    ldd #$0000
-  loop
-    std ,x++    ;8
-    dec b       ;2
-    bne loop    ;3 = 6.5cycles/byte -> 153846 bytes per MHz and second
-    
-6809 fast
-
-  loop
-    pshs u,x,y  ;11
-    decb        ;2
-    bne loop    ;3 = 2.67cycles/byte -> 374531 bytes per MHz and second
-    
-6809 fast b
-
-  loop
-    pshs u,x,y   ;11
-    pshs u,x,y   ;11
-    decb         ;2
-    bne loop     ;3 = 2.25cycles/byte -> 444444 bytes per MHz and second
-
-    
-    
-
-4) clear more than 256 bytes
