@@ -19,33 +19,48 @@ loop
   ld a, (hl)
   and e
   or d
-  ld (hl), a            ;=32
-  ld de, 29             ;10
-  add hl, de            ;11
-  djnz loop             ;13 = 34
+  ld (hl), a            ;
+  inc h                 ;=36
   
-  138*16=2208 ~ 630us
+  ;3*36=108
+  
+  ;inc h
+  ld a, h               ;4
+  and c                 ;4
+  jr z, update_hl       ;7  
+  djnz loop             ;13 = 28
+  
+  244*8=1952 ~ 558us
   
 6809:
 
 loop
-  lda ,x                ;4+0
-  anda ,y               ;4+0 
+  ldd ,x                ;5+0
+  anda ,y               ;4+0
   ora 1,y               ;4+1
-  sta ,x                ;4+0 =17
-  lda 1,x               ;4+1
-  anda 2,y              ;4+1
-  ora 3,y               ;4+1
-  sta 1,x               ;4+1 =20
+  andb 2,y              ;4+1
+  orb 3,y               ;4+1
+  std ,x                ;5+0 =29
   lda 2,x               ;4+1
   anda 4,y              ;4+1
   ora 5,y               ;4+1
-  sta 2,x               ;4+1 =20 
-  leay 6,y              ;4+1
-  leax 29,x             ;4+1
-  decb                  ;2
-  bne loop              ;3 = 15
+  sta 2,x               ;4+1 =20
+
+  ldd 32,x
+  anda 6,y
+  ora 7,y
+  and 8,y
+  ora 9,y
+  std 32,x              ;=32
+  lda 34,x
+  anda 10,y
+  ora 11,y
+  sta 34,x              ;=20
   
-  72
+  leay 12,y             ;5+1
+  leax 64,x             ;5+1   
+  dec <count            ;6
+  bne loop              ;3 = 21    
   
+  122*8=976 ~ 558us
   
