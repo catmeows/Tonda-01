@@ -6,8 +6,9 @@ FEDCBA98 76543210
 01xxxxxx xxxxxxxx - RAM $4000 - RAM $7FFF mapped to $4000 - $7FFF
 10xxxxxx xxxxxxxx - RAM $8000 - RAM $BFBF mapped to $8000 - $BEFF
 10111111 110xxxxx - Marta register ($BFC0)
-10111111 111xxRRR - Frida registers or external device ($BFE0 - $BFE7)
+10111111 111xxRRR - Frida registers ($BFE0 - $BFE7) or external device ($BFE8 - $BFFF)
 11xxxxxx xxxxxxxx - 16KB ROM - mapped to $C000 - $FFFF
+11111111 00000000 - optional disk ROM
 
 
 Video modes
@@ -59,7 +60,7 @@ Marta registers
 port $BFC0 - register (mapped $BFC0 - $ BFDF)
 write 0xxRRRRR -> select register RRRRR
 write 1VVVVVVV -> write register
-read -> read register 00
+read -> read register 00 (MAP): 111BPMMM
 
 registers:
 00     - 1xxBPMMM -> MAP (B..RAM bank at $0000-$3FFF,  P..page used for video buffer i.e. bank 0/1, MMM..video mode)
