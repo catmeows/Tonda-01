@@ -8,7 +8,7 @@ FEDCBA98 76543210
 10111111 110xxxxx - Marta register ($BFC0)
 10111111 111xxRRR - Frida registers ($BFE0 - $BFE7) or external device ($BFE8 - $BFFF)
 11xxxxxx xxxxxxxx - 16KB ROM - mapped to $C000 - $FFFF
-11111111 00000000 - optional disk ROM
+11000000 00000000 - optional disk ROM
 
 
 Video modes
