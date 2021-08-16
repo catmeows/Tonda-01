@@ -18,7 +18,7 @@ Registers:
 $BFE0 CONTROL  - LSK...CC - L..led, S..printer /strobe, K..keyboard/other select(KS), CC..sound channel select 3210
 $BFE1 PX       - value reading from potentiometer
 $BFE2 PY       - value reading from potentiometer
-$BFE3 DATA     - write to PR0..PR7, JS0..JS1, KR0..KR2, TO 
+$BFE3 DATA     - write to PR0..PR7, JS0, KR0..KR2, TO 
                - read K0..K6, J0..J4, TI, P/A, PBS
 $BFE4          - FREQHI - NVVVFFFF - N..noise on/off, VVV..volume 0..7, FFFF..high 4 bits of frequency
 $BFE5          - FREQLO - low 8 bit of frequency
@@ -30,9 +30,9 @@ DATA ($BFE3) read/write table
 mode/bits      b7  b6  b5  b4  b3  b2  b1  b0
 
 write          PR7 PR6 PR5 PR4 PR3 PR2 PR1 PR0
-write          KR2 KR1 KR0 JS0 JS1 TO  --  --
+write          KR2 KR1 KR0 JS  -- TO  --  --
 read (KS=0)    TI  K6  K5  K4  K3  K2  K1  K0
-read (KS=1)    P/A --  PBS J4  J3  J2  J1  J0
+read (KS=1)    P/A PBS J4B J4A J3  J2  J1  J0
 
 
 I/O
