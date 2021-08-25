@@ -37,13 +37,12 @@ leEdit:
   goto @inputLine
   
 newEmptyLine:
-  gosub @reserveSpace(32)
+  gosub @reserveSpace
   return
   
 copyEditLine:
   gosub @findLine(lineCursor)
-  reserve=gosub @getDecodedLineLength
-  gosub @reserveSpace(reserve)
+  gosub @reserveSpace
   return
   
 inputLine:
@@ -51,8 +50,10 @@ inputLine:
   
 
 
+reserveSpace:
 
-      
+
+
       
 findLine:
 //LINE FORMAT:
@@ -62,11 +63,11 @@ findLine:
     ldx basicStart
 findLine2    
     ldd ,x++
-    cmpd #$ffff
+    cmpa #$ff
     beq findLine1
     cmpd lineToFind
     beq findLine2
-    lda ,x
+    lda ,x+
     leax a,x
     bra findLine2
 findLine1
