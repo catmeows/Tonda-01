@@ -5,6 +5,8 @@ leInit:
 le1:
   list(lineCursor)
   readKey
+  if key==CTRL&B
+    
   if key==UP
     if (lineCursor<>0) 
       lineCursor=lineCursor-1
@@ -21,17 +23,55 @@ le1:
     if (lineCursor<>0)
       lineEdit=lineCursor
       goto @leEdit
-  if key==EMPTY     
+  if key==NOCHAR     
     goto @le1
   else
     lineEdit=0
     goto @leEdit
     
 leEdit:
+  if (lineEdit==0)
+    gosub @newEmptyLine
+  else   
+    gosub @copyEditLine
+  goto @inputLine
   
+newEmptyLine:
+  gosub @reserveSpace(32)
+  return
   
+copyEditLine:
+  gosub @findLine(lineCursor)
+  reserve=gosub @getDecodedLineLength
+  gosub @reserveSpace(reserve)
+  return
   
-      
-      
-      
+inputLine:
+  cursorPos=0
+  
 
+
+
+      
+      
+findLine:
+//LINE FORMAT:
+//lineNum=2B, lineLen=1B, tokens, EOL
+//returns with Z=true if line is found
+//returns with Z=false if line in not found
+    ldx basicStart
+findLine2    
+    ldd ,x++
+    cmpd #$ffff
+    beq findLine1
+    cmpd lineToFind
+    beq findLine2
+    lda ,x
+    leax a,x
+    bra findLine2
+findLine1
+    tsta
+findLine2
+    rts
+
+  
