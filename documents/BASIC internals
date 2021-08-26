@@ -1,5 +1,37 @@
 
-Memory layout
+
+BAS_PROG       1st line
+               line: line=2B,length=1B,tokens,EOL
+               $FFFF
+               
+BAS_IDS        1st id
+               id: length=1B, characters
+               $00
+                       
+BAS_VARS       ptr to procedures/labels
+               ptr to global ints=2B
+               ptr to global floats=2B
+               ptr to global for loop=2B
+               ptr to global int arrays=2B
+               ptr to global float arrays=2B
+               ptr to global strings=2B
+               ptr to global string arrays=2B
+               ptr to procedure frames=2B
+               
+(PROCEDURES)   procedure: id=2B, length=1B, type=1B, ptr=2B, paramCount=1B, paramItems=xB
+                          id...item in id table
+                          length...length of entry
+                          type...label type: 1=goto target, 2=procedure target
+                          ptr...line pointer
+                          paramCount...parameter count
+                          paramItems...parameter type
+                       
+(INTS)         int: id=2B, value=4B                      
+                    $FFFF
+                    
+(FLOATS)       float: id=2B, value=5B
+
+
 basic line 1 - pointed BAS_PROG
 basic line X
 Id table - pointed BAS_PROG_ID_TABLE
