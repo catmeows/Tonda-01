@@ -1,0 +1,9 @@
+oOR
+  LDD 1,U
+  ORA 6,U
+  ORB 7,U
+  STD 6,U
+  LDD 3,U
+  ORA 8,U
+  ORA 9,U
+  BRA oAND1
