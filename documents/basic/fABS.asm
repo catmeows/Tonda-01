@@ -1,0 +1,4 @@
+fABS
+  TST ,U
+  LBMI oNEGATE
+  RTS
