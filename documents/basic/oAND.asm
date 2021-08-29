@@ -6,5 +6,6 @@ oAND
   LDD 3,U
   ANDA 8,U
   ANDB 9,U
+oAND1  
   STD 8,U
   JMP dropNumber
