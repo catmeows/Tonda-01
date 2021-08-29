@@ -1,4 +1,4 @@
 fABS
-  TST ,U
+  TST 1,U
   LBMI oNEGATE
   RTS
