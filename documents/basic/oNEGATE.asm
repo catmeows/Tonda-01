@@ -1,0 +1,15 @@
+oNEGATE
+  LDD 3,U
+  COMA
+  COMB
+  STD 3,U
+  LDD 1,U
+  COMA
+  COMB
+  ADDD #0001
+  STD 1,U
+  BCC oNEGATE1
+  LDD 3,U
+  ADDD #0001
+  STD 3,U
+  RTS
