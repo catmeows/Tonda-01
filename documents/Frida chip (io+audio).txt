@@ -87,14 +87,14 @@ Regular and ctrl:
  
  Row     KR2..KR0    bits 6      5      4      3      2      1      0
  
- 0       %000             up     1      2      3      4      5      6
- 1       %001             down   Q      W      E      R      T      Y    
+ 0       %000             1      2      3      4      5      6      7
+ 1       %001             Q      W      E      R      T      Y      U    
  2       %010             ctrl   A      S      D      F      G      H    
  3       %011             lshf   Z      X      C      V      B      N
- 4       %100             <none> spc    rshf   /      .      ,      M     
- 5       %101             rght   ent    '      ;      L      K      J
- 6       %110             del    left   =      P      O      I      U
- 7       %111             ]      [      -      0      9      8      7
+ 4       %100             down   spc    rshf   /      .      ,      M     
+ 5       %101             rght   |      '      ;      L      K      J
+ 6       %110             left   ent    ]      [      P      O      I
+ 7       %111             up     del    +      -      0      9      8
  
 JOYSTICK 0/1
 
