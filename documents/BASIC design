@@ -1,75 +1,130 @@
-line number 1-9999
+=FLOW CONTROL=
+DO-WHILE-EXIT-REPEAT
+STOP
+RUN
+RESUME
+ON(?)
+PROC-ENDPROC
+              *RETURN*
+PAUSE
+FOR-TO-STEP-NEXT
+IF-ELSE-ENDIF
+GOTO
 
-LIST <number> - list starting from line number
-LIST - list from start
-LIST ? - list starting last error
+=SCREEN=
+PRINT
+PLOT
+PEN
+PAPER
+INVERSE
+INK
+FILL
+DRAW
+CLS
+CIRCLE
+BORDER
+UDG(?)
+SCREEN$
+POS
+POINT
+ATTR
+USING
+AT
 
-TRON 0|1|2 - trace off/on/interactive - prints line number and command token at 0,0 (LLLL TOKEN), in mode 2 prints LLLL TOKEN next? 
+=INPUT=
+INPUT
+JOY
+INKEY$
+PROMPT
+LINE
+
+=FILE=
+SAVE
+LOAD
+FORMAT
+ERASE
+DRIVE
+RENAME
+CAT$
+         *VERIFY
+         *MERGE
+         *COPY* (?)  SAVE [drive,]file TO [drive,]file
+         *BACKUP*
+
+=VARIABLES=
+RESTORE
+READ
+LET
+DIM
+CONST
+DATA
 
 
-=Loops=
+=SOUND=
+PLAY
+BEEP
 
-FOR <variable>=<initial value> TO <end value> STEP <increment> : ... :NEXT <variable> 
-DO: ... :WHILE <condition>: ... :REPEAT
+=PRINTER=
+LPRINT
+LLIST
 
+=OTHER=
+TRON
+POKE
+NEW
+LIST
+CLEAR
+RANDOMIZE
+TIME
+PEEK
 
-CONTINUE
-EXIT 
-
-=Conditional=
-
-IF <condition> THEN ... :ENDIF
-IF <condition> THEN ... :ELSE ... :ENDIF
-
-
-=Math functions=
-
-ABS <expression>
-SGN <expression>
-INT <expression>
+=MATH FUNC=
+VAL
+USR
+TRUE
+TAN
+SQR
+SIN
+SGN
 RND
+PI
+MIN
+MAX
+LN
+INT
+FALSE
+EXP
+COS
+ATN
+ASN
+ACS
+ABS
 
 
+=STRING FUNC=
+UP$
+TRIM$
+SPACE$
+LOW$
+LEN
+ISUP(?) can be replaced by ISALPHA & CODE<=CODE'Z'
+ISLOW(?)
+ISDIGIT
+ISALPHA
+INSTR
+CODE
+CHR$
 
-=TAPE and DISK operations=
-
-Tape and disk operations use concept of device priority.
-First drive has number 1 and has highest priority, second drive has number 2, etc. Tape has number 9. 
-
-LOAD <filename> - load Basic program from default drive
-LOAD <filename> CODE - load binary file from default drive to memory location stated in file header
-LOAD <filename> DATA <variable name> - load variable file from drive storage and store it to a variable
-LOAD <drive>,<filename> - load Basic program from <drive>
-
-SAVE <filename> - save Basic program to drive
-SAVE <filename> CODE <address>,<length> - save binary file to default drive from memory address, length gives number of bytes
-SAVE <filename> DATA <variable> - save variable to default drive
-SAVE <drive>,<filename> - save Basic program to <drive>
-SAVE <filename> DIR
-SAVE <filename> TO <new filename> - copy <filename> to <new filename> 
-VERIFY <filename>
-MERGE <filename>
-
-FREE - returns empty sectors on default drive
-FREE <drive> - returns empty sectors on <drive>
-LOCK <filename>, <lock> - locks/unlocks <filename> for writing, <lock>!=0 for read only files
-
-ERASE <filename> - erase <filename>
-
-RENAME <filename>, <new filename> - rename filename
-RENAME <drive>, filename
-CAT - print catalog of default drive
-CAT <filename mask> - print list of files matching <filename_mask>, wildcards '*' and '?' are allowed
-CAT TO <string variable> - redirect output to <string variable>
-CAT <drive> - print catalog of specified drive
-FORMAT <drive> - format drive specified 
-DRIVE <drive> - change default drive to drive specified
-DIR <filename>
-
-Error messages:
-"Drive not found"
-"Disk is full"
-"Invalid filename"
-"Invalid argument"
-"Disk error"
-"Loading error"
+=OPERATORS=
+XOR
+OR
+NOT
+MOD
+DIV
+AND
+<=
+>=
+<>
+         *SHL
+         *SHR
+         
