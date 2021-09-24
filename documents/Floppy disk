@@ -15,15 +15,35 @@ Track structure:
  $B5 -          1011 0101
  $BD -          1011 1101
  
-Catalogue:
- Catalogue has 88 records, each 32 bytes long.
- First record is volume description
-  00-15 Volume name
-  16-
- Second and all other records
-  00    Type: Empty, Basic, Code, Integer array, String array, Float array, Text, 
-  01-16 File name
-  17
+Catalogue - track 0 (840B):
+ Disk header (19B)
+ 39x File entry (741B)
+ Track map (80B)
+ 
+ Disk header (19B)
+ Diskname        12B
+ Tracks           1B how many tracks on side
+ Free             1B how many tracks are free tracks
+ Version          1B version of disk format
+ Autoboot         1B file entry
+ Reserved         3B reserved
+ 
+  
+ File entry (19B):
+ Filename        12B 
+ Type             1B  B-Basic, C-Code, V-variable, $00-empty
+ Length           2B
+ Attribute        2B  
+ Start track      1B
+ Flag             1B  00-normal, 01-write protected
+ 
+ Track map:
+ 80 bytes
+ Values: $00       unused
+         $01-$7F   next track
+         $FE       deleted
+         $FF       bad  
+ 
  
 Controller has following properties:
  Reading/writing one bit takes 4us ~ 6.5 cycles.
