@@ -1,0 +1,22 @@
+ID: 'TONDATAPE'
+Length of : 2B little endian
+Block: Header or Data
+Header: FlagByte: 00
+        Type: B-Basic, C-code, V-variable, S-screen
+        Name: 12 bytes
+        Length: 2B
+        Attribute:  B: start line
+                    C: start address
+                    V: empty (0000)
+                    S: mode
+        Checksum: Fletcher16
+Data:   FlagByte: FF
+        Data:
+        Checksum: Fletcher16
+        
+CRC: Fletcher checksum
+     2 bytes T,S
+     For each byte in data:
+       S=(S+byte) modulo 256
+       T=(T+S) modulo 256
+     Checksum=T*256+S  
