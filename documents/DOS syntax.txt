@@ -1,0 +1,16 @@
+DRIVE drive                               - set drive as default
+FORMAT drive,"filename...."               - format drive, give disk a name
+BACKUP drive                              - backup whole disk using single drive
+BACKUP drive TO drive                     - backup whole disk using two drives
+CAT$                                      - return string with catalogue 
+RENAME filename TO filename               - rename file 
+ERASE filename                            - erase file
+LOCK filename, TRUE
+LOCK filename, FALSE
+COPY filename TO filename
+COPY drive,filename TO drive,filename
+APPEND filename TO filename
+LOAD
+SAVE
+VERIFY
+MERGE
