@@ -1,0 +1,11 @@
+
+Number:
+
+BYTE 0: sign, type/factor  
+BYTE 1: value
+BYTE 2: value
+BYTE 3: value
+BYTE 4: value
+
+
+
