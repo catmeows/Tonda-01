@@ -1,4 +1,8 @@
-     
+
+
+
+SYS_VAR_TIMER EQU $BFB0
+
 SWI3_VECTOR   EQU $BFB4
 SWI2_VECTOR   EQU $BFB6
 SWI_VECTOR    EQU $BFB8
@@ -7,11 +11,18 @@ IRQ_VECTOR    EQU $BFBC
 NMI_VECTOR    EQU $BFBE     
 
 
-FastFill
 
-A=fill byte
-X=destination
-Y=counter
+
+
+SHORT_COPY
+     ;X destination
+     ;Y source
+     ;B counter
+           LDA ,Y+
+	   STA ,X+
+	   DECB
+	   BNE SHORT_COPY
+	   RTS
 
 FAST_FILL
     ;A fill byte
@@ -33,27 +44,40 @@ FILL_LOOP
 	  BNE FILL_LOOP    ;3   -> 8clocks/byte
 FILL_EXIT
 	  RTS
-
+	  
+RESET_HANDLER
+	  LDD #RESET_HANDLER
+	  STD NMI_VECTOR                       ;set default NMI handler to RESET
+	  LDS #$BDFE                           ;set stack below system variables
+	  LDX #SWI3_VECTOR		       ;vectors in ram
+	  LDY #DEFAULT_VECTORS                 ;default vectors
+	  LDB #10                              ;5x2 bytes
+	  JSR SHORT_COPY                       ;copy default to vectors
+	  LDD #$0000		               ;reset timer
+          STD SYS_VAR_TIMER
+          STD SYS_VAR_TIMER+2
+          LDA #$BF                             ;set direct page 
+          TFR A,DP
 
 DEFAULT_IRQ_HANDLER
-    LDD SYS_VAR_TIMER+2 		          ;increase four byte timer
-    ADDD #$0001
-    STD SYS_VAR_TIMER+2
-    BCC DEFAULT_IRQ_HANDLER1
-    LDX SYS_VAR_TIMER
-    LEAX +1,X 
-    STX SYS_VAR_TIMER
+          LDD SYS_VAR_TIMER+2 		       ;increase four byte timer
+          ADDD #$0001
+          STD SYS_VAR_TIMER+2
+          BCC DEFAULT_IRQ_HANDLER1
+          LDX SYS_VAR_TIMER
+          LEAX +1,X 
+          STX SYS_VAR_TIMER
 DEFAULT_IRQ_HANDLER1    
-    JSR SYS_SCAN_KEYS 		            ;scan keyboard
+          JSR SYS_SCAN_KEYS 		       ;scan keyboard
 DEFAULT_HANDLER
-    RTI  			                        ;simply do nothing and leave
+          RTI  			               ;simply do nothing and leave
 
 DEFAULT_VECTORS
-    FDB DEFAULT_HANDLER               ;default handler for SWI3
-    FDB DEFAULT_HANDLER               ;default handler for SWI2
-    FDB DEFAULT_HANDLER               ;default handler for SWI
-    FDB DEFAULT_HANDLER               ;default handler for FIRQ
-    FDB DEFAULT_IRQ_HANDLER           ;default handler for IRQ
+         FDB DEFAULT_HANDLER                        ;default handler for SWI3
+         FDB DEFAULT_HANDLER                        ;default handler for SWI2
+         FDB DEFAULT_HANDLER                        ;default handler for SWI
+         FDB DEFAULT_HANDLER                        ;default handler for FIRQ
+         FDB DEFAULT_IRQ_HANDLER                    ;default handler for IRQ
 
 NMI_HANDLER
     JMP [NMI_VECTOR]		              ;jump vector from NMI_VECTOR 
