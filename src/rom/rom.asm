@@ -10,9 +10,84 @@ FIRQ_VECTOR   EQU $BFBA
 IRQ_VECTOR    EQU $BFBC
 NMI_VECTOR    EQU $BFBE     
 
+MARTA_IO      EQU $BFC0
 
-
-
+SET_VIDEO
+     ;A video mode
+     CLRB
+     STB 
+     LDB #$FC
+     
+     
+     
+SET_BITS
+     ;A value
+     ;B mask
+     ;X memory ptr
+           ANDB ,X
+	   STB ,X
+	   ORA ,X
+	   STA ,X
+	   RTS
+fastCopyDec
+        ;Y source
+        ;X destination
+        ;D count
+	PSHS U
+        TFR Y,U
+        TFR D,Y
+        BITB #$01
+        BEQ fastCopyDecEven
+        LDA ,U-
+        STA ,X-
+        LEAY -1,Y
+        BEQ fastCopyExit
+fastCopyDecEven
+        BITB #$02
+        BEQ fastCopyDec4
+        LDD ,U--
+        STD ,X--
+        LEAY -2,Y
+        BEQ fastCopyExit
+fastCopyDec4
+        LDD ,U--
+        STD ,X--
+        LDD ,U--
+        STD ,X--
+        LEAY -4,Y
+        BNE fastCopyDec4
+        BRA fastCopyExit
+        
+fastCopyInc
+	;Y source
+        ;X destination
+        ;D count
+	PSHS U
+        TFR Y,U
+        TFR D,Y
+        BITB #$01
+	BEQ fastCopyIncEven
+	LDA ,U+
+        STA ,X+
+        LEAY -1,Y
+        BEQ fastCopyExit
+fastCopyIncEven
+        BITB #$02
+        BEQ fastCopyInc4
+        LDD ,U++
+        STD ,X++
+        LEAY -2,Y
+        BEQ fastCopyExit
+fastCopyInc4
+        LDD ,U++    ;5+3
+        STD ,X++    ;5+3
+        LDD ,U++    ;5+3
+        STD ,X++    ;5+3
+        LEAY -4,Y   ;4+1
+        BNE fastCopyInc4 ;3
+fastCopyExit
+        PULS U
+        RTS           
 
 SHORT_COPY
      ;X destination
