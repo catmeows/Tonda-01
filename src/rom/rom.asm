@@ -20,6 +20,11 @@ MARTA_IO      EQU $BFC0
 
 
 
+setBorder
+     ;A border color
+     LDB #$02
+     JMP setMartaRegister
+
 clearVideo
      ;clear screen
      LDA >SYS_MARTAREG
@@ -210,7 +215,7 @@ resetHandler
 	  STD NMI_VECTOR                       ;set default NMI handler to RESET
 	  LDS #$BDFE                           ;set stack below system variables
 	  LDX #SWI3_VECTOR		       ;vectors in ram
-	  LDY #defaultVectors                 ;default vectors
+	  LDY #defaultVectors                  ;default vectors
 	  LDB #10                              ;5x2 bytes
 	  JSR shortCopy                        ;copy default to vectors
 	  LDD #$0000		               ;reset timer
@@ -219,7 +224,11 @@ resetHandler
           LDA #$BF                             ;set direct page 
           TFR A,DP
 	  CLRA
-	  JSR setVideo				;set graphics mode 0
+	  JSR setVideo			       ;set graphics mode 0
+	  LDA $10
+	  JSR setBorder                        ;set border
+	  
+	  
 	  
 defaultIrqHandler
           LDD SYS_TIMER+2 		       ;increase four byte timer
