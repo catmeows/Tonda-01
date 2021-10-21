@@ -22,7 +22,13 @@ MARTA_IO      EQU $BFC0
 
 setBorder
      ;A border color
-     LDB #$02
+     LDB #$02     
+     JMP setMartaRegister
+     
+setPalleteColor
+     ;A color
+     ;B pallete
+     ADDB #$10
      JMP setMartaRegister
 
 clearVideo
