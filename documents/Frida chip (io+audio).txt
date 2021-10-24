@@ -3,7 +3,8 @@ Frida is custom chip that cares about i/o and sound in Tonda 01 computer.
 
 Pins:
 0,1 - Vcc, Vss
-2..12 - out: PR0|KR0, PR1|KR1, PR2|KR2, PR3|TO, PR4|JS0, PR5|JS1, PR6, PR7, P/S, KS, LED
+2..10 - out: PR0|KR0, PR1|KR1, PR2|KR2, PR3|TO, PR4|JS0, PR5|KS, PR6|LED, PR7, P/S
+11..12 out: multiplexer
 13..20 - in: K0|J0, K1|J1, K2|J2, K3|J3, K4|J4a, K5|J4b, K6|PB, TI|P/A
 21..28 - in/out: D0..D7
 29 - in: chip select /CS
@@ -15,17 +16,17 @@ Pins:
 39 - in: RESET
 
 
-
+Input multiplexing:
 Joystick1 (up, right, down, left) | Joystick2 (up, right, down, left) -> 74LS157 quad 2to1 multiplexer -> JoystickX
 
 JoystickX (up, right, down, left) | Keyboard K0,K1,K2,K3 -> 74LS157 quad 2to1 multiplexer -> READ PORT 0,1,2,3
 Joystick1 fire, Joystick2 fire, Printer Ack, Printer Busy | Keyboard K4,K5,K6,TapeIn -> 74LS157 quad  2to1 multiplexer -> READ PORT 4,5,6,7
 
-
+Output multiplexing
 
 
 Registers:
-$BFE0 CONTROL  - LSK...CC - L..led, S..printer /strobe, K..keyboard/other select(KS), CC..sound channel select 3210
+$BFE0 CONTROL  - RSMMxxCC - R..read port A or B, S..printer /strobe, MM..output multiplexer,  CC..sound channel select 3210
 $BFE1 PX       - value reading from potentiometer
 $BFE2 PY       - value reading from potentiometer
 $BFE3 DATA     - write to PR0..PR7, JS0, KR0..KR2, TO 
