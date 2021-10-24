@@ -4,7 +4,7 @@ Frida is custom chip that cares about i/o and sound in Tonda 01 computer.
 Pins:
 0,1 - Vcc, Vss
 2..12 - out: PR0|KR0, PR1|KR1, PR2|KR2, PR3|TO, PR4|JS0, PR5|JS1, PR6, PR7, P/S, KS, LED
-13..20 - in: K0|J0, K1|J1, K2|J2, K3|J3, K4|J4, K5, K6|PB, TI|P/A
+13..20 - in: K0|J0, K1|J1, K2|J2, K3|J3, K4|J4a, K5|J4b, K6|PB, TI|P/A
 21..28 - in/out: D0..D7
 29 - in: chip select /CS
 30..32 - in: address A0..A2
