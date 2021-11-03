@@ -28,7 +28,8 @@ lineLen=lineLen+1
 ptr=ptr+lineLen
 repeat
 
-
+FIND STATEMENT
+counter=
 
 
 
