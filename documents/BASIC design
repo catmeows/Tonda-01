@@ -1,130 +1,34 @@
-=FLOW CONTROL=
-DO-WHILE-EXIT-REPEAT
-STOP
-RUN
-RESUME
-ON(?)
-PROC-ENDPROC
-              *RETURN*
-PAUSE
-FOR-TO-STEP-NEXT
-IF-ELSE-ENDIF
-GOTO
-
-=SCREEN=
-PRINT
-PLOT
-PEN
-PAPER
-INVERSE
-INK
-FILL
-DRAW
-CLS
-CIRCLE
-BORDER
-UDG(?)
-SCREEN$
-POS
-POINT
-ATTR
-USING
-AT
-
-=INPUT=
-INPUT
-JOY
-INKEY$
-PROMPT
-LINE
-
-=FILE=
-SAVE
-LOAD
-FORMAT
-ERASE
-DRIVE
-RENAME
-CAT$
-         *VERIFY
-         *MERGE
-         *COPY* (?)  SAVE [drive,]file TO [drive,]file
-         *BACKUP*
-
-=VARIABLES=
-RESTORE
-READ
-LET
-DIM
-CONST
-DATA
 
 
-=SOUND=
-PLAY
-BEEP
+BASIC PROGRAM
 
-=PRINTER=
-LPRINT
-LLIST
+BASIC LINE:
+LineNumber(2B),LineLength(1-2B),Statement(xB)[,Statement]:0x0C
 
-=OTHER=
-TRON
-POKE
-NEW
-LIST
-CLEAR
-RANDOMIZE
-TIME
-PEEK
+LineNumber - MSB.LSB, never more than 9999, MSB=128 is program terminator, LineNumber 0 not accepted, it is used 
+LineLenght - firstByte[.secondByte] - length=(firstByte<0xff)?firstByte+1:secondByte+256 - 0..511
 
-=MATH FUNC=
-VAL
-USR
-TRUE
-TAN
-SQR
-SIN
-SGN
-RND
-PI
-MIN
-MAX
-LN
-INT
-FALSE
-EXP
-COS
-ATN
-ASN
-ACS
-ABS
+STATEMENT:
+
+StatementLength, StatementToken[[,Modifier [Parameters];]Parameters] 
+
+StatementLength(1-2B) - firstByte[.secondByte] - length=(firstByte<0xff)?firstByte+1:secondByte+256 - 0..511
 
 
-=STRING FUNC=
-UP$
-TRIM$
-SPACE$
-LOW$
-LEN
-ISUP(?) can be replaced by ISALPHA & CODE<=CODE'Z'
-ISLOW(?)
-ISDIGIT
-ISALPHA
-INSTR
-CODE
-CHR$
 
-=OPERATORS=
-XOR
-OR
-NOT
-MOD
-DIV
-AND
-<=
->=
-<>
-         *SHL
-         *SHR
-         
+
+FIND LINE
+ptr=PROGSTART
+lineNum=256*mem[ptr]+mem[ptr+1]
+if (lineNum==expectedLine) return ptr
+if (lineNum>(40*256-1)) ERROR:Line not found
+lineLen=mem[ptr+2]
+if (lineLen==255) lineLen=lineLen+mem[ptr+3]
+lineLen=lineLen+1
+ptr=ptr+lineLen
+repeat
+
+
+
+
+
