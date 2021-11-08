@@ -3,47 +3,53 @@ Frida is custom chip that cares about i/o and sound in Tonda 01 computer.
 
 Pins:
 0,1 - Vcc, Vss
-2..10 - out: PR0|KR0, PR1|KR1, PR2|KR2, PR3|TO, PR4|JS0, PR5|KS, PR6|LED, PR7, P/S
-11..12 out: multiplexer
-13..20 - in: K0|J0, K1|J1, K2|J2, K3|J3, K4|J4a, K5|J4b, K6|PB, TI|P/A
-21..28 - in/out: D0..D7
-29 - in: chip select /CS
-30..32 - in: address A0..A2
-33 - in: clock
+2..10 - out: PR0,PR1,PR2,PR3,PR4,PR5,PR6,PR7 (printer data)
+11 - out: /STROBE (printer strobe)
+12 - in: /ACK (printer ack)
+13..20 - in: K0|J0, K1|J1, K2|J2, K3|J3, K4|J4, K5, K6, TI (keyboard/joystick, tape in)
+21..28 - in/out: D0..D7 (data bus)
+29 - in: /CS (chip select)
+30 - in: A0 (register select)
+31 - out: TO (tape out)
+33 - in: clock (system clock)
 34,35 - out: audio left/right
 36,37 - in: potentiometr PX,PY
 38 - in: RW
 39 - in: RESET
 
-
-Input multiplexing:
-Joystick1 (up, right, down, left) | Joystick2 (up, right, down, left) -> 74LS157 quad 2to1 multiplexer -> JoystickX
-
-JoystickX (up, right, down, left) | Keyboard K0,K1,K2,K3 -> 74LS157 quad 2to1 multiplexer -> READ PORT 0,1,2,3
-Joystick1 fire, Joystick2 fire, Printer Ack, Printer Busy | Keyboard K4,K5,K6,TapeIn -> 74LS157 quad  2to1 multiplexer -> READ PORT 4,5,6,7
-
-Output multiplexing
-
-
 Registers:
-$BFE0 CONTROL  - RSMMxxCC - R..read port A or B, S..printer /strobe, MM..output multiplexer,  CC..sound channel select 3210
-$BFE1 PX       - value reading from potentiometer
-$BFE2 PY       - value reading from potentiometer
-$BFE3 DATA     - write to PR0..PR7, JS0, KR0..KR2, TO 
-               - read K0..K6, J0..J4, TI, P/A, PBS
-$BFE4          - FREQHI - NVVVFFFF - N..noise on/off, VVV..volume 0..7, FFFF..high 4 bits of frequency
-$BFE5          - FREQLO - low 8 bit of frequency
-$BFE6          - WAVEHI - high wave sample 
-$BFE7          - WAVELO - low wave sample 
+$BFE0 SELECT      - register select
+$BFE1 REGISTER    - register
 
-DATA ($BFE3) read/write table
+$00 - BITS        - b7|b6|b5|b4|b3|b2|b1|b0 - direction of printer data lines, 0..read, 1..write    
+$01 - PRINTER     - d7|d6|d5|d4|d3|d2|d1|d0 - printer data 
+$02 - KEYBTAPE    - ti|k6|k5|k4(j4)|k3(j3)|k2(j2)|k1(j1)|k0(j0) - tape in (ti), keyboard(k6-k0), joystick(j4-j0)
+$03 - CONTROLOUT  - na|na|na|to|ps|s2|s1|s0 - tape out (to), printer strobe (ps), select key row (s2-s0)
+$04 - CONTROLIN   - na|na|na|na|na|na|na|pa - printer ack (pa)
+$05 - POTX        - potentiometer X
+$06 - POTY        - potentiometer Y
 
-mode/bits      b7  b6  b5  b4  b3  b2  b1  b0
+$10 - FREQHI1     - NVVVFFFF - N..noise on/off, VVV..volume 0..7, FFFF..high 4 bits of frequency
+$11 - FREQLO1     - FFFFFFFF - low 8 bit of frequency (latch, loaded when FREQHI1 is written)
+$12 - WAVEHI1     - WWWWWWWW - high wave sample 
+$13 - WAVELO1     - WWWWWWWW - low wave sample (latch, loaded when WAVEHI1 is written
+$14 - FREQHI2
+$15 - FREQLO2
+$16 - WAVEHI2
+$17 - WAVELO2
+$18 - FREQHI3
+$19 - FREQLO3
+$1A - WAVEHI3
+$1B - WAVELO3
+$1C - FREQHI4
+$1D - FREQLO4
+$1E - WAVEHI4
+$1F - WAVELO4
 
-write          PR7 PR6 PR5 PR4 PR3 PR2 PR1 PR0
-write          KR2 KR1 KR0 JS  -- TO  --  --
-read (KS=0)    TI  K6  K5  K4  K3  K2  K1  K0
-read (KS=1)    P/A PBS J4B J4A J3  J2  J1  J0
+
+
+
+
 
 
 I/O
@@ -92,9 +98,10 @@ Regular and ctrl:
  In hardware, keyboard is matrix of seven columns and eight rows. 7x8 = 56 so one position in matrix is unused (indicated as <none> in table)
  
  Reading key:
- 1) Write to DATA ($BFE3) row select KR2..KR0 (KKK.....)
- 2) Write to CONTROL ($BFE0) bit 5 (KS) with bit reset
- 3) Read from DATA ($BFE3) key state for selected row (.KKKKKKK)
+ 1) Write to SELECT ($BFE0) $03 (select CONTROLOUT)
+ 2) Write to REGISTER ($BFE1) row to read (bits 2,1,0)
+ 3) Write to SELECT ($BFE0) $02 (select KEYBTAPE)
+ 4) Read from REGISTER ($BFE1) key state for selected row (.KKKKKKK)
  
  Row     KR2..KR0    bits 6      5      4      3      2      1      0
  
@@ -107,11 +114,10 @@ Regular and ctrl:
  6       %110             left   ]      [      P      O      I      U
  7       %111             del    =      -      0      9      8      7
  
-JOYSTICK 0/1
+JOYSTICK
 
-There are two joystick ports: J0 and J1.
-Joystick port J0 is standard Atari joystick port with 5 digital inputs and two analog inputs.
-Joystick port J1 is standard Atari joystick port with 5 digital inputs only.
+Joystick port is standard Atari joystick port with 5 digital inputs and two analog inputs.
+
 
 Reading joystick digital input:
 1) Write to DATA ($BFE3) joystick select JS0 (...10...) or JS1 (...01...)
