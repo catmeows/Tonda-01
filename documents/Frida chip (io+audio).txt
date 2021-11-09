@@ -149,11 +149,12 @@ A) Write to REGISTER ($BFE1) with bit 3 reset
 TAPE IN/OUT
 
 Read tape:
-1) Write to CONTROL ($BFE0) bit 5 (KS) with bit reset
-2) Poll bit 7 (TI) from DATA ($BFE3)
+1) Write to SELECT ($BFE0) $02 (select KEYBTAPE)
+2) Read from REGISTER ($BFE1) with bit 7 
 
 Write tape:
-1) Write to DATA ($BFE3) with bit 2 (TO) set/reset
+1) Write to SELECT ($BFE0) $03 (select CONTROLOUT)
+2) Write to REGISTER ($BFE1) with bit 4 
 
 
 AUDIO
