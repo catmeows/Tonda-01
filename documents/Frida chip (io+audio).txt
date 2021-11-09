@@ -47,11 +47,6 @@ $1E - WAVEHI4
 $1F - WAVELO4
 
 
-
-
-
-
-
 I/O
 
 KEYBOARD
