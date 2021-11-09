@@ -140,16 +140,9 @@ Send character to printer:
 4) Write to REGISTER ($BFE1) character code
 5) Write to SELECT ($BFE0) $03 (select CONTROLOUT)
 6) Write to REGISTER ($BFE1) with bit 3 reset (/STROBE)
-7) Mask 
-
-1) Write to DATA ($BFE3) character code
-2) Write to CONTROL ($BFE0) bit 5 (KS) with bit set
-3) Read from DATA ($BFE3) bit 5 (PBS), wait until it is low
-4) Write to CONTROL ($BFE0) bit 6 (P/S) with bit set to signal /strobe
-5) Wait at least 1us (2 cycles)
-6) Write to CONTROL ($BFE0) bit 6 (P/S) with bit reset to deactivate /strobe
-7) Poll b7 (/ACK) from DATA ($BFE3), printer will signal /ACK for about 5us (8 cycles)
-
+7) Write to SELECT ($BFE0) $04 (select CONTROLIN)
+8) Read from REGISTER ($BFE1)
+9) Check bit b0 for ACK, loop until 
 
 TAPE IN/OUT
 
