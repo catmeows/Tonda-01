@@ -158,10 +158,10 @@ Channels A,B are mixed together as first output and C,D are mixed together as se
 Connecting 3.5mm stereo jack into AUDIO connector disables internal speaker. In such case, channels A,B are routed to left output and channels C,D are routed to right output.
 
 Each channel is controlled by 4 registers:
-$BFE4          - FREQHI - NVVVFFFF - N..noise on/off, VVV..volume 0..7, FFFF..high 4 bits of frequency
-$BFE5          - FREQLO - low 8 bit of frequency
-$BFE6          - WAVEHI - high wave sample 
-$BFE7          - WAVELO - low wave sample 
+FREQHI - NVVVFFFF - N..noise on/off, VVV..volume 0..7, FFFF..high 4 bits of frequency
+FREQLO - low 8 bit of frequency
+WAVEHI - high wave sample 
+WAVELO - low wave sample 
 
 FREQHI - channel control and 4 bits of frequency (pitch) control
 FREQLO - lower 8 bits of frequency (pitch) control (write to FREQLO is latched and loaded when FREQHI is written)
