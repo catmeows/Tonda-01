@@ -130,7 +130,7 @@ Reading joystick analog input:
  
 PARALLEL PORT (PRINTER)
 
-Parallel port has connected 8 data lines, /STROBE signal, /ACK signal. Data lines are bidirectional.
+Parallel port has connected 8 data lines, /STROBE signal, BUSY signal. Data lines are bidirectional.
 
 Send character to printer:
 
