@@ -18,13 +18,13 @@ Fantasy computer based on 6809 cpu
   * Output to internal speaker or stereo 3.5 mm jack
 * I/O
   * Keyboard with 56 keys (matrix 8x7)
-  * 2x Atari joystick connector (one with 2 analog lines) 
+  * Atari joystick connector (with 2 analog lines) 
   * Tape in/out connector
   * TV out 
   * Analog (4 level) RGB
   * Composite video
   * Edge connector
-  * Parallel port
+  * Centronics parallel port  
   
 
 
