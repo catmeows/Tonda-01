@@ -12,7 +12,7 @@ Pins:
 29 - in: /CS (chip select)
 30 - in: A0 (register select)
 31 - out: TO (tape out)
-32 - out: KJS (keyboard/joystick select)
+32 - out: KS (keyboard/joystick select)
 33 - in: clock (system clock)
 34,35 - out: audio left/right
 36,37 - in: potentiometr PX,PY
@@ -26,7 +26,7 @@ $BFE1 REGISTER    - register
 $00 - BITS        - b7|b6|b5|b4|b3|b2|b1|b0 - direction of printer data lines, 0..read, 1..write    
 $01 - PRINTER     - d7|d6|d5|d4|d3|d2|d1|d0 - printer data 
 $02 - KEYBTAPE    - ti|k6|k5|k4(j4)|k3(j3)|k2(j2)|k1(j1)|k0(j0) - tape in (ti), keyboard(k6-k0), joystick(j4-j0)
-$03 - CONTROLOUT  - na|na|na|to|ps|s2|s1|s0 - tape out (to), printer strobe (ps), select key row (s2-s0)
+$03 - CONTROLOUT  - na|na|ks|to|ps|s2|s1|s0 - keyboard/joystick select (ks), tape out (to), printer strobe (ps), select key row (s2-s0)
 $04 - CONTROLIN   - na|na|na|na|na|na|na|pb - printer busy (pb)
 $05 - POTX        - potentiometer X
 $06 - POTY        - potentiometer Y
@@ -96,7 +96,7 @@ Regular and ctrl:
  
  Reading key:
  1) Write to SELECT ($BFE0) $03 (select CONTROLOUT)
- 2) Write to REGISTER ($BFE1) row to read (bits 2,1,0)
+ 2) Write to REGISTER ($BFE1) row to read (bits 2,1,0) and rest bit 0 to read keyboard
  3) Write to SELECT ($BFE0) $02 (select KEYBTAPE)
  4) Read from REGISTER ($BFE1) key state for selected row (.KKKKKKK)
  
@@ -116,8 +116,10 @@ JOYSTICK
 Joystick port is standard Atari joystick port with 5 digital inputs and two analog inputs.
 
 Reading joystick digital input:
-1) Write to SELECT ($BFE0) $02 (select KEYBTAPE)
-2) Read from REGISTER ($BFE1) joystick state for selected row (...JJJJJ)
+1) Write to SELECT ($BFE0) $03 (select CONTROLOUT)
+2) Write to REGISTER ($BFE1) with bit 5 set to read joystick
+3) Write to SELECT ($BFE0) $02 (select KEYBTAPE)
+4) Read from REGISTER ($BFE1) joystick state (...JJJJJ)
 
 Reading joystick analog input:
 1) Write to SELECT ($BFE0) $05/$06 (select POTX/POTY)
