@@ -18,7 +18,7 @@ Pins:
 39 - in: RESET
 
 Registers:
-$BFE0 SELECT      - register select
+$BFE0 SELECT      - register select (register remains selected till change)
 $BFE1 REGISTER    - register
 
 $00 - BITS        - b7|b6|b5|b4|b3|b2|b1|b0 - direction of printer data lines, 0..read, 1..write    
@@ -118,22 +118,30 @@ JOYSTICK
 
 Joystick port is standard Atari joystick port with 5 digital inputs and two analog inputs.
 
-
 Reading joystick digital input:
-1) Write to DATA ($BFE3) joystick select JS0 (...10...) or JS1 (...01...)
-2) Write to CONTROL ($BFE0) bit 5 (KS) with bit set
-3) Read from DATA ($BFE3) state of selected joystick (...FUDLR)
+1) Write to SELECT ($BFE0) $02 (select KEYBTAPE)
+2) Read from REGISTER ($BFE1) joystick state for selected row (...JJJJJ)
 
 Reading joystick analog input:
-1) Write anything to PX ($BFE1) or PY ($BFE2)
+1) Write to SELECT ($BFE0) $05/$06 (select POTX/POTY)
+1) Write anything to REGISTER ($BFE1)
 2) Wait at least 300 cycles
-3) Read PX ($BFE1) or PY ($BFE2) - reading will be roughly between 19 to 213, when joystick is not connected reading will be 255 
+3) Read REGISTER ($BFE1) - reading will be roughly between 08 to 230, when joystick is not connected reading will be 255 
  
 PARALLEL PORT (PRINTER)
 
-Parallel port has connected 8 data lines, /STROBE signal, /ACK signal, BUSY signal.
+Parallel port has connected 8 data lines, /STROBE signal, /ACK signal. Data lines are bidirectional.
 
 Send character to printer:
+
+1) Write to SELECT ($BFE0) $00 (select BITS)
+2) Write to REGISTER ($BFE1) $FF (all bits set to write)
+3) Write to SELECT ($BFE0) $01 (select PRINTER)
+4) Write to REGISTER ($BFE1) character code
+5) Write to SELECT ($BFE0) $03 (select CONTROLOUT)
+6) Write to REGISTER ($BFE1) with bit 3 reset (/STROBE)
+7) Mask 
+
 1) Write to DATA ($BFE3) character code
 2) Write to CONTROL ($BFE0) bit 5 (KS) with bit set
 3) Read from DATA ($BFE3) bit 5 (PBS), wait until it is low
@@ -153,13 +161,6 @@ Write tape:
 1) Write to DATA ($BFE3) with bit 2 (TO) set/reset
 
 
-LED
-Led diode is used to indicate CAPS lock but is fully programmable.
-
-Setting Led diode on/off:
-1) Write to CONTROL ($BFE0) bit 7 (LED), 0 for off, 1 for on
-
-
 AUDIO
 Frida provides 4 channels: A, B, C, D
 Channels A,B are mixed together as first output and C,D are mixed together as second audio output. In normal circumstancies, these two audio lines are connected to internal speaker.  
@@ -173,8 +174,8 @@ $BFE7          - WAVELO - low wave sample
 
 FREQHI - channel control and 4 bits of frequency (pitch) control
 FREQLO - lower 8 bits of frequency (pitch) control (write to FREQLO is latched and loaded when FREQHI is written)
-WAVEHI - high wave form bits (write to WAVEHI is latched and loaded when FREQHI is written)
-WAVELO - low wave form bits (write to WAVELO is latched and loaded when FREQHI is written)
+WAVEHI - high wave form bits
+WAVELO - low wave form bits (write to WAVELO is latched and loaded when WAVEHI is written)
 
 FREQL and FREQH forms frequency divider (higher value means lower frequency/tone pitch) that gives pace at which two wave register, WAVEL and WAVEH registers are shifted.
 When frequency is zero the clock is stopped
