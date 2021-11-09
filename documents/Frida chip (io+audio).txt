@@ -104,9 +104,9 @@ Regular and ctrl:
  1       %001             ctrl   Q      W      E      R      T      Y    
  2       %010             lshf   A      S      D      F      G      H    
  3       %011             space  Z      X      C      V      B      N
- 4       %100             down   rshft  up     /      .      ,      M     
- 5       %101             rght   enter  '      ;      L      K      J
- 6       %110             left   ]      [      P      O      I      U
+ 4       %100             right  down  left    /      .      ,      M     
+ 5       %101             rshft  up     '      ;      L      K      J
+ 6       %110             enter  ]      [      P      O      I      U
  7       %111             del    =      -      0      9      8      7
  
 JOYSTICK
