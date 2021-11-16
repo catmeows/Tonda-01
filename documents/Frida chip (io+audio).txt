@@ -4,7 +4,7 @@ Frida is custom chip that cares about i/o and sound in Tonda 01 computer.
 Pins:
 0,1 - Vcc, Vss
 2..9 - out: PR0,PR1,PR2,PR3,PR4,PR5,PR6,PR7 (printer data)
-10 - nc
+10 - out: caps lock led
 11 - out: /STROBE (printer strobe)
 12 - in: BUSY (printer busy)
 13..20 - in: K0|J0, K1|J1, K2|J2, K3|J3, K4|J4, K5, K6, TI (keyboard/joystick, tape in)
@@ -21,13 +21,13 @@ Pins:
 
 Registers:
 $BFE0 SELECT      - register select (register remains selected till change)
-$BFE1 REGISTER    - register
+$BFE1 REGISTER    - register write/read
 
 $00 - BITS        - b7|b6|b5|b4|b3|b2|b1|b0 - direction of printer data lines, 0..read, 1..write    
 $01 - PRINTER     - d7|d6|d5|d4|d3|d2|d1|d0 - printer data 
 $02 - KEYBTAPE    - ti|k6|k5|k4(j4)|k3(j3)|k2(j2)|k1(j1)|k0(j0) - tape in (ti), keyboard(k6-k0), joystick(j4-j0)
-$03 - CONTROLOUT  - na|na|ks|to|ps|s2|s1|s0 - keyboard/joystick select (ks), tape out (to), printer strobe (ps), select key row (s2-s0)
-$04 - CONTROLIN   - na|na|na|na|na|na|na|pb - printer busy (pb)
+$03 - CONTROLOUT  - --|cl|ks|to|ps|s2|s1|s0 - caps lock led (cl), keyboard/joystick select (ks), tape out (to), printer strobe (ps), select key row (s2-s0)
+$04 - CONTROLIN   - --|--|--|--|--|--|--|pb - printer busy (pb)
 $05 - POTX        - potentiometer X
 $06 - POTY        - potentiometer Y
 
