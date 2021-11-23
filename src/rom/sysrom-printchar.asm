@@ -39,7 +39,25 @@ getCharPattern1
     MUL
     LEAX D,X
     RTS
-    
+
+yPix2yAttr
+    PSHS A,B
+    TFR Y,D
+    ANDB #$1F
+    ASLB
+    ASLB
+    ASLB
+    ANDA #$1F
+    ASRA
+    RORB
+    ASRA
+    RORB
+    ASRA
+    RORB
+    ADDA #$18
+    TFR D,Y
+    PULS A,B
+    RTS
     
     
     
