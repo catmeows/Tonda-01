@@ -5,6 +5,23 @@ Track 0 contains disk catalogue, tracks 1-39 contains data.
 Single side of disk can store 109824 bytes.
 
 
+Interfacing:
+Disk is driven by two ports $BFFE, $BFFF.
+
+Write BFFE - byte to write
+Read  BFFE - content of shift register
+
+Write BFFF - xxxxdaaa - d..data bit, aaa..address
+                        aaa=000 track phase 0 off/on 
+                            001 track phase 1 off/on
+                            010 track phase 2 off/on
+                            011 track phase 3 off/on
+                            100 drive 0/1
+                            101 motor on
+                            110 mode write/read
+                            111 mode write normal/write long
+Read BFFF - xxxxatwp - a..ack byte, t..track 0, w..write protect, p..disk present 
+
 Track structure:
  Header: 16*pilot byte + 3 bytes $D5 $F5 $B5 + 1 byte with track id + 1 byte with track id (for verification) + 1*byte $D5
  Data: 16*pilot byte + 3 bytes $D5 $F5 $BD + 2816 bytes of data + 2 bytes of CRC + 1*byte $D5
@@ -18,12 +35,12 @@ Track structure:
 Catalogue - track 0 (840B):
  Disk header (19B)
  39x File entry (741B)
- Track map (80B)
+ Track map (39B)
  
  Disk header (19B)
  Diskname        12B
  Tracks           1B how many tracks on side
- Free             1B how many tracks are free tracks
+ Free             1B how many tracks are free
  Version          1B version of disk format
  Autoboot         1B file entry
  Reserved         3B reserved
@@ -38,7 +55,7 @@ Catalogue - track 0 (840B):
  Flag             1B  00-normal, 01-write protected
  
  Track map:
- 80 bytes
+ 39 bytes
  Values: $00       unused
          $01-$7F   next track
          $FE       deleted
@@ -46,8 +63,8 @@ Catalogue - track 0 (840B):
  
  
 Controller has following properties:
- Reading/writing one bit takes 4us ~ 6.5 cycles.
- Reading/writing one byte takes 32us ~ 51.6 cycles
+ Reading/writing one bit takes 4us ~ 7 cycles.
+ Reading/writing one byte takes 32us ~ 56 cycles
 
  Reading disk:
  Setting ReadDisk line low.
@@ -57,9 +74,9 @@ Controller has following properties:
  That allows CPU to poll shift register content until b7 is set and then read a byte.
 
    read_floppy
-      LDA #PA_PORT      ;5 floppy data port
+      LDA $BFFE         ;5 floppy data port
       BPL read_floppy   ;3 wait till byte is complete (bit 7 set)
-                        ;after b7 is set, controller will wait for '1' and 'X' bits before clearing register, giving at most 13 cycles for read
+                        ;after b7 is set, controller will wait for '1' and 'X' bits before clearing register, giving at most 14 cycles to exit polling loop
                         
  Using pilot "byte" 111111110b (9bits) controller can synchronize. It takes 7 pilot bytes to be fully synchronized.
  
@@ -132,18 +149,6 @@ Controller has following properties:
                         in all cases controller will read data/pilot latch within no more than 2*4us ~ 14 cycles
                         wait some time and jump to repeat
         
-        
-Interfacing
--select drive line
--step motor line 0
--step motor line 1
--step motor line 2
--step motor line 3
--head on track 0 signal
--write protect signal
--8xdata latch
--pilot signal latch
--write signal
--read signal
+       
         
  
