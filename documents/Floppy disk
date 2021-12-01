@@ -83,6 +83,55 @@ Controller has following properties:
  Regular bytes are encode as in FM scheme: 1D1D1D1D, where D are data bits. So it takes two bytes on disk to store single data bit.
  Values $D5, $F5, $B5, $AD cannot occur in regular data so they are used as mark bytes to identify header and data sections.
  
+ Writting disk:
+ 
+   write_sync
+      STA $BFFE         ;write data byte
+      LDA #DISK_MODE    ;xxxx1|111 set sync mode
+      STA $BFFF         ;set sync mode bit
+                        ;this must be done before data are shifted out
+   write_ack                      
+      LDA $BFFF         ;read control byte
+      ANDA #$08         ;AND xxxxAxxx
+      BNE write_ack
+                        ;continue
+
+
+      LDA #DISK_MODE    ;2 xxxx0|111 set data mode
+      STA $BFFF         ;5 reset sync mode bit
+   write_data_loop
+      LDA ,X+           ;7
+   write_data
+      STA $BFFE         ;5 write data byte
+      LDA #$08
+   write_dack
+      BIT $BFFF         ;5
+      BEQ write_dack    ;3 wait for ack (max delay 13 cycles)
+                        ;  continue
+      LEAY -1,Y         ;5  decrease counter
+      BNE write_data_loop ;3
+      
+                        ;ack to ack = 13 delay + 8 loop + 12 write + 2 setup + 13 delay = 48 (less than 56) 
+ 
+ Track 0 sensor
+    LDA $BFFF           ;read control register
+    BITA #04            ;test track 0 bit
+    BNE track0detected
+    
+ Write protect sensor
+    LDA $BFFF
+    BITA #02
+    BNE writeProtected
+    
+Disk exists
+    LDA $BFFF
+    BITA #$01
+    BNE diskExists
+    
+    
+      
+      
+ 
  Pseudo code for reading data from single track/sector:
  
  _read_sector
