@@ -1,0 +1,16 @@
+10 LET W=500:DIM F(W):LET P=1:LET A=3
+20 LET F(P)=A:LET P=P+1:IF P>W THEN STOP
+30 LET A=A+2:LET X=1
+40 LET S=A/F(X):IF S=INT(S) THEN 30
+50 LET X=X+1:IF X<P AND F(X)*F(X)<=A THEN 40
+60 GOTO 20
+
+http://www.retroprogramming.com/2010/01/8-bit-home-computer-benchmarks.html
+
+Acorn Electron 2.0MHz 6502        138
+Amstrad CPC464 4.0MHz Z80A        140
+Commodore C64  1.0MHz 6510        254
+Commodore Plus/4 1.0 MHz 8501     267
+Tandy 64K CoCo 2 0.895MHz 6809E   271
+Atari 800XL 1.8MHz 6502           316
+Sinclair Spectrum +3 3.55MHz Z80A 388
