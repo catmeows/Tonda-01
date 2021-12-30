@@ -6,8 +6,9 @@ Pins:
 2..9 - out: PR0,PR1,PR2,PR3,PR4,PR5,PR6,PR7 (printer data)
 10 - out: caps lock led
 11 - out: /STROBE (printer strobe)
-12 - in: BUSY (printer busy)
-13..20 - in: K0|J0, K1|J1, K2|J2, K3|J3, K4|J4, K5, K6, TI (keyboard/joystick, tape in)
+12 - out: row select 0
+13..19 - in: K0|J0, K1|J1, K2|J2, K3|J3, K4|J4, K5|TI, K6|BUSY (keyboard/joystick, tape in, printer busy)
+20 - out: row select 1
 21..28 - in/out: D0..D7 (data bus)
 29 - in: /CS (chip select)
 30 - in: A0 (register select)
@@ -17,7 +18,10 @@ Pins:
 34,35 - out: audio left/right
 36,37 - in: potentiometr PX,PY
 38 - in: RW
-39 - in: RESET
+39 - out: row select 2
+
+Pins 12,20,39 are connected to 74LS138 (3 to 8 line decoder)
+Pins 13,14,15,16 are connected to 74LS157 (quad 2 to 1 multiplexer), pins 17,18,19 are connected to another 74LS157.
 
 Registers:
 $BFE0 SELECT      - register select (register remains selected till change)
@@ -25,11 +29,10 @@ $BFE1 REGISTER    - register write/read
 
 $00 - BITS        - b7|b6|b5|b4|b3|b2|b1|b0 - direction of printer data lines, 0..read, 1..write    
 $01 - PRINTER     - d7|d6|d5|d4|d3|d2|d1|d0 - printer data 
-$02 - KEYBTAPE    - ti|k6|k5|k4(j4)|k3(j3)|k2(j2)|k1(j1)|k0(j0) - tape in (ti), keyboard(k6-k0), joystick(j4-j0)
-$03 - CONTROLOUT  - --|cl|ks|to|ps|s2|s1|s0 - caps lock led (cl), keyboard/joystick select (ks), tape out (to), printer strobe (ps), select key row (s2-s0)
-$04 - CONTROLIN   - --|--|--|--|--|--|--|pb - printer busy (pb)
-$05 - POTX        - potentiometer X
-$06 - POTY        - potentiometer Y
+$02 - KEYBTAPE    - 0|k6(pb)|k5(ti)|k4(j4)|k3(j3)|k2(j2)|k1(j1)|k0(j0) - tape in (ti), keyboard(k6-k0), joystick(j4-j0), printer busy (pb)
+$03 - CONTROLOUT  - --|cl|ps|to|ks|s2|s1|s0 - caps lock led (cl), keyboard/joystick select (ks), tape out (to), printer strobe (ps), select key row (s2-s0)
+$04 - POTX        - potentiometer X
+$05 - POTY        - potentiometer Y
 
 $10 - FREQHI1     - NVVVFFFF - N..noise on/off, VVV..volume 0..7, FFFF..high 4 bits of frequency
 $11 - FREQLO1     - FFFFFFFF - low 8 bit of frequency (latch, loaded when FREQHI1 is written)
@@ -52,7 +55,7 @@ $1F - WAVELO4
 I/O
 
 KEYBOARD
-Tonda 01 has 55 key keyboards. 
+Tonda 01 has 56 key keyboards. 
 
 Physical layout looks like this 
 Regular and shift:
@@ -92,13 +95,14 @@ Regular and ctrl:
                    +---------------------------------+  +----+----+----+
                    
                    
- In hardware, keyboard is matrix of seven columns and eight rows. 7x8 = 56 so one position in matrix is unused (indicated as <none> in table)
+ In hardware, keyboard is matrix of seven columns and eight rows. 
  
  Reading key:
  1) Write to SELECT ($BFE0) $03 (select CONTROLOUT)
- 2) Write to REGISTER ($BFE1) row to read (bits 2,1,0) and rest bit 0 to read keyboard
- 3) Write to SELECT ($BFE0) $02 (select KEYBTAPE)
- 4) Read from REGISTER ($BFE1) key state for selected row (.KKKKKKK)
+ 2) Read REGISTER ($BFE1) and mask bits 3,2,1,0
+ 3) Write to REGISTER ($BFE1) combination of row to read (bits 2,1,0), keyboard select (b3=0) and upper bits (printer strobe, tape out, caps lock diode) unchanged
+ 4) Write to SELECT ($BFE0) $02 (select KEYBTAPE)
+ 5) Read from REGISTER ($BFE1) key state for selected row (.KKKKKKK)
  
  Row     KR2..KR0    bits 6      5      4      3      2      1      0
  
@@ -117,12 +121,13 @@ Joystick port is standard Atari joystick port with 5 digital inputs and two anal
 
 Reading joystick digital input:
 1) Write to SELECT ($BFE0) $03 (select CONTROLOUT)
-2) Write to REGISTER ($BFE1) with bit 5 set to read joystick
-3) Write to SELECT ($BFE0) $02 (select KEYBTAPE)
-4) Read from REGISTER ($BFE1) joystick state (...JJJJJ)
+2) Read REGISTER ($BFE1) and mask bit 3
+3) Write to REGISTER ($BFE1) combination of bit 3 set and rest of bits unchanged
+4) Write to SELECT ($BFE0) $02 (select KEYBTAPE)
+5) Read from REGISTER ($BFE1) joystick state (...JJJJJ)
 
 Reading joystick analog input:
-1) Write to SELECT ($BFE0) $05/$06 (select POTX/POTY)
+1) Write to SELECT ($BFE0) $04/$04 (select POTX/POTY)
 1) Write anything to REGISTER ($BFE1)
 2) Wait at least 300 cycles
 3) Read REGISTER ($BFE1) - reading will be roughly between 08 to 230, when joystick is not connected reading will be 255 
@@ -137,12 +142,15 @@ Send character to printer:
 2) Write to REGISTER ($BFE1) $FF (all bits set to write)
 3) Write to SELECT ($BFE0) $01 (select PRINTER)
 4) Write to REGISTER ($BFE1) character code
-5) Write to SELECT ($BFE0) $04 (select CONTROLIN)
-6) Read from REGISTER ($BFE1) and check b0 is low. If high then repeat
+5) Write to SELECT ($BFE0) $03 (select CONTROLOUT)
+6) Read from REGISTER ($BFE1) and mask bit 3
+7) Write to REGISTER ($BFE1) combination of bit 3 set and rest of bits unchanged
+8) Write to SELECT ($BFE0) $02 (select KEYBTAPE)
+9) Read from REGISTER ($BFE1) and check bit 6 ==0 (if bit 6 is set then printer is busy. repeat step 9) 
 7) Write to SELECT ($BFE0) $03 (select CONTROLOUT)
 8) Write to REGISTER ($BFE1) with bit 3 reset (/STROBE)
 9) Wait 5us
-A) Write to REGISTER ($BFE1) with bit 3 reset
+A) Write to REGISTER ($BFE1) with bit 3 set
 
 
 TAPE IN/OUT
