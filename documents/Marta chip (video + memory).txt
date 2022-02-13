@@ -63,7 +63,7 @@ write 1VVVVVVV -> write register
 read -> read register 00 (MAP): 111BPMMM
 
 registers:
-00     - 1xxxBPMM -> MAP (B..RAM bank at $0000-$3FFF,  P..page used for video buffer i.e. bank 0/1, MM..video mode)
+00     - 1xxBPxMM -> MAP (B..RAM bank at $0000-$3FFF,  P..page used for video buffer i.e. bank 0/1, MM..video mode)
 01     - 1TTTTTTT -> FIRQTIMER (every 1-127 line, 0-never)
 02     - 1xRRGGBB -> BORDERCOL (border color)
 16..31 - 1xRRGGBB -> COLOR0..COLORF (pallette entries)
