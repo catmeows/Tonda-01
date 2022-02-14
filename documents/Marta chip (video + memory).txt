@@ -10,6 +10,28 @@ FEDCBA98 76543210
 11xxxxxx xxxxxxxx - 16KB ROM - mapped to $C000 - $FFFF
 11000000 00000000 - optional disk ROM
 
+Video timing
+Each frame 311 lines are generated.
+Frame starts with 63 lines, either sync or border.
+In next 192 lines with pixels are generated.
+And finaly, 56 border lines of border follows.
+
+Each line takes 114 cycles.
+First 22 cycles are sync and backporch, followed by 92 cycles of picture area. We can expect that about 85 cycles would be really visible on TV.
+
+SYNC(22)   |               PICTURE(92)                         |
+invisible(25) |             visible(85)                 |inv(4)| 
+SYNC(22)   | BORDER(14)   | 256/128 PIXELS(64) |   BORDER(14)  |    ....mode 0,1,2
+SYNC(22)   | BORDER(6) |      320 PIXELS(80)      | BORDER(6)  |    ....mode 3 
+
+Interrupts
+IRQ is kept low for cycles 0 to 3 at the beginning of frame.
+If FIRQTIMER register is not equal 0, then its value is decreased at cycle 104 of line. If value reaches 0, FIRQTIMER is reloaded and 
+FIRQ is kept low for cycle 105, 106, 107, 108.
+As interrupt lines are kept low for 4 cycles, SYNC instruction can be used to wait for inttterupt.
+
+Memory refresh
+Marta will refresh DRAM on each line, accessing 16 rows in first 16 cycles of line. That secures refresh cycle for 256 rows every 1 ms.
 
 Video modes
 
