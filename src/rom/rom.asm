@@ -86,6 +86,41 @@ getPackedLength1
     LDA #$01
     LDB ,Y+
     RTS
+    
+error
+    STA <ERR                               ;store error number
+    JSR printAtError                       ;set temporary print flags
+    LDX #errorMsgs                         ;use error msg table
+    LDA <ERR                               ;get index to table
+    JSR printMsg                           ;print msg from table
+    BSR printSpc                           ;print single space
+    LDD <LINE_NO                           ;print line number
+    JSR printNum16                         
+    LDA #':'                               ;print ':'
+    JSR printChar                          
+    LDA <COMMAND_NO                        ;print statement number
+    JSR printNum8
+    
+printSpc
+    LDA #' '
+    JMP printChar
+    
+printMsg
+    ;enters with X as pointer to table, A as index into table
+    TSTA                                    ;is it this message ?
+printMsg3    
+    BEQ printMsg1                           ;yes
+printMsg2    
+    LDB ,X+                                 ;get byte
+    BPL printMsg2                           ;not the last byte of this msg
+    DECA                                    ;decrease msg counter
+    BRA printMsg3                           ;try next
+printMsg1
+    LDA ,X                                  ;read next character 
+    JSR printChar                           ;print character
+    LDA ,X+                                 ;advance pointer
+    BPL printMsg1                           ;check if it was last character
+    RTS
 
 ;========================
 ;= ERROR MESSAGES
