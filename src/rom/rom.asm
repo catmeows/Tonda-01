@@ -275,8 +275,10 @@ swi3Handler
     JMP [SWI3_VECTOR]		                    ;jump vector from SWI3_VECTOR 
 
    
-
-;TOKENS
+;========================
+;= TOKENS
+;========================
+tokenTable
     ;helpers
     FCC 'THE',$80+'N'
     FCC 'STE',$80+'P'
