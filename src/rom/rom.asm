@@ -102,7 +102,7 @@ error
     JSR printNum8
     
 printSpc
-    LDA #' '
+    LDA #$20
     JMP printChar
     
 printMsg
