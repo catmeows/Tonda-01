@@ -10,13 +10,31 @@ REMARK     EQU $27
 ;= INTERPRETER
 ;========================
 
-
-
+execLine
+    LDD ,Y++                          ;read line number
+    STD <LINE_NO                      ;store line number
+    CMPA #$FF                         ;is it end of program ?
+    BNE execLine1                     ;not end of program
+    CLRA                              ;will report 'OK' error
+    BRA execCommand4                  ;continue to error
+execLine1    
+    BSR getPackedLength               ;get line length
+    LEAX D,Y                          ;compute ptr to next line
+    STX <NXT_LINE                     ;store ptr to next line
+    CLR <COMMAND_NO                   ;reset command counter
+    BSR execCommand                   ;execute all commands in line
+    LDY <NXT_LINE                     ;load pointer to next line
+    BRA execLine                      ;loop program execution
+    
 execCommand
     INC <COMMAND_NO                   ;increase number of current command
-    LDA <IS_BREAK
+    LDA <IS_BREAK                     ;check BREAK pressed
     BNE execCommand4                  ;A is filled by $01, so report Break
-    JSR getPackedLength               ;get command length
+    LDA <TRACE_MODE                   ;check trace mode
+    BEQ execCommand5                  ;no trace
+    JSR traceHandler                  ;dispatch trace
+execCommand5    
+    BSR getPackedLength               ;get command length
     LEAX D, Y                         ;compute ptr of next command
     STX <NXT_COMMAND                  ;store address to next command
     BSR getNextNonWhite               ;read next non white character
@@ -28,6 +46,7 @@ execCommand
     BEQ execCommand2
     CMPA #LABEL                       ;if label then continue to next command
     BNE execCommand3                  ;otherwise report error 'Syntax error'
+execNextCommand    
     LDY <NXT_COMMAND                  ;continue
     BRA execCommand
 execCommand2
