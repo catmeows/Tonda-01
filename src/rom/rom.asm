@@ -1,10 +1,19 @@
 ERR_OK     EQU $00
 ERR_BREAK  EQU $01
 ERR_SYNTAX EQU $02
+ERR_STOP   EQU $03
 
 EOL        EQU $0d
 LABEL      EQU '@'
 REMARK     EQU $27
+
+;========================
+;= COMMAND RUNTIME
+;========================
+
+commStop
+    LDA #ERR_STOP
+    JMP error
 
 ;========================
 ;= INTERPRETER
@@ -85,6 +94,7 @@ errorMsgs
     FCC "O",$80+'K'                        ;error 0
     FCC "Brea",$80+'k'                     ;error 1
     FCC "Syntax erro",$80+'r'              ;error 2
+    FCC "STOP statemen",$80+'t'            ;error 3
    
     
     FCC "TONDA BASIC ",$7F,"202",$80+'2'
