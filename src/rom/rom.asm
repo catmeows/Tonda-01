@@ -67,7 +67,7 @@ execCommand4
 execCommand1
     SUBA #LEADINGTOKEN
     ASLA
-    LDX #CommandTable
+    LDX #commandTable
     JMP A,X
 
 getNextNonWhite
@@ -121,6 +121,11 @@ printMsg1
     LDA ,X+                                 ;advance pointer
     BPL printMsg1                           ;check if it was last character
     RTS
+    
+commandTable
+    FDB 0
+    FDB 0
+    FDB 0
 
 ;========================
 ;= ERROR MESSAGES
