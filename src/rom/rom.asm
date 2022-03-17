@@ -12,6 +12,7 @@ REMARK     EQU $27
 ;========================
 
 commStop
+    JSR expectColon
     LDA #ERR_STOP
     JMP error
 
@@ -100,6 +101,7 @@ error
     JSR printChar                          
     LDA <COMMAND_NO                        ;print statement number
     JSR printNum8
+    ;TODO
     
 printSpc
     LDA #$20
@@ -120,6 +122,17 @@ printMsg1
     JSR printChar                           ;print character
     LDA ,X+                                 ;advance pointer
     BPL printMsg1                           ;check if it was last character
+    RTS
+    
+expectColon
+    JSR getNextNonWhite
+    cp #$3a
+    BEQ expectColon1
+    cp #$0d
+    BEQ expectColon1
+    LDA #$02
+    JMP error
+expectColon1
     RTS
     
 commandTable
