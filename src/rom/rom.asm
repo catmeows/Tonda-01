@@ -31,12 +31,26 @@ REMARK     EQU $27
 
 
 
+
+isAlpha
+    ;reset carry if character in <a..z,A..Z>
+    CMPA #$41                          ;carry set if character < 'A'
+    BCS isDigit2                       ;leave with carry set
+    CMPA #$5B                          ;carry set if character <= 'Z'
+    BCS isDigit3                       ;leave to reset carry for 'A'..'Z'
+    CMPA #$61                          ;carry set if character < 'a'
+    BCS isDigit2                       ;leave with carry set
+    CMPA #$7B                          ;carry set if character <= 'z'
+    BCS isDigit3                       ;leave to reset carry for 'a'..'z'
+    BRA isDigit1                       ;leave to carry set
+
 isDigit
     ;reset carry if character in <0..9>
     CMPA #$30
     BCS isDigit2                       ;carry set if character < '0'
     CMPA #40
     BCC isDigit1                       ;carry reset if character > '9'
+isDigit3    
     ANDCC #$FE                         ;reset carry
     RTS
 isDigit1    
