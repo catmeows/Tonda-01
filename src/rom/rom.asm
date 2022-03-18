@@ -3,9 +3,46 @@ ERR_BREAK  EQU $01
 ERR_SYNTAX EQU $02
 ERR_STOP   EQU $03
 
+CARRY_BIT  EQU $01
+
+NULL       EQU $00
+SHORT_INT  EQU $01
+HEX_NUM    EQU $02
+HEX_END    EQU $03
+NUM        EQU $04
+STRING     EQU $05
+CUR_LEFT   EQU $06
+CUR_RIGHT  EQU $07
+CUR_UP     EQU $08
+CUR_DOWN   EQU $09
+
+TRUE_VIDEO EQU $0b
+INV_VIDEO  EQU $0c
 EOL        EQU $0d
 LABEL      EQU '@'
 REMARK     EQU $27
+
+
+;========================
+;= TOKENIZER
+;========================
+
+
+
+
+
+isDigit
+    ;reset carry if character in <0..9>
+    CMPA #$30
+    BCS isDigit2                       ;carry set if character < '0'
+    CMPA #40
+    BCC isDigit1                       ;carry reset if character > '9'
+    ANDCC #$FE                         ;reset carry
+    RTS
+isDigit1    
+    ORCC #$01                          ;carry set
+isDigit2
+    RTS
 
 ;========================
 ;= COMMAND RUNTIME
