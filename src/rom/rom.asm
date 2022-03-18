@@ -40,7 +40,7 @@ isDigit
     ANDCC #$FE                         ;reset carry
     RTS
 isDigit1    
-    ORCC #$01                          ;carry set
+    ORCC #$CARRY_BIT                   ;carry set
 isDigit2
     RTS
 
