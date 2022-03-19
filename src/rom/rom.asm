@@ -120,7 +120,7 @@ execCommand1
     SUBA #LEADINGTOKEN
     ASLA
     LDX #commandTable
-    JMP A,X
+    JMP [A,X]
 
 getNextNonWhite
     LDA ,Y+
@@ -176,12 +176,13 @@ printMsg1
     RTS
     
 expectColon
-    JSR getNextNonWhite
-    cp #$3a
+    ;check next non white character, throw error if not colon or EOL
+    JSR getNextNonWhite                     ;get next non white character
+    cp #$3a                                 ;compare with colon
     BEQ expectColon1
-    cp #$0d
+    cp #EOL                                 ;compare with EOL
     BEQ expectColon1
-    LDA #$02
+    LDA #$02                                ;otherwise leave with 'Synatx error'
     JMP error
 expectColon1
     RTS
@@ -327,6 +328,34 @@ tokenTable
     FCC 'SAV',$80+'E'
     FCC 'LOA',$80+'D'
     
+;========================
+;= SYS UTILS
+;======================== 
+
+byteCopy
+   
+    
+    LDA B,X            ;4+1
+    STA B,U            ;4+1
+    DECB               ;2
+    BNE                 ;3   ->8+8+5+3=24/2 bytes
+                             ->5+5+2+3=15/1 byte
+                             
+    LDD ,X
+    STD ,U
+    LDD 2,X
+    STD 2,U
+    LDD 4,X
+    STD 4,U
+    LDD 6,X
+    STD 6,U
+    LEAX 8,X
+    LEAU 8,X
+    LEAY -1,Y
+    BNE           ;2*5 + 6*6 + 3*5 + 3 = 10+36+15+3 = 64/8 cycles
+                  ;2*5 + 14*6 + 15 + 3 = 10+84+15+3 = 114/16 cycles
+                             
+                             
 ;========================
 ;= IRQ HANDLERS
 ;======================== 
