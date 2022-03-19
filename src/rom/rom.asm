@@ -339,26 +339,27 @@ byteCopy
     CMPD 2,S              ;compare with U
     PULS U,X              ;discard values on stack (flags are unchanged)
     BCS byteCopyUp        ;U>X, will copy incrementaly
-    TFR D,Y               ;copy length to D
-    LEAX D,X
+    TFR Y,D               ;copy length to D
+    LEAX D,X              ;update pointers for decrementing copy
     LEAU D,U
     BRA byteCopyDown
    
 byteCopyUp
     ;copy Y bytes from X to U, increment 
-    BSR byteCopyInit
+    BSR byteCopyInit      ;main loop will copy 8 bytes at time, before we need to compute bytes left
+    BEQ byteCopyLoopUp    ;if length is multiple of 8 the skip slow bytes
 byteCopyWarmUp    
-    LDA ,X+
+    LDA ,X+               ;copy lenght modulo 8 bytes slowly
     STA ,U+
     LEAY -1,Y
-    BNE byteCopyWarmUp1
+    BNE byteCopyWarmUp1   ;may be we are done already
     RTS
 byteCopyWarmUp1    
-    DECB
+    DECB                  ;slow bytes counter
     BNE byteCopyWarmUp
 byteCopyLoopUp                             
-    LDD ,X
-    STD ,U
+    LDD ,X                ;main copy loop
+    STD ,U                ;64 cycles per 8 bytes
     LDD 2,X
     STD 2,U
     LDD 4,X
@@ -373,7 +374,8 @@ byteCopyLoopUp
     
 byteCopyDown
     ;copy Y bytes from X to U, decrement
-    BSR byteCopyInit
+    BSR byteCopyInit                     ;compute lenght modulo 8
+    BEQ byteCopyLoopDown                 ;skip slow bytes if length is multiple of 8
 byteCopyWarmDown
     LDA ,-X
     STA ,-U   
@@ -399,7 +401,7 @@ byteCopyLoopDown
     RTS
     
 byteCopyInit
-    TFR Y,D
+    TFR Y,D                                ;B = Y modulo 8 
     ANDB #$07
     RTS
                              
