@@ -333,14 +333,30 @@ tokenTable
 ;======================== 
 
 byteCopy
+    ;copy Y bytes from X to U
+    PSHS U,X
+    LDD ,S                ;read X
+    CMPD 2,S              ;compare with U
+    PULS U,X              ;discard values on stack (flags are unchanged)
+    BCS byteCopyUp        ;U>X, will copy incrementaly
+    TFR D,Y               ;copy length to D
+    LEAX D,X
+    LEAU D,U
+    BRA byteCopyDown
    
-    
-    LDA B,X            ;4+1
-    STA B,U            ;4+1
-    DECB               ;2
-    BNE                 ;3   ->8+8+5+3=24/2 bytes
-                             ->5+5+2+3=15/1 byte
-                             
+byteCopyUp
+    ;copy Y bytes from X to U, increment 
+    BSR byteCopyInit
+byteCopyWarmUp    
+    LDA ,X+
+    STA ,U+
+    LEAY -1,Y
+    BNE byteCopyWarmUp1
+    RTS
+byteCopyWarmUp1    
+    DECB
+    BNE byteCopyWarmUp
+byteCopyLoopUp                             
     LDD ,X
     STD ,U
     LDD 2,X
@@ -351,10 +367,41 @@ byteCopy
     STD 6,U
     LEAX 8,X
     LEAU 8,X
+    LEAY -8,Y
+    BNE byteCopyLoopUp           
+    RTS
+    
+byteCopyDown
+    ;copy Y bytes from X to U, decrement
+    BSR byteCopyInit
+byteCopyWarmDown
+    LDA ,-X
+    STA ,-U   
     LEAY -1,Y
-    BNE           ;2*5 + 6*6 + 3*5 + 3 = 10+36+15+3 = 64/8 cycles
-                  ;2*5 + 14*6 + 15 + 3 = 10+84+15+3 = 114/16 cycles
-                             
+    BNE byteCopyWarmDown1
+    RTS
+byteCopyWarmDown1    
+    DECB
+    BNE byteCopyWarmDown
+byteCopyLoopDown
+    LDD -2,X
+    STD -2,U
+    LDD -4,X
+    STD -4,U
+    LDD -6,X
+    STD -6,U
+    LDD -8,X
+    STD -8,U
+    LEAX -8,X
+    LEAU -8,U
+    LEAY -8,Y
+    BNE byteCopyLoopDown
+    RTS
+    
+byteCopyInit
+    TFR Y,D
+    ANDB #$07
+    RTS
                              
 ;========================
 ;= IRQ HANDLERS
