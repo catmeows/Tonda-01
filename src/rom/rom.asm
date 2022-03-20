@@ -29,6 +29,8 @@ REMARK     EQU $27
 
 findKeyword
     ;Y..first character in buffer, X..first character in keyword table, B..keyword id
+    ;returns keyword code in B
+    ;carry set if success
     PSHS Y
 keywordLoop
     LDA ,Y                             ;read next character from buffer
