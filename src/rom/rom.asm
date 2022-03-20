@@ -378,7 +378,7 @@ byteCopy
     LDD ,S                ;read X
     CMPD 2,S              ;compare with U
     PULS U,X              ;discard values on stack (flags are unchanged)
-    BCS byteCopyUp        ;U>X, will copy incrementaly
+    BCC byteCopyUp        ;U<=X, will copy incrementaly
     TFR Y,D               ;copy length to D
     LEAX D,X              ;update pointers for decrementing copy
     LEAU D,U
