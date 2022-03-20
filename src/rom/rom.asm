@@ -27,11 +27,49 @@ REMARK     EQU $27
 ;= TOKENIZER
 ;========================
 
+findKeyword
+    ;Y..first character in buffer, X..first character in keyword table, B..keyword id
+    PSHS Y
+keywordLoop
+    LDA ,Y                             ;read next character from buffer
+    JSR isAplpha                       ;check, if it is alpha
+    BCS keywordNotMatch
+    CMPA #$61                          ;check lower case
+    BCS keywordValidCase
+    SUB #$20                           ;convert lower case to upper case
+keywordValidCase
+    XORA ,X                            ;xor character with character from token
+    AND #$7F                           ;and discard bit 7
+    BNE keywordNotMatch                ;are the characters same ?
+    LDA ,X                             ;read character from token one more time
+    BPL keywordContinue                ;last character should have bit 7 set, is it so ?
+    LDA 1,Y                            ;check next character in buffer
+    JSR isAlphaNum                     ;if identifier in buffer continues, then this is not a keyword
+    BCS keywordSuccess
+keywordNotMatch
+    PULS Y                             ;not match, we start scan again
+    INC B                              ;increment keyword id
+    BNE keywordNotMatch1               ;there is more keywords to check
+    ANDCC #$FE                         ;keyword not found, reset carry
+    RTS
+keywordNotMatch1
+    LDA ,X+                            ;find end of current keyword
+    BPL keywordNotMatch1
+    BRA keywordNext                    ;continue to next keyword
+keywordSuccess
+    LEAS 2,S                           ;discard old Y
+    LEAY 1,Y                           ;set Y to next character in buffer
+    RTS
+keywordContinue
+    LEAX 1,X                           ;advance one character in keyword table
+    LEAY 1,Y                           ;advance one character in buffer
+    BRA keywordLoop                    ;continue to check next character
 
-
-
-
-
+isAlphaNum
+    ;reset carry if character in <a..z,A..Z,0..9>
+    BSR isDigit                        ;check is digit
+    BCC isDigit2                       ;if so, leave, otherwise continue to isAlpha
+                                        
 isAlpha
     ;reset carry if character in <a..z,A..Z>
     CMPA #$41                          ;carry set if character < 'A'
