@@ -23,8 +23,8 @@ LABEL      EQU '@'
 REMARK     EQU $27
 
 
-FONTPTR    EQU $0000  ;TODO
-UDGPTR     EQU $0000  ;TODO
+FONTPTR    EQU $0000  ;2B
+UDGPTR     EQU $0000  ;2B
 PRINTATTR  EQU $0000
 PRINTTATTR EQU $0000
 PRINTINV   EQU $0000
@@ -34,6 +34,11 @@ PRINTTOVER EQU $0000  ;TODO
 VIDEOMODE  EQU $0000  ;
 PRINTLINE  EQU $0000
 PRINTCOLU  EQU $0000
+WINDOWRGHT EQU $0000  ;1B
+WINDOWLEFT EQU $0000  ;1B
+WINDOWBOT  EQU $0000  ;1B
+WINDOWTOP  EQU $0000  ;1B
+PRINTWRAP  EQU $0000  ;1B
 
 ;========================
 ;= TOKENIZER
@@ -429,7 +434,7 @@ printCharNormal1
 printCharM0
     LDY <PRINTLINE                         ;Y is now PRINTLINE*256+PRINTCOLU which is exactly the pointer into screen
     LDB #$08                               ;count 8 bytes of character pattern
-printChatM0loop    
+printCharM0loop    
     LDA ,Y                                 ;read byte from screen
     ANDA <PRINTTOVER                       ;clear it or left it for over
     EORA ,X+                               ;do over (with empty byte when over is off)
@@ -446,8 +451,30 @@ printChatM0loop
     LEAX D,X                               ;complete attribute address
     LDA <PRINTTATTR                        ;read temporary attribute
     STA ,X                                 ;set character attribute
+printCharNextPos    
+    LDD <PRINTLINE                         ;read PRINTLINE and PRINTCOLU
+    INCB                                   ;one position to the right
+    CMPB <WINDOWRGHT                       ;is it out of window ?
+    BEQ printCharNxtLine
+    STB <PRINTCOLU                         ;next position is still in window
     PULS Y,PC                              ;shorter version of PULS Y ; RTS
     
+printCharNxtLine
+    LDB <WINDOWLEFT                        ;set column to left window column    
+    STB <PRINTCOLU                           
+    INCA
+    CMPA <WINDOWBOT                        ;is next line out of window ?
+    BEQ printCharScroll
+printCharNxtLine1    
+    STA <PRINTLINE                         ;next position is still in window
+    PULS Y,PC                              ;shorter version of PULS Y ; RTS
+
+printCharWrap
+    TST <PRINTWRAP                         ;test whether scroll or wrap     
+    BNE printCharScroll
+    LDA <WINDOWTOP                         ;for wrap simply continue from top left corner of window
+    BRA printCharNxtLine1
+printCharScroll   
     
 ;========================
 ;= SYS UTILS
