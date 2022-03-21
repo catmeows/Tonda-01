@@ -25,11 +25,15 @@ REMARK     EQU $27
 
 FONTPTR    EQU $0000  ;TODO
 UDGPTR     EQU $0000  ;TODO
+PRINTATTR  EQU $0000
+PRINTTATTR EQU $0000
 PRINTINV   EQU $0000
 PRINTTINV  EQU $0000
 PRINTOVER  EQU $0000
 PRINTTOVER EQU $0000  ;TODO
 VIDEOMODE  EQU $0000  ;
+PRINTLINE  EQU $0000
+PRINTCOLU  EQU $0000
 
 ;========================
 ;= TOKENIZER
@@ -382,8 +386,9 @@ tokenTable
 
 
 printChar
-    ;print character
+    ;print character in A
     ;TODO tokens
+    PSHS Y
     CMPA #$20                              ;compare with space
     BCC printCharNormal
     CMPA #$10                              ;compare with UDG  
@@ -395,7 +400,7 @@ printChar
 printCharInverse
     CMPA #INV_VIDEO                        ;is it inverse video ?
     BNE printCharControl
-    LDA #$80                               ;set inverse video
+    LDA #$FF                               ;set inverse video
 printCharInverse1    
     STA <PRINTTINV                         ;set true/inverse video in temporary flag
     RTS
@@ -414,9 +419,36 @@ printCharNormal1
     MUL                                    ;multiply code by 8
     LEAX D,X                               ;add font base
     LDA <VIDEOMODE
-    BEQ printCharPtrM0                     ;find screen ptr for mode 0
-
-
+    BEQ printCharM0                        ;print in mode 0
+    DECA
+    BEQ printCharM1                        ;print in mode 1
+    DECA
+    BEQ printCharM2                        ;print in mode 2
+                                           ;print in mode 3
+                                           
+printCharM0
+    LDY <PRINTLINE                         ;Y is now PRINTLINE*256+PRINTCOLU which is exactly the pointer into screen
+    LDB #$08                               ;count 8 bytes of character pattern
+printChatM0loop    
+    LDA ,Y                                 ;read byte from screen
+    ANDA <PRINTTOVER                       ;clear it or left it for over
+    EORA ,X+                               ;do over (with empty byte when over is off)
+    EORA <PRINTTINV                        ;do inverse (with empty byte when inverse is off)
+    STA ,Y                                 ;and store byte into
+    LEAY 32,Y                              ;move to next pixel line
+    DECB                                 
+    BNE printCharM0loop                    ;repeat
+    LDA <PRINTLINE                         ;get print line to compute attr pointer
+    LDB #$20                               
+    MUL                                    ;multiply by 32
+    ADDB <PRINTCOLU                        ;add column
+    LDX #$1800                             ;start of attributes
+    LEAX D,X                               ;complete attribute address
+    LDA <PRINTTATTR                        ;read temporary attribute
+    STA ,X                                 ;set character attribute
+    PULS Y,PC                              ;shorter version of PULS Y ; RTS
+    
+    
 ;========================
 ;= SYS UTILS
 ;======================== 
