@@ -23,6 +23,14 @@ LABEL      EQU '@'
 REMARK     EQU $27
 
 
+FONTPTR    EQU $0000  ;TODO
+UDGPTR     EQU $0000  ;TODO
+PRINTINV   EQU $0000
+PRINTTINV  EQU $0000
+PRINTOVER  EQU $0000
+PRINTTOVER EQU $0000  ;TODO
+VIDEOMODE  EQU $0000  ;
+
 ;========================
 ;= TOKENIZER
 ;========================
@@ -367,7 +375,48 @@ tokenTable
     FCC 'VERIF',$80+'Y'
     FCC 'SAV',$80+'E'
     FCC 'LOA',$80+'D'
-    
+
+;========================
+;= SCREEN OUTPUT
+;======================== 
+
+
+printChar
+    ;print character
+    ;TODO tokens
+    CMPA #$20                              ;compare with space
+    BCC printCharNormal
+    CMPA #$10                              ;compare with UDG  
+    BCC printCharUdg
+    CMPA #TRUE_VIDEO                       ;is it true video ?
+    BNE printCharInverse
+    CLRA                                   ;set true video
+    BRA printCharInverse1
+printCharInverse
+    CMPA #INV_VIDEO                        ;is it inverse video ?
+    BNE printCharControl
+    LDA #$80                               ;set inverse video
+printCharInverse1    
+    STA <PRINTTINV                         ;set true/inverse video in temporary flag
+    RTS
+printCharControl
+    ;TODO: EOL, etc
+
+printCharUdg
+    LDX <UDGPTR                            ;look for udg pointer
+    SUBA #$10                              ;first character in font is char #16
+    BRA printCharNormal1
+printCharNormal
+    LDX <FONTPTR                           ;look for font pointer
+    SUBA #$20                              ;first character in font is space 
+printCharNormal1    
+    LDB #$08
+    MUL                                    ;multiply code by 8
+    LEAX D,X                               ;add font base
+    LDA <VIDEOMODE
+    BEQ printCharPtrM0                     ;find screen ptr for mode 0
+
+
 ;========================
 ;= SYS UTILS
 ;======================== 
