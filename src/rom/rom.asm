@@ -116,13 +116,68 @@ isDigit2
     RTS
 
 ;========================
+;= LINE EDITOR
+;========================
+;input line can have inmutable header text (for use in INPUT and MONITOR)
+;it starts on last line (23rd) but can take more lines, expanding up
+;cursor is blinking
+;cursor is always behind current position
+;left and right to move along line
+;up and down to move along line
+;cancel/break operation
+;autorepeat 
+;character limit vs screen limit
+
+
+;========================
+;= MONITOR
+;========================
+;find string
+;copy lines
+;delete lines
+;replace string
+;merge basic
+;0123456789012345
+;FIND STRING
+;what ? xxxxxxxx
+;first line ? xxxx
+;last line ? xxxx
+;COPY LINE
+;first line ?
+;last line ? 
+;where ?
+;DELETE LINE
+;first line ?
+;last line ?
+;are you sure ? (Y)
+;REPLACE STRING
+;what ?
+;by ?
+;first line ?
+;last line ?
+;MERGE
+;file ?
+;where ?
+;PROG
+;VARS
+;STACK
+;FREE
+
+
+;========================
 ;= COMMAND RUNTIME
 ;========================
 
 commStop
+    ;STOP
+    ;expects no parameter
+    ;throws error 'STOPP
     JSR expectColon
     LDA #ERR_STOP
     JMP error
+commTrace
+    JSR expectNumExpr
+    
 
 ;========================
 ;= INTERPRETER
