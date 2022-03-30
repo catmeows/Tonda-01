@@ -464,7 +464,7 @@ printCharNxtLine
     STB <PRINTCOLU                           
     INCA
     CMPA <WINDOWBOT                        ;is next line out of window ?
-    BEQ printCharScroll
+    BEQ printCharWrap                      ;go check if are going to scroll or wrap
 printCharNxtLine1    
     STA <PRINTLINE                         ;next position is still in window
     PULS Y,PC                              ;shorter version of PULS Y ; RTS
@@ -472,9 +472,12 @@ printCharNxtLine1
 printCharWrap
     TST <PRINTWRAP                         ;test whether scroll or wrap     
     BNE printCharScroll
+    LDB <WINDOWLEFT                        ;set column to left
+    STB <PRINTCOLU
     LDA <WINDOWTOP                         ;for wrap simply continue from top left corner of window
     BRA printCharNxtLine1
 printCharScroll   
+    
     
 ;========================
 ;= SYS UTILS
