@@ -142,6 +142,7 @@ isDigit2
 ;what ? xxxxxxxx
 ;first line ? xxxx
 ;last line ? xxxx
+;edit ?
 ;COPY LINE
 ;first line ?
 ;last line ? 
@@ -149,12 +150,13 @@ isDigit2
 ;DELETE LINE
 ;first line ?
 ;last line ?
-;are you sure ? (Y)
+;are you sure ? (Yes)
 ;REPLACE STRING
 ;what ?
 ;by ?
 ;first line ?
 ;last line ?
+;replace ? (Yes/Always)
 ;MERGE
 ;file ?
 ;where ?
