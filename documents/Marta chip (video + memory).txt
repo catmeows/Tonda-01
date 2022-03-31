@@ -82,7 +82,7 @@ Marta registers
 port $BFC0 - register (mapped $BFC0 - $ BFDF)
 write 0xxRRRRR -> select register RRRRR
 write 1VVVVVVV -> write register
-read -> read register 00 (MAP): 111BPMMM
+read -> read register 00 (MAP): 111BP1MM
 
 registers:
 00     - 1xxBPxMM -> MAP (B..RAM bank at $0000-$3FFF,  P..page used for video buffer i.e. bank 0/1, MM..video mode)
