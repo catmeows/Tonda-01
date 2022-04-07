@@ -39,6 +39,7 @@ WINDOWLEFT EQU $0000  ;1B
 WINDOWBOT  EQU $0000  ;1B
 WINDOWTOP  EQU $0000  ;1B
 PRINTWRAP  EQU $0000  ;1B
+TRACEMODE  EQU $0000  ;1B
 
 ;========================
 ;= TOKENIZER
@@ -170,15 +171,60 @@ isDigit2
 ;= COMMAND RUNTIME
 ;========================
 
+
+commDoke
+    ;DOKE num_expression, num_expression
+    ;first parameter is in range <-16383,65535>
+    ;second parameter is in range <0,65535>
+    BSR commDokePokeCommon
+    JSR fetchUint
+    TFR D,X
+    JSR fetchUint
+    EXG D,X
+    STD ,X
+    RTS
+    
+commPoke
+    ;POKE num_expression, num_expression
+    ;first parameter is in range <-16383,65535>
+    ;second parameter is in range <0,255>
+    BSR commDokePokeCommon
+    JSR fetchByte
+    TFR D,X
+    JSR fetchUint
+    ;TODO check sign, for access to Bank 1
+    ;for positive numbers:
+    EXG D,X
+    STA ,X
+    RTS
+    
+commDokePokeCommon
+    JSR expectNumExpr
+    JSR expectComma
+    JSR expectNumExpr
+    JMP expectColon           ;JSR expectColon, RTS    
+
 commStop
     ;STOP
     ;expects no parameter
-    ;throws error 'STOPP
+    ;throws error 'STOP statement'
     JSR expectColon
     LDA #ERR_STOP
     JMP error
 commTrace
+    ;TRACE num_expression
+    ;if expression is zero, switch trace off
+    ;if expression is one, switch trace on, print line and command at line 23 
+    ;if expression is two, switch trace on, print line and command at line 23, wait for key
     JSR expectNumExpr
+    JSR expectColon
+    JSR fetchByte
+    STA <TRACEMODE
+    JMP endOfCommand
+commDraw
+    ;DRAW x1,y1
+    ;DRAW x1,y1 TO x2,y2
+    ;DRAW TO x2,y2
     
 
 ;========================
@@ -400,7 +446,6 @@ tokenTable
     FCC 'FIL',$80+'L'
     FCC 'CIRCL',$80+'E'
     FCC 'DRA',$80+'W'
-    FCC 'PLO',$80+'T'
     FCC 'CL',$80+'W'
     FCC 'WINDO',$80+'W'
     FCC 'CL',$80+'S'
@@ -427,7 +472,6 @@ tokenTable
     FCC 'REPEA',$80+'T'
     FCC 'WHIL',$80+'E'
     FCC 'D',$80+'O'
-    FCC 'ENDI',$80+'F'
     FCC 'ELS',$80+'E'
     FCC 'I',$80+'F'
     FCC 'NEX',$80+'T'
