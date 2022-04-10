@@ -172,11 +172,24 @@ isDigit2
 ;========================
 
 
+commIf
+    ;IF num_expression THEN [list of commands [:ELSE [list of commands]]]
+    JSR expectNumExpr      ;expect numeric expression
+    JSR fetchByte          ;we test just for zero, any non-zero result is evaluated as true     
+    TSTA
+    BEQ commIf
+    JSR
+
+commElse
+    ;ELSE is never executed, it skips rest of line
+    RTS
+
+
 commDoke
     ;DOKE num_expression, num_expression
     ;first parameter is in range <-16383,65535>
     ;second parameter is in range <0,65535>
-    BSR commDokePokeCommon
+    BSR commTwoNumExpr
     JSR fetchUint
     TFR D,X
     JSR fetchUint
@@ -188,7 +201,7 @@ commPoke
     ;POKE num_expression, num_expression
     ;first parameter is in range <-16383,65535>
     ;second parameter is in range <0,255>
-    BSR commDokePokeCommon
+    BSR commTwoNumExpr
     JSR fetchByte
     TFR D,X
     JSR fetchUint
@@ -198,7 +211,8 @@ commPoke
     STA ,X
     RTS
     
-commDokePokeCommon
+commTwoNumExpr
+    ;expects num_expression, enum_expression
     JSR expectNumExpr
     JSR expectComma
     JSR expectNumExpr
