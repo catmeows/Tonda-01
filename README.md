@@ -7,10 +7,9 @@ Fantasy computer based on 6809 cpu
 * ROM: 16KB
 * RAM: 64KB
 * Video: 
-  * Mode 0: 256x192 bitmap with 32x24 16 color (from 64) overlay, in square 8x8 pixels two colors from 16 are given by overlay (double buffer capability)
-  * Mode 1: 128x192 bitmap with 32x24 16 color (from 64) overlay, in square 4x8 two colors from 16 are given by overlay and two colors from 16 are global (double buffer capability)
+  * Mode 0: 320x192 bitmap with 40x24 16 color (from 64) overlay, in square 8x8 pixels two colors from 16 are given by overlay (double buffer capability)
+  * Mode 1: 160x96 bitmap  with 16 colors (from 64) (double buffer capability)
   * Mode 2: 320x192 bitmap with 4 colors (from 64)
-  * Mode 3: 128x96 bitmap with 16 colors (from 64) (double buffer capability)
   * 16 color LUT for pixel area + 1 color LUT for border area. Entry in LUT is mapped to RRGGBB (64 colors) 
 
 * Audio:
