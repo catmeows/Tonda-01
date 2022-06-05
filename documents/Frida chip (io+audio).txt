@@ -6,22 +6,19 @@ Pins:
 2..9 - out: PR0,PR1,PR2,PR3,PR4,PR5,PR6,PR7 (printer data)
 10 - out: caps lock led
 11 - out: /STROBE (printer strobe)
-12 - out: row select 0
-13..19 - in: K0|J0, K1|J1, K2|J2, K3|J3, K4|J4, K5|TI, K6|BUSY (keyboard/joystick, tape in, printer busy)
-20 - out: row select 1
-21..28 - in/out: D0..D7 (data bus)
-29 - in: /CS (chip select)
-30 - in: A0 (register select)
-31 - out: TO (tape out)
-32 - out: KS (keyboard/joystick select)
-33 - in: clock (system clock)
-34,35 - out: audio left/right
-36,37 - in: potentiometr PX,PY
-38 - in: RW
-39 - out: row select 2
+12 - in: /BUSY
+13,14,15 - out: row select
+16..23 - in/out: D0..D7 (data bus)
+24 - /in: CS (chip select)
+25 - in: clock (system clock)
+26 - out: audio
+27,28 - in: potentiometer PX, PY
+29 - in: RW
+30,31 - in/out: TAPE IN/OUT
+32..38 - in: read keyboard/joystick (7 bits)
+39 - in: A0 register select
 
-Pins 12,20,39 are connected to 74LS138 (3 to 8 line decoder)
-Pins 13,14,15,16 are connected to 74LS157 (quad 2 to 1 multiplexer), pins 17,18,19 are connected to another 74LS157.
+Pins 13,14,15 are connected to 74LS138 (3 to 8 line decoder)
 
 Registers:
 $BFE0 SELECT      - register select (register remains selected till change)
@@ -29,10 +26,11 @@ $BFE1 REGISTER    - register write/read
 
 $00 - BITS        - b7|b6|b5|b4|b3|b2|b1|b0 - direction of printer data lines, 0..read, 1..write    
 $01 - PRINTER     - d7|d6|d5|d4|d3|d2|d1|d0 - printer data 
-$02 - KEYBTAPE    - 0|k6(pb)|k5(ti)|k4(j4)|k3(j3)|k2(j2)|k1(j1)|k0(j0) - tape in (ti), keyboard(k6-k0), joystick(j4-j0), printer busy (pb)
-$03 - CONTROLOUT  - --|cl|ps|to|ks|s2|s1|s0 - caps lock led (cl), keyboard/joystick select (ks), tape out (to), printer strobe (ps), select key row (s2-s0)
-$04 - POTX        - potentiometer X
-$05 - POTY        - potentiometer Y
+$02 - CONTROLOUT  - px|py|cl|ps|to|s2|s1|s0 - strobe potentiometer (px,py), caps lock led (cl), printer strobe (ps), tape out (to), select key row (s2-s0)
+$03 - CONTROLIN   - ..|..|..|..|..|..|pb|ti - printer busy (pb), tape in (ti) 
+$04 - KEYBOARD    - --|k6|k5|k4|k3|k2|k1|k0 - read keyboard bits
+$05 - POTX        - potentiometer X
+$06 - POTY        - potentiometer Y
 
 $10 - FREQHI1     - NVVVFFFF - N..noise on/off, VVV..volume 0..7, FFFF..high 4 bits of frequency
 $11 - FREQLO1     - FFFFFFFF - low 8 bit of frequency (latch, loaded when FREQHI1 is written)
