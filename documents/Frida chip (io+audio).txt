@@ -26,28 +26,32 @@ $BFE1 REGISTER    - register write/read
 
 $00 - BITS        - b7|b6|b5|b4|b3|b2|b1|b0 - direction of printer data lines, 0..read, 1..write    
 $01 - PRINTER     - d7|d6|d5|d4|d3|d2|d1|d0 - printer data 
-$02 - CONTROLOUT  - px|py|cl|ps|to|s2|s1|s0 - strobe potentiometer (px,py), caps lock led (cl), printer strobe (ps), tape out (to), select key row (s2-s0)
+$02 - CONTROLOUT  - ..|..|cl|ps|to|s2|s1|s0 - caps lock led (cl), printer strobe (ps), tape out (to), select key row (s2-s0)
 $03 - CONTROLIN   - ..|..|..|..|..|..|pb|ti - printer busy (pb), tape in (ti) 
 $04 - KEYBOARD    - --|k6|k5|k4|k3|k2|k1|k0 - read keyboard bits
-$05 - POTX        - potentiometer X
-$06 - POTY        - potentiometer Y
+$08 - POTX        - potentiometer X
+$09 - POTY        - potentiometer Y
 
-$10 - FREQHI1     - NVVVFFFF - N..noise on/off, VVV..volume 0..7, FFFF..high 4 bits of frequency
+$10 - FREQHI1     - ....FFFF - FFFF..high 4 bits of frequency
 $11 - FREQLO1     - FFFFFFFF - low 8 bit of frequency (latch, loaded when FREQHI1 is written)
 $12 - WAVEHI1     - WWWWWWWW - high wave sample 
 $13 - WAVELO1     - WWWWWWWW - low wave sample (latch, loaded when WAVEHI1 is written
-$14 - FREQHI2
-$15 - FREQLO2
-$16 - WAVEHI2
-$17 - WAVELO2
-$18 - FREQHI3
-$19 - FREQLO3
-$1A - WAVEHI3
-$1B - WAVELO3
-$1C - FREQHI4
-$1D - FREQLO4
-$1E - WAVEHI4
-$1F - WAVELO4
+$14 - VOLUME1     - ....NVVV - N..noise on/off, VVV..volume 0..7
+$20 - FREQHI2
+$21 - FREQLO2
+$22 - WAVEHI2
+$23 - WAVELO2
+$24 - VOLUME2
+$30 - FREQHI3
+$31 - FREQLO3
+$32 - WAVEHI3
+$33 - WAVELO3
+$34 - VOLUME3
+$40 - FREQHI4
+$41 - FREQLO4
+$42 - WAVEHI4
+$43 - WAVELO4
+$44 - VOLUME4
 
 
 I/O
@@ -97,9 +101,9 @@ Regular and ctrl:
  
  Reading key:
  1) Write to SELECT ($BFE0) $03 (select CONTROLOUT)
- 2) Read REGISTER ($BFE1) and mask bits 3,2,1,0
- 3) Write to REGISTER ($BFE1) combination of row to read (bits 2,1,0), keyboard select (b3=0) and upper bits (printer strobe, tape out, caps lock diode) unchanged
- 4) Write to SELECT ($BFE0) $02 (select KEYBTAPE)
+ 2) Read REGISTER ($BFE1) and mask bits 2,1,0
+ 3) Write to REGISTER ($BFE1) combination of row to read (bits 2,1,0) and upper bits (printer strobe, tape out, caps lock diode) unchanged
+ 4) Write to SELECT ($BFE0) $04 (select KEYBOARD)
  5) Read from REGISTER ($BFE1) key state for selected row (.KKKKKKK)
  
  Row     KR2..KR0    bits 6      5      4      3      2      1      0
@@ -115,17 +119,21 @@ Regular and ctrl:
  
 JOYSTICK
 
-Joystick port is standard Atari joystick port with 5 digital inputs and two analog inputs.
+Joystick port 1 is standard Atari joystick port with 5 digital inputs and two analog inputs.
+Joystick port 2 is standard Atari joystick port with 5 digital inputs, analog input is not connected.
+Joystick port 1 is mapped to keys '6','5','4','3','2'.
+Joystick port 2 is mapped to keys '7','8','9','0','-'.
+
 
 Reading joystick digital input:
 1) Write to SELECT ($BFE0) $03 (select CONTROLOUT)
-2) Read REGISTER ($BFE1) and mask bit 3
-3) Write to REGISTER ($BFE1) combination of bit 3 set and rest of bits unchanged
+2) Read REGISTER ($BFE1) and mask bits 2,1,0.
+3) Write to REGISTER ($BFE1) combination %000 for joystick 1 (%111 for joystick 2) and upper bits.
 4) Write to SELECT ($BFE0) $02 (select KEYBTAPE)
 5) Read from REGISTER ($BFE1) joystick state (...JJJJJ)
 
 Reading joystick analog input:
-1) Write to SELECT ($BFE0) $04/$04 (select POTX/POTY)
+1) Write to SELECT ($BFE0) $08/$09 (select POTX/POTY)
 1) Write anything to REGISTER ($BFE1)
 2) Wait at least 300 cycles
 3) Read REGISTER ($BFE1) - reading will be roughly between 08 to 230, when joystick is not connected reading will be 255 
