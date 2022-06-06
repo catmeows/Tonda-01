@@ -120,9 +120,9 @@ Regular and ctrl:
 JOYSTICK
 
 Joystick port 1 is standard Atari joystick port with 5 digital inputs and two analog inputs.
-Joystick port 2 is standard Atari joystick port with 5 digital inputs, analog input is not connected.
-Joystick port 1 is mapped to keys '6','5','4','3','2'.
-Joystick port 2 is mapped to keys '7','8','9','0','-'.
+Joystick port 2 is standard Atari joystick port with 5 digital inputs, analog input is not connected. 
+Joystick port 1 is mapped to keys '6','5','4','3','2' and A/D PX,PY.
+Joystick port 2 is mapped to keys '7','8','9','0','-'. Analog line is connected '=' as second Fire button.
 
 
 Reading joystick digital input:
