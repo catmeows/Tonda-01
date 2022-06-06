@@ -6,7 +6,7 @@ Pins:
 2..9 - out: PR0,PR1,PR2,PR3,PR4,PR5,PR6,PR7 (printer data)
 10 - out: caps lock led
 11 - out: /STROBE (printer strobe)
-12 - in: /BUSY
+12 - in: BUSY (printer busy)
 13,14,15 - out: row select
 16..23 - in/out: D0..D7 (data bus)
 24 - /in: CS (chip select)
