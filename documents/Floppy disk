@@ -1,26 +1,12 @@
-Tonda01 uses 40 track single density single drive.
-Tracks are numbered 0 to 39.
-Each track has single sector of 2816 bytes.
-Track 0 contains disk catalogue, tracks 1-39 contains data.
-Single side of disk can store 109824 bytes.
+Tonda01 uses 35 track single density single drive.
+Tracks are numbered 0 to 34.
+Each track has single sector of 3072 bytes.
+Track 0 contains disk catalogue, tracks 1-34 contains data.
+Single side of disk can store 104448 bytes.
 
 
 Interfacing:
-Disk is driven by two ports $BFFE, $BFFF.
 
-Write BFFE - byte to write
-Read  BFFE - content of shift register
-
-Write BFFF - xxxxdaaa - d..data bit, aaa..address
-                        aaa=000 track phase 0 off/on 
-                            001 track phase 1 off/on
-                            010 track phase 2 off/on
-                            011 track phase 3 off/on
-                            100 drive 0/1
-                            101 motor on
-                            110 mode write/read
-                            111 mode write normal/write long
-Read BFFF - xxxxatwp - a..ack byte, t..track 0, w..write protect, p..disk present 
 
 Track structure:
  Header: 16*pilot byte + 3 bytes $D5 $F5 $B5 + 1 byte with track id + 1 byte with track id (for verification) + 1*byte $D5
@@ -33,29 +19,27 @@ Track structure:
  $BD -          1011 1101
  
 Catalogue - track 0 (840B):
- Disk header (19B)
- 39x File entry (741B)
- Track map (39B)
+ Disk header (20B)
+ 34x File entry (782B)
+ Track map (34B)
  
- Disk header (19B)
- Diskname        12B
- Tracks           1B how many tracks on side
+ Disk header (20B)
+ Diskname        16B
  Free             1B how many tracks are free
  Version          1B version of disk format
- Autoboot         1B file entry
- Reserved         3B reserved
+ Reserved         2B reserved
  
   
- File entry (19B):
- Filename        12B 
- Type             1B  B-Basic, C-Code, V-variable, $00-empty
+ File entry (23B):
+ Filename        16B 
+ Type             1B  B-Basic, C-Code, V-variable, S-Screen, $00-empty, $01-deleted
  Length           2B
  Attribute        2B  
  Start track      1B
  Flag             1B  00-normal, 01-write protected
  
  Track map:
- 39 bytes
+ 34 bytes
  Values: $00       unused
          $01-$7F   next track
          $FE       deleted
@@ -64,6 +48,7 @@ Catalogue - track 0 (840B):
  
 Controller has following properties:
  Reading/writing one bit takes 4us ~ 7 cycles.
+ Reading/writing one byte takes 28us ~ 49 cycles
  Reading/writing one byte takes 32us ~ 56 cycles
 
  Reading disk:
@@ -78,10 +63,78 @@ Controller has following properties:
       BPL read_floppy   ;3 wait till byte is complete (bit 7 set)
                         ;after b7 is set, controller will wait for '1' and 'X' bits before clearing register, giving at most 14 cycles to exit polling loop
                         
- Using pilot "byte" 111111110b (9bits) controller can synchronize. It takes 7 pilot bytes to be fully synchronized.
+ Using pilot "byte" 11111110b (8bits) controller can synchronize. It takes 7 pilot bytes to be fully synchronized.
  
- Regular bytes are encode as in FM scheme: 1D1D1D1D, where D are data bits. So it takes two bytes on disk to store single data bit.
- Values $D5, $F5, $B5, $AD cannot occur in regular data so they are used as mark bytes to identify header and data sections.
+ Regular bytes are encode as 7-bit GCR scheme:
+ 
+1010101 - 0
+1010110 - 1
+1010111 - 2
+1011010 - 3
+1011011 - 4
+1011101 - 5
+1011110 - 6
+1011111 - 7
+1101010 - 8
+1101011 - 9
+1101101 - A
+1101110 - B
+1101111 - C
+1110101 - D
+1110110 - E
+1110111 - F
+1111010 - MARK0  
+1111011 - MARK1
+1111101 - MARK2 
+1111110 -
+1111111 - SYNC
+ 
+ State machine programs
+ 
+   STD FD_WRITE   ;PC,opcode
+                 ;PC+1               WRITE LOAD             SHIFT                 RESET         
+                 ;PC+2               '0'         '1'        '0'         '1'       '0'/'1'        
+                 ;$FFFF           0  NOP         NOP        NOP         NOP       SR,JMP 1    
+                 ;EA, rA          1  NOP         NOP        NOP         NOP       SR,JMP 1
+                 ;EA+1, rB        2  LOAD        LOAD       SHL0        SHL0      SR,JMP 1
+  STA FD_WRITE   ;PC, opcode      3  NOP         NOP        NOP         NOP       SR,JMP 1
+                 ;PC+1            4  NOP         NOP        NOP         NOP       SR,JMP 1
+                 ;PC+2            5  NOP         NOP        NOP         NOP       SR,JMP 1
+                 ;$FFFF           6  NOP         NOP        NOP         NOP       SR,JMP 1
+                 ;EA, rA          7  JMP 1       NOP        JMP 1       NOP       SR,JMP 1
+                 ;                8  NOP         NOP        NOP         NOP       SR,JMP 1
+                 ;                9  LOAD        LOAD       SHL0        SHL0      SR,JMP 1
+                 ;                A  NOP         NOP        NOP         NOP       SR,JMP 1      
+                 ;                B  NOP         NOP        NOP         NOP       SR,JMP 1
+                 ;                C  NOP         NOP        NOP         NOP       SR,JMP 1
+                 ;                D  NOP         NOP        NOP         NOP       SR,JMP 1
+                 ;                E  JMP 8       JMP 1      JMP 8       JMP 1     SR,JMP 1
+                 ;                F  NOP         NOP        NOP         NOP       SR,JMP 1
+                 ;                
+
+                 ;                   BIT0        BIT0       BIT1        BIT1
+                 ;                   PULSE0      PULSE1     PULSE0      PULSE1 
+                 ;
+                 ;                0  NOP         NOP        NOP,JMP0    NOP
+                 ;                1  NOP         NOP        NOP         NOP
+                 ;                2  NOP         NOP        NOP         NOP
+                 ;                3  NOP         JMP A      NOP         JMP D
+                 ;                4  NOP         JMP A      NOP         JMP D 
+                 ;                5  NOP         JMP A      NOP         JMP D
+                 ;                6  NOP         JMP A      NOP         JMP D
+                 ;                7  NOP         JMP A      NOP         JMP D
+                 ;                8  NOP         JMP A      NOP         JMP D
+                 ;                9  SHL0,JMP 0  JMP A      CLR,JMP B   JMP D
+                 ;                A  SHL1,JMP 0  SHL1,JMP 0 JMP 0       JMP 0             
+                 ;                B  SHL1        SHL1       JMP 0       JMP 0
+                 ;                C  SHL0,JMP 2  SHL0,JMP 2 JMP 0       JMP 0                 
+                 ;                D  SHL1        SHL1       CLR,JMP D   CLR,JMP D 
+                 ;                E  SHL1,JMP 2  SHL1,JMP 2 JMP 0       JMP 0
+                 ;                F  JMP 0       JMP 0      JMP 0       JMP 0
+ 
+ 
+ 
+ 
  
  Writting disk:
  
