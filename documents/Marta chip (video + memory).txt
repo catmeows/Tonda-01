@@ -5,8 +5,10 @@ FEDCBA98 76543210
 00xxxxxx xxxxxxxx - selected memory bank mapped to $0000 - $3FFF
 01xxxxxx xxxxxxxx - RAM $4000 - RAM $7FFF mapped to $4000 - $7FFF
 10xxxxxx xxxxxxxx - RAM $8000 - RAM $BFBF mapped to $8000 - $BFBF
-10111111 110xxxxx - Marta register ($BFC0)
-10111111 111xxRRR - Frida registers ($BFE0 - $BFE1) or external device (external decoding and external disable of Frida)
+10111111 10xxxxxx - Marta register ($BFC0)
+10111111 11xxxxxR - Frida registers ($BFE0 - $BFE1) or external device (external decoding and external disable of Frida)
+10111111 1100000R - Frida registers conventions
+10111111 111LLLDx - floppy disk latch (LLL..latch select, D..data bit), A0 is not connected 
 11xxxxxx xxxxxxxx - 16KB ROM - mapped to $C000 - $FFFF
 11000000 00000000 - optional disk ROM
 
