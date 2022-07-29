@@ -7,6 +7,19 @@ Single side of disk can store 104448 bytes.
 
 Interfacing:
 
+WRITE:
+A4,A3,A2 selects latch
+A1 is data bit 
+D7 to D0 goes to shift register if appropriiate mode is set
+
+A4 .. latch address 
+A3 .. latch address
+A2 .. latch address
+A1 .. data
+A0 .. not connected
+
+READ:
+reads shift register
 
 Track structure:
  Header: 16*SYNC + MARK0 + MARK1 + 1 byte with track id + 1 byte with track id (for verification) + MARK0
