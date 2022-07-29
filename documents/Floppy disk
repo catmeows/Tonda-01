@@ -6,6 +6,22 @@ Single side of disk can store 104448 bytes.
 
 
 Interfacing:
+10111111 111LLLDx - LLL..latch, D..data bit
+$BFE0 - STEP0 OFF
+$BFE2 - STEP0 ON
+$BFE4 - STEP1 OFF
+$BFE6 - STEP1 ON
+$BFE8 - STEP2 OFF
+$BFEA - STEP2 ON
+$BFEC - STEP3 OFF
+$BFEE - STEP3 ON
+$BFF0 - MOTOR OFF
+$BFF2 - MOTOR ON
+$BFF4 - MODE: READ
+$BFF6 - MODE: WRITE
+$BFF8 - MODE: LOAD
+$BFFA - MODE: SHIFT
+
 
 WRITE:
 A4,A3,A2 selects latch
