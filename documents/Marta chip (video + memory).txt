@@ -4,9 +4,9 @@ address decoding
 FEDCBA98 76543210
 00xxxxxx xxxxxxxx - selected memory bank mapped to $0000 - $3FFF
 01xxxxxx xxxxxxxx - RAM $4000 - RAM $7FFF mapped to $4000 - $7FFF
-10xxxxxx xxxxxxxx - RAM $8000 - RAM $BFBF mapped to $8000 - $BFBF
-10111111 10xxxxxx - Marta register ($BFC0)
-10111111 11xxxxxR - Frida registers ($BFE0 - $BFE1) or external device (external decoding and external disable of Frida)
+10xxxxxx xxxxxxxx - RAM $8000 - RAM $BF7F mapped to $8000 - $BFBF
+10111111 10xxxxxx - Marta register ($BF80)
+10111111 11xxxxxR - Frida registers ($BFC0 - $BFC1) or external device (external decoding and external disable of Frida)
 10111111 1100000R - Frida registers conventions
 10111111 111LLLDx - floppy disk latch (LLL..latch select, D..data bit), A0 is not connected 
 11xxxxxx xxxxxxxx - 16KB ROM - mapped to $C000 - $FFFF
@@ -77,7 +77,7 @@ $0000 +-------+ +-------+
 
 
 Marta registers
-port $BFC0 - register (mapped $BFC0 - $ BFDF)
+port $BF80 - register (mapped $BF80 - $ BFBF)
 write 0xxRRRRR -> select register RRRRR
 write 1VVVVVVV -> write register
 read -> read register 00 (MAP): 111BP1MM
