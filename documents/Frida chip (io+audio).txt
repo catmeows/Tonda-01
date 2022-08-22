@@ -7,7 +7,7 @@ Pins:
 10 - out: caps lock led
 11 - out: /STROBE (printer strobe)
 12 - in: BUSY (printer busy)
-13,14,15 - out: row select
+13,14,15 - out: keyboard row select
 16..23 - in/out: D0..D7 (data bus)
 24 - /in: CS (chip select)
 25 - in: clock (system clock)
