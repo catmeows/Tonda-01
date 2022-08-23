@@ -11,8 +11,9 @@ Pins:
 16..23 - in/out: D0..D7 (data bus)
 24 - /in: CS (chip select)
 25 - in: clock (system clock)
-26 - out: audio
-27,28 - in: potentiometer PX, PY
+26 - out: audio left
+27 - out: audio right
+28 - 
 29 - in: RW
 30,31 - in/out: TAPE IN/OUT
 32..38 - in: read keyboard/joystick (7 bits)
