@@ -22,8 +22,8 @@ Pins:
 Pins 13,14,15 are connected to 74LS138 (3 to 8 line decoder)
 
 Registers:
-$BFE0 SELECT      - register select (register remains selected till change)
-$BFE1 REGISTER    - register write/read
+$BFC0 SELECT      - register select (register remains selected till change)
+$BFC1 REGISTER    - register write/read
 
 $00 - BITS        - b7|b6|b5|b4|b3|b2|b1|b0 - direction of printer data lines, 0..read, 1..write    
 $01 - PRINTER     - d7|d6|d5|d4|d3|d2|d1|d0 - printer data 
