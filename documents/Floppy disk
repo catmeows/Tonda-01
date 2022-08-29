@@ -71,8 +71,8 @@ Catalogue - track 0 (836B):
  
 Controller has following properties:
  Reading/writing one bit takes 4us ~ 7 cycles.
- Reading/writing one byte takes 28us ~ 49 cycles
- Reading/writing one byte takes 32us ~ 56 cycles
+ Reading/writing one 7 bit word takes 28us ~ 49 cycles
+ Reading/writing one 8 bit word (sync) takes 32us ~ 56 cycles
 
  Reading disk:
  Using pilot "byte" 11111110b (8bits) controller can synchronize. It takes 7 pilot bytes to be fully synchronized.
