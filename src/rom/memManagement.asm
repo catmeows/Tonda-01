@@ -27,7 +27,7 @@
 ;
 ; 6809's S stack is used as machine code stack.
 ;
-; PROGS start of program area
+; PROG start of program area
 ; NUMARRAYS start of numeric array area
 ; NUMVARS start of numeric variables area
 ; LABELS start of label area
