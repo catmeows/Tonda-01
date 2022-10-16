@@ -36,6 +36,22 @@
 ; ELINE start of edit line area
 ; WRKSPC is start of workspace area
 ; FREEMEM is start of unused memory available to BASIC
-; RAMTOP is start of memery area that is not available to BASIC
+; RAMTOP is start of memory area that is not available to BASIC
+
+testRoom
+;test if there is enough memory to reserve more space for BASIC
+;count of bytes required in system variable <RESERVE
+  TFR U,D                     ;take bottom of U stack
+  SUBD <FREEMEM               ;compute free space between workspace and calculator stack
+  BCS testRoomFail            ;we are out of space already, probably because of complex expression
+  SUBD #$60                   ;add 96 more bytes to give reasonable space for expression evaluation
+  BCS testRoomFail
+  CMPD <RESERVE               ;now try if there is enough space
+  BCS testRoomFail
+  RTS
+testRoomFail
+  LDA #ERR_OUTMEM
+  JMP reportError
+  
 
 
