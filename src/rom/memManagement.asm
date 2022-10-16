@@ -53,5 +53,37 @@ testRoomFail
   LDA #ERR_OUTMEM
   JMP reportError
   
-
+updatePtrNumArrays  
+  LDD <NUMARRAYS              ;update NUMARRAYS
+  ADDD <RESERVE
+  STD <NUMARRAYS
+updatePtrNumVars  
+  LDD <NUMVARS                ;update NUMVARS
+  ADDD <RESERVE
+  STD <NUMVARS
+updatePtrLabels  
+  LDD <LABELS                 ;update LABELS
+  ADDD <RESERVE
+  STD <LABELS
+updatePtrStrings  
+  LDD <STRINGS                ;update STRINGS
+  ADDD <RESERVE
+  STD <STRINGS
+updatePtrLoops
+  LDD <LOOPS                  ;update LOOPS
+  ADDD <RESERVE
+  STD <LOOPS
+updatePtrELine  
+  LDD <ELINE                  ;update ELINE
+  ADDD <RESERVE
+  STD <ELINE
+updatePtrWrkSpc  
+  LDD <WRKSPC                 ;update WRKSPC
+  ADDD <RESERVE
+  STD <WRKSPC
+updatePtrFreeMem
+  LDD <FREEMEM                ;update FREEMEM
+  ADDD <RESERVE
+  STD <FREEMEM
+  RTS
 
