@@ -52,38 +52,50 @@ testRoom
 testRoomFail
   LDA #ERR_OUTMEM
   JMP reportError
-  
-updatePtrNumArrays  
-  LDD <NUMARRAYS              ;update NUMARRAYS
-  ADDD <RESERVE
-  STD <NUMARRAYS
-updatePtrNumVars  
-  LDD <NUMVARS                ;update NUMVARS
-  ADDD <RESERVE
-  STD <NUMVARS
-updatePtrLabels  
-  LDD <LABELS                 ;update LABELS
-  ADDD <RESERVE
-  STD <LABELS
-updatePtrStrings  
-  LDD <STRINGS                ;update STRINGS
-  ADDD <RESERVE
-  STD <STRINGS
-updatePtrLoops
-  LDD <LOOPS                  ;update LOOPS
-  ADDD <RESERVE
-  STD <LOOPS
-updatePtrELine  
-  LDD <ELINE                  ;update ELINE
-  ADDD <RESERVE
-  STD <ELINE
-updatePtrWrkSpc  
-  LDD <WRKSPC                 ;update WRKSPC
-  ADDD <RESERVE
-  STD <WRKSPC
-updatePtrFreeMem
-  LDD <FREEMEM                ;update FREEMEM
-  ADDD <RESERVE
-  STD <FREEMEM
+
+
+updatePointers
+  ;update all pointers from NUMARRAYS, NUMVARS, LABELS, STRINGS, LOOPS, ELINE, WRKSPC, FREEMEM
+  ;that need to be updated
+  ;since place of insertion is always less than FREEMEM, at least pointer is found
+  ; <INSERTPTR place where to insert space
+  ; <RESERVE size of inserted space
+  LDX NUMARRAYS
+updatePointers1
+  LDD ,X++                    ;take current value of pointer
+  CMPD <INSERTPTR             ;compare with ptr to place where insert will happen
+  BCC updatePointers1         ;if value of pointer is below place of change then go to next ptr
+  LEAX -2,X                   ;roll two bytes back, we found first pointer to update
+updatePointers2 
+  LDD ,X                      ;read current value of pointer 
+  ADDD <RESERVE               ;update pointer by size of change
+  STD ,X++                    ;store updated pointer
+  CMPX #FREEMEM+2             ;was it last pointer ?
+  BNE updatePointers2
   RTS
+  
+makeOneByteRoom
+  ;make space for one more byte
+  LDD #$0001                  ;set <RESERVE to 1 and continue to makeSpace
+  STD <RESERVE
+makeSpace
+  ;make space for bytes given by value in <RESERVE
+  ;at the location given by <INSERTPTR
+  BSR testRoom                ;first check if space is avalable, testRoom will throw OUT OF MEMORY error if there is not enough space 
+  LDD <FREEMEM
+  LDX <FREEMEM 
+  SUBD <INSERTPTR             ;compute length of block to move
+  PSHS D,X                    ;store old FREEMEM and length block on stack
+  BSR updatePointers          ;update pointers
+  PULS D,X                    ;restore old FREEMEM as source and length of block to move 
+  LDY <FREEMEM                ;set new FREEMEM as destination
+  BSR copyBackward            ;and copy everything up
+  RTS
+  
+copyBackward
+  PSHS U
+  TFR
+  LDD ,--X
+  STD ,--Y
+
 
