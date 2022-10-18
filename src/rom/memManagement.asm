@@ -93,9 +93,43 @@ makeSpace
   RTS
   
 copyBackward
-  PSHS U
-  TFR
-  LDD ,--X
-  STD ,--Y
-
-
+  ;copy from top to bottom
+  ;Y is destination
+  ;X is source
+  ;D is length
+  CMPD #$0000                 ;leave if length is 0
+  BEQ copyBackward2
+  PSHS U                      ;save U
+  TFR Y,U                     ;U is destination
+  TFR D,Y                     ;Y is counter, because LEAY sets ZERO flag
+  ANDB #$07                   ;is counter already aligned to 8 ?
+  BEQ copyBackward4           ;then copy by 8 bytes
+copyBackward3
+  LDA ,X                      ;copy single byte 
+  STA ,U
+  LEAX -1,X                   ;source--
+  LEAU -1,U                   ;destination--
+  LEAY -1,Y                   ;counter--
+  BEQ copyBackward5           ;check end of copy
+  DECB                        ;loop until counter is divisible by 8
+  BNE copyBackward4
+copyBackward4
+  LEAX -1,X                   ;adjust source for copy through D
+  LEAU -1,U                   ;adjust destination for copy through D
+copyBackward1   
+  LDD ,X                      ;5+0  copy 8 bytes at once 
+  STD ,U                      ;5+0  
+  LDD -2,X                    ;5+1  8B / 64cycles -> 1B / 8cycles 
+  STD -2,U                    ;5+1
+  LDD -4,X                    ;5+1
+  STD -4,U                    ;5+1
+  LDD -6,X                    ;5+1
+  STD -6,U                    ;5+1
+  LEAX -8,X                   ;4+1
+  LEAU -8,U                   ;4+1
+  LEAY -8,Y                   ;4+1
+  BNE copyBackward1           ;3
+copyBackward5  
+  PULS U
+copyBackward2
+  RTS
