@@ -91,6 +91,11 @@ makeSpace
   LDY <FREEMEM                ;set new FREEMEM as destination
   JSR copyBackward            ;and copy everything up
   RTS
+  
+reclaimRoom
+  ;reclaim space for bytes given by value in <RESERVE
+  ;at the location given by <INSERTPTR
+  
 
 copyForward
   ;copy from bottom to top
