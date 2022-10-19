@@ -89,8 +89,42 @@ makeSpace
   BSR updatePointers          ;update pointers
   PULS D,X                    ;restore old FREEMEM as source and length of block to move 
   LDY <FREEMEM                ;set new FREEMEM as destination
-  BSR copyBackward            ;and copy everything up
+  JSR copyBackward            ;and copy everything up
   RTS
+
+copyForward
+  ;copy from bottom to top
+  ;Y is destination
+  ;X is source
+  ;D is length
+  CMPD #$0000
+  BEQ copyBackward2
+  PSHS U
+  TFR Y,U
+  TFR D,Y
+  ANDB #$07
+  BEQ copyForward4
+copyForward3
+  LDA ,X+
+  STA ,U+
+  LEAY -1,Y
+  BEQ copyBackward5
+  DECB
+  BNE copyForward3
+copyForward1
+  LDD ,X
+  STD ,U
+  LDD +2,X
+  STD +2,U
+  LDD +4,X
+  STD +4,U
+  LDD +6,X
+  STD +6,U
+  LEAX +8,X
+  LEAU +8,U
+  LEAU -8,Y
+  BNE copyForward1
+  BRA copyBackward5 
   
 copyBackward
   ;copy from top to bottom
@@ -112,7 +146,7 @@ copyBackward3
   LEAY -1,Y                   ;counter--
   BEQ copyBackward5           ;check end of copy
   DECB                        ;loop until counter is divisible by 8
-  BNE copyBackward4
+  BNE copyBackward3
 copyBackward4
   LEAX -1,X                   ;adjust source for copy through D
   LEAU -1,U                   ;adjust destination for copy through D
