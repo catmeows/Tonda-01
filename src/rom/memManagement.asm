@@ -95,14 +95,24 @@ makeSpace
 reclaimRoom
   ;reclaim space for bytes given by value in <RESERVE
   ;at the location given by <INSERTPTR
+  LDD <RESERVE                ;take number of bytes to be reclaimed
+  PSHS D                      ;save it for later
+  COMA                        ;to update pointers, negate length of reclaimed area
+  COMB
+  ADDD #$0001
+  STD <RESERVE
+  BSR updatePointers          ;update system pointers
+  PULS D                      ;restore length
+  LDY <INSERTPTR              ;copy destination is first reclaimed byte
+  LEAX D,Y                    ;copy source is first reclaimed byte + length of reclaimed area
+                              ;then continue directly to copyForward
   
-
 copyForward
   ;copy from bottom to top
   ;Y is destination
   ;X is source
   ;D is length
-  CMPD #$0000
+  CMPD #$0000                 ;leave if length is 0   
   BEQ copyBackward2
   PSHS U
   TFR Y,U
