@@ -8,9 +8,9 @@
 ; is created in numeric array area. Commands CLEAR, NEW erase all variables and therefore colapse numeric array area.
 ;
 ; Numeric variables area is storage for numeric variables. When a new numeric variable is created, space for variable is created
-; for the variable. Commands CLEAR, NEW erase all variables and therefore colapse numeric array area.
+; for the variable. Commands CLEAR, NEW erase all variables and therefore colapse numeric variables area.
 ;
-; Labels are is storage for labels in program. Whenever commands GOTO, GOSUB, FN, RESTORE are looking for a label, they will check
+; Labels area is storage for labels in program. Whenever commands GOTO, GOSUB, FN, RESTORE are looking for a label, they will check
 ; label area to quickly get address of label. If label is unknown, program is searched and if label is found, it is inserted into 
 ; label area. All labels are discarded and Label area is collapsed when BASIC leaves execution mode and enters edit mode.
 ;
