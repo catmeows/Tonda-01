@@ -207,12 +207,10 @@ To set a channel
 4) write higher 4 bits of frequency, noise mode and volume to FREQHI ($BFE34).
    Bits are as follows: NVVVFFFF - N..noise, VVV..volume, FFFF..frequency
             
-   pitch = 1.6122MHz / (2 * 8 * FREQ)
+   pitch = 1.7734475 / (2 * 8 * FREQ)
    
-   FREQ = 1.6122MHz / (2 * 8 * pitch)
-   
-   TODO: In reality: 1.609375 (64us / 103)
-   
+   FREQ = 1.7734475 / (2 * 8 * pitch)
+    
    Example:
    Note  Freq[Hz] FREQ RealHz
       
