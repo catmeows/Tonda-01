@@ -182,3 +182,37 @@ copyBackward5
   PULS U
 copyBackward2
   RTS
+
+;memory banks
+;since it is not guaranteed that S stack points above paged area, we must move S stack above banked area
+  
+pageBank1
+  ;page in bank 1
+  STD <TEMPE                  ;store D reg to temporary location
+  LDD ,S                      ;load return address
+  STS <OLDSTACK               ;store S reg to temporary location
+  LDS #TMPSTACK
+  STD ,S                      ;store return address on new stack
+  CLRA
+  STA $BF80                   ;select Marta register R0
+  LDA $BF80                   ;read Marta register R0
+  ANDA #$0F                   ;mask bits
+  ORA #$10                    ;set paged bank 1
+  STA $BF80                   ;write Marta R0
+  LDD <TEMPE                  ;restore D reg
+  RTS
+  
+pageBank0
+  ;page in bank 0 
+  STD <TEMPE                  ;store D reg to temporary location
+  CLRA
+  STA $BF80                   ;select Marta register R0
+  LDA $BF80                   ;read Marta register R0
+  ANDA #$0F                   ;mask bits
+  STA $BF80                   ;write Marta R0, page bank 0
+  LDD ,S                      ;load return address
+  LDS <TSTACK                 ;restore original stack
+  STD ,S                      ;replace old return address
+  RTS
+  
+  
