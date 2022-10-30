@@ -33,4 +33,5 @@ TEMPF         EQU $BEFF
 ;other variables
 
 TIME          EQU $BF00
-TSTACK        EQU $BF04
+OLDSTACK      EQU $BF04
+TEMPSTACK     EQU $BF80
