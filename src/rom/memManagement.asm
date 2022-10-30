@@ -57,7 +57,7 @@ testRoomFail
 updatePointers
   ;update all pointers from NUMARRAYS, NUMVARS, LABELS, STRINGS, LOOPS, ELINE, WRKSPC, FREEMEM
   ;that need to be updated
-  ;since place of insertion is always less than FREEMEM, at least pointer is found
+  ;since place of insertion is always less than FREEMEM, at least one pointer is found
   ; <INSERTPTR place where to insert space
   ; <RESERVE size of inserted space
   LDX NUMARRAYS
