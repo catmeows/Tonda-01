@@ -71,7 +71,7 @@ PC6 is connected to 4021's CLOCK. This way, whenever PC6 goes hi, latched bits a
 This way is possible to read up to 8 buttons.
 To save Fridas pin count, latch and clock are common for keyboard and both joysticks.
 
-Since keyboard has mouch more buttons, key row is selected by 3 to 8 decoder.
+Since keyboard has much more buttons, key row is selected by 3 to 8 decoder.
 
 
 KEYBOARD
@@ -129,14 +129,7 @@ Regular and ctrl:
                    
  In hardware, keyboard is matrix of seven columns and eight rows. 
  
- Reading key:
- 1) Write to SELECT ($BFE0) $03 (select CONTROLOUT)
- 2) Read REGISTER ($BFE1) and mask bits 2,1,0
- 3) Write to REGISTER ($BFE1) combination of row to read (bits 2,1,0) and upper bits (printer strobe, tape out, caps lock diode) unchanged
- 4) Write to SELECT ($BFE0) $04 (select KEYBOARD)
- 5) Read from REGISTER ($BFE1) key state for selected row (.KKKKKKK)
- 
- Row     KR2..KR0    bits 6      5      4      3      2      1      0
+ Row     R2..R0      bits 6      5      4      3      2      1      0
  
  0       %000             edit   1      2      3      4      5      6      
  1       %001             ctrl   Q      W      E      R      T      Y    
@@ -146,58 +139,34 @@ Regular and ctrl:
  5       %101             rshft  up     '      ;      L      K      J
  6       %110             enter  ]      [      P      O      I      U
  7       %111             del    =      -      0      9      8      7
+
  
 JOYSTICK
 
-Joystick port 1 is standard Atari joystick port with 5 digital inputs and two analog inputs.
-Joystick port 2 is standard Atari joystick port with 5 digital inputs, analog input is not connected. 
-Joystick port 1 is mapped to keys '6','5','4','3','2' and A/D PX,PY.
-Joystick port 2 is mapped to keys '7','8','9','0','-'. Analog line is connected '=' as second Fire button.
+Joystick has buttons up, down, left, right, fire 1, fire 2, fire 3.
+
+Reading joystick:
+ 1) Write to SELECT ($BFE0) $03 (select PORTC)
+ 2) Read REGISTER ($BFE1) and mask bits 2,3,4,5,6 - saving bit 0 (printer busy), bit 1 (tape out), bit 7 (caps lock led)
+ 3) Write to REGISTER ($BFE1) combine saved bits with serial latch low, serial clock low
+ 4) Write to REGISTER ($BFE1) again, now with latch bit (b5) set hi - buttons are latched.
+ 5) Write to SELECT ($BFE0) $02 (select PORTB)
+ 6) Read REGISTER (($BFE1), bit 3 (bit 4) is state of button on joystick 0 (joystick 1)
+ 7) Write to SELECT ($BFE0) $03 (select PORTC)
+ 8) Write to REGISTER ($BFE1), with serial clock hi - button bits are shifted by one
+ 9) Write to REGISTER ($BFE1), with serial clock low
+ 10) Go back to step 5) and repeat until all button states are collected
 
 
-Reading joystick digital input:
-1) Write to SELECT ($BFE0) $03 (select CONTROLOUT)
-2) Read REGISTER ($BFE1) and mask bits 2,1,0.
-3) Write to REGISTER ($BFE1) combination %000 for joystick 1 (%111 for joystick 2) and upper bits.
-4) Write to SELECT ($BFE0) $02 (select KEYBTAPE)
-5) Read from REGISTER ($BFE1) joystick state (...JJJJJ)
 
-Reading joystick analog input:
-1) Write to SELECT ($BFE0) $08/$09 (select POTX/POTY)
-1) Write anything to REGISTER ($BFE1)
-2) Wait at least 300 cycles
-3) Read REGISTER ($BFE1) - reading will be roughly between 08 to 230, when joystick is not connected reading will be 255 
  
 PARALLEL PORT (PRINTER)
 
 Parallel port has connected 8 data lines, /STROBE signal, BUSY signal. Data lines are bidirectional.
 
-Send character to printer:
-
-1) Write to SELECT ($BFE0) $00 (select BITS)
-2) Write to REGISTER ($BFE1) $FF (all bits set to write)
-3) Write to SELECT ($BFE0) $01 (select PRINTER)
-4) Write to REGISTER ($BFE1) character code
-5) Write to SELECT ($BFE0) $03 (select CONTROLOUT)
-6) Read from REGISTER ($BFE1) and mask bit 3
-7) Write to REGISTER ($BFE1) combination of bit 3 set and rest of bits unchanged
-8) Write to SELECT ($BFE0) $02 (select KEYBTAPE)
-9) Read from REGISTER ($BFE1) and check bit 6 ==0 (if bit 6 is set then printer is busy. repeat step 9) 
-7) Write to SELECT ($BFE0) $03 (select CONTROLOUT)
-8) Write to REGISTER ($BFE1) with bit 3 reset (/STROBE)
-9) Wait 5us
-A) Write to REGISTER ($BFE1) with bit 3 set
-
 
 TAPE IN/OUT
 
-Read tape:
-1) Write to SELECT ($BFE0) $02 (select KEYBTAPE)
-2) Read from REGISTER ($BFE1) with bit 7 
-
-Write tape:
-1) Write to SELECT ($BFE0) $03 (select CONTROLOUT)
-2) Write to REGISTER ($BFE1) with bit 4 
 
 
 AUDIO
