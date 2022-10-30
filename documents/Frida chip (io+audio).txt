@@ -3,33 +3,39 @@ Frida is custom chip that cares about i/o and sound in Tonda 01 computer.
 
 Pins:
 0,1 - Vcc, Vss
-2..9 - out: PR0,PR1,PR2,PR3,PR4,PR5,PR6,PR7 (printer data)
-10 - out: caps lock led
-11 - out: /STROBE (printer strobe)
-12 - in: BUSY (printer busy)
-13,14,15 - out: keyboard row select
-16..23 - in/out: D0..D7 (data bus)
-24 - /in: CS (chip select)
-25 - in: clock (system clock)
-26 - out: audio left
-27 - out: audio right
-28 - 
-29 - in: RW
-30,31 - in/out: TAPE IN/OUT
-32..38 - in: read keyboard/joystick (7 bits)
-39 - in: A0 register select
+2..9 - PA0..PA7, bidirectional port A
+10..17 - PB0..PB7, input port B
+18..25 - PC0..PC7, output port C
+26 - /CS chip select
+27 - CLK, clock
+28 - R/W, read/write
+29..36 - D0..D7, data lines
+37,38 - AUDL, AUDR, audio left, audio right
+39 - SELECT, register select
 
-Pins 13,14,15 are connected to 74LS138 (3 to 8 line decoder)
+PA..PA7 (in/out) are connected to data lines of printer port
+PB0 (in) is connected to printer busy
+PB1 (in) is connected to tape in
+PB2 (in) is connected to keyboard serial data input
+PB3 (in) is connected to joystick 0 serial data input
+PB4 (in) is connected to joystick 1 serial data input
+PB5..PB7 not connected
+PC0 (out) is connected to printer strobe
+PC1 (out) is connected to tape out
+PC2..PC4 (out) is connected to 74LS138 (3 to 8 line decoder) used to select keyboard row
+PC5 (out) is connected to keyboard latch, joystick 0 latch, joystick 1 latch
+PC6 (out) is connected to keyboard clock, joystick 0 clock, joystick 1 clock
+PC7 (out) is connected to caps lock led
+
 
 Registers:
 $BFC0 SELECT      - register select (register remains selected till change)
 $BFC1 REGISTER    - register write/read
 
-$00 - BITS        - b7|b6|b5|b4|b3|b2|b1|b0 - direction of printer data lines, 0..read, 1..write    
-$01 - PRINTER     - d7|d6|d5|d4|d3|d2|d1|d0 - printer data 
-$02 - CONTROLOUT  - ..|..|cl|ps|to|s2|s1|s0 - caps lock led (cl), printer strobe (ps), tape out (to), select key row (s2-s0)
-$03 - CONTROLIN   - ..|..|..|..|..|..|pb|ti - printer busy (pb), tape in (ti) 
-$04 - KEYBOARD    - --|k6|k5|k4|k3|k2|k1|k0 - read keyboard bits
+$00 - DIRECTION   - b7|b6|b5|b4|b3|b2|b1|b0 - direction of printer data lines, 0..read, 1..write    
+$01 - PORTA       - d7|d6|d5|d4|d3|d2|d1|d0 - printer data 
+$02 - PORTB       - ..|..|..|j1|j0|ks|ti|pb - joystick 1 serial data (j1), joystick 0 serial data (j0), keyboard serial data (ks), tape in (ti), printer busy (pb)
+$03 - PORTC       - cl|kc|kl|r2|r1|r0|to|ps - caps lock led (cl), serial clock, serial latch, select key row (s2-s0), tape out (to), printer strobe (ps)
 
 $10 - FREQHI1     - ....FFFF - FFFF..high 4 bits of frequency
 $11 - FREQLO1     - FFFFFFFF - low 8 bit of frequency (latch, loaded when FREQHI1 is written)
@@ -54,6 +60,10 @@ $44 - VOLUME4
 
 
 I/O
+
+KEYBOARD AND JOYSTICK
+
+Keyboard and both joysticks are read in serial fashion. First, common latch signal 
 
 KEYBOARD
 Tonda 01 has 56 key keyboards. 
