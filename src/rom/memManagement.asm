@@ -190,7 +190,7 @@ pageBank1
   ;page in bank 1
   STD <TEMPE                  ;store D reg to temporary location
   LDD ,S                      ;load return address
-  STS OLDSTACK               ;store S reg to temporary location
+  STS OLDSTACK                ;store S reg to temporary location
   LDS #TMPSTACK
   STD ,S                      ;store return address on new stack
   CLRA
