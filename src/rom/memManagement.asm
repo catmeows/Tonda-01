@@ -218,7 +218,7 @@ pageBank0
   ANDA #$0F                   ;mask bits
   STA $BF80                   ;write Marta R0, page bank 0
   LDD ,S                      ;load return address
-  LDS OLDSTACK               ;restore original stack
+  LDS OLDSTACK                ;restore original stack
   STD ,S                      ;replace old return address by new return address
   RTS
   
