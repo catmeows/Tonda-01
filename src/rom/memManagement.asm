@@ -183,8 +183,15 @@ copyBackward5
 copyBackward2
   RTS
 
-;memory banks
+;MEMORY BANKS
 ;since it is not guaranteed that S stack points above paged area, we must move S stack above banked area
+;BASIC pages bank 1 for very short period only, and then pages bank 0 back
+;still, stack space has to accomodate values stored by invocation of NMI, IRQ or FIRQ and also few levels subroutine calls
+;NMI saves 12B on invocation, IRQ also saves 12B on invocation
+;FIRQ saves only 3 bytes but we can expect at least one accumulator register and one index register has to be saved, that makes 6B
+;further, each subroutine call takes 2B on stack
+;BASIC reserves 40B (12+12+6+5*2) on S stack, which is enough for all common situations
+;but note that NMI can be interrupted by another NMI and successive NMI invocation will exhaust space reserved stack eventually
   
 pageBank1
   ;page in bank 1
@@ -212,7 +219,7 @@ pageBank0
   STA $BF80                   ;write Marta R0, page bank 0
   LDD ,S                      ;load return address
   LDS <OLDSTACK               ;restore original stack
-  STD ,S                      ;replace old return address
+  STD ,S                      ;replace old return address by new return address
   RTS
   
   
