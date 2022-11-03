@@ -50,6 +50,8 @@ printChar1
   LDB #$08                    ;character pattern is 8 bytes long
   MUL
   LEAX D, X                   ;now we have pointer to pattern
+  LDA <PRTPOS_LINE            ;get current print line
+  TST <GMODE                  ;check current graphics mode
   
 
 
