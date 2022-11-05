@@ -97,6 +97,22 @@ printLoop
   BPL printByteM1
   
   ;print byte for mode 2
+  
+  
+  
+printByteM1
+  ;print byte 
+
+printByteM0
+  ;print byte for mode 0
+  TST <OVER                   ;test over mode
+  BEQ printByteM0over0       
+  ORA ,Y                      ;over is on, combine character byte with byte on screen
+printByteM0over0  
+  STA ,Y                      ;store character byte
+  DECB                        ;decrease loop counter
+  BNE printLoop               ;repeat until done
+  
 
   
   
