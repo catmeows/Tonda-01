@@ -88,7 +88,15 @@ printPosM1
 printPosDone
   TFR D, Y                    ;store pointer to screen into Y
   
-
+  LDB #$08                    ;counter for pixel lines in character
+printLoop
+  LDA ,X+                     ;take one byte of character
+  EORA <INVERSE               ;invert byte when INVERSE is $FF
+  TEST <GMODE                 ;test graphics mode
+  BEQ printByteM0             ;GMODE==0 it is mode 0
+  BPL printByteM1
+  
+  ;print byte for mode 2
 
   
   
