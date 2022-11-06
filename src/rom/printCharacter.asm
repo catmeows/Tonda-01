@@ -3,6 +3,10 @@ printMessage
   ;will print x-th message from a table
   ;A holds message number, X holds pointer to message table
   ;this routine is used to print tokens and error messages
+  ;
+  ;mode 0 - 
+  ;mode 1 -
+  ;mode 2 -
 
   TSTA                        ;initial test to see if message counter is zero already
 printMsg3  
@@ -88,7 +92,15 @@ printPosM1
 printPosDone
   TFR D, Y                    ;store pointer to screen into Y
   
-  LDB #$08                    ;counter for pixel lines in character
+  ;usage of temporary variables
+  ;variable mode0        mode1        mode2
+  ;TEMP0    charByte                  charByte
+  ;TEMP1                              bitsLoop 
+  ;TEMP2
+  ;TEMP3    byteLoop     byteLoop     byteLoop
+  
+  LDA #$08                    ;counter for pixel lines in character
+  STA <TEMP3                  
 printLoop
   LDA ,X+                     ;take one byte of character
   EORA <INVERSE               ;invert byte when INVERSE is $FF
@@ -97,10 +109,16 @@ printLoop
   BPL printByteM1
   
   ;print byte for mode 2
+  LDU #printTabM2
   STA <TEMP0
   LDA #$04
   STA <TEMP1
 printByteM2loop
+  LDA <TEMP0
+  ROLA
+  ROLA
+  STA <TEMP0
+  ANDA #$03
   
   
   
@@ -156,5 +174,8 @@ printByteM0over0
 printTabM1
   FCB $00, $03, $0C, $0F, $30, $33, $3C, $3F
   FCB $C0, $C3, $CC, $CF, $F0, $F3, $FC, $FF
+  
+printTabM2
+  FCB $
   
   
