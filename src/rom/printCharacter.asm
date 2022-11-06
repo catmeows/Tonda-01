@@ -92,7 +92,7 @@ printPosDone
 printLoop
   LDA ,X+                     ;take one byte of character
   EORA <INVERSE               ;invert byte when INVERSE is $FF
-  TEST <GMODE                 ;test graphics mode
+  TST <GMODE                  ;test graphics mode
   BEQ printByteM0             ;GMODE==0 it is mode 0
   BPL printByteM1
   
