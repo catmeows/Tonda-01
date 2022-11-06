@@ -16,6 +16,13 @@ PRTPOS_COL    EQU $BE17
 GMODE         EQU $BE18
 INVERSE       EQU $BE19
 GINVERSE      EQU $BE1A
+OVER          EQU $BE1B
+GOVER         EQU $BE1C
+PAPER         EQU $BE1D
+GPAPER        EQU $BE1E
+INK           EQU $BE1F
+GINK          EQU $BE20
+
 
 TEMP0         EQU $BEF0 
 TEMP1         EQU $BEF1
