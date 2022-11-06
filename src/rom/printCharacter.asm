@@ -97,11 +97,16 @@ printLoop
   BPL printByteM1
   
   ;print byte for mode 2
+  STA <TEMP0
+  LDA #$04
+  STA <TEMP1
+printByteM2loop
   
   
   
 printByteM1
-  ;print byte
+  ;print byte for mode 1
+  STB <TEMP2                  ;store
   LDU #printTabM1
   STA <TEMP0                  ;temporary store character byte
   LSRA                        ;isolate higher nibble
@@ -113,9 +118,12 @@ printByteM1
   ANDA #$0F                   ;print right 4px of character byte
   JSR printByteM1sub
   LEAY +79, Y                 ;move one pixel line down
+  LDB <TEMP2
+  DECB
+  BNE printLoop
   BRA
     
-printByteM1sub  
+printByteM1sub   
   LDB A, U                    ;get mask for the nibble 
   ANDB <MXINK                 ;and mask with ink
   STB <TEMP1                  ;store all ink bits
@@ -139,6 +147,7 @@ printByteM0
   ORA ,Y                      ;over is on, combine character byte with byte on screen
 printByteM0over0  
   STA ,Y                      ;store character byte
+  LEAY +40,Y                  ;continue to next pixel line
   DECB                        ;decrease loop counter
   BNE printLoop               ;repeat until done
   
