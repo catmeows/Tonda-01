@@ -108,6 +108,14 @@ printByteM1
   LSRA                        ;and shift it right
   LSRA
   LSRA
+  JSR printByteM1sub          ;print left 4px of character byte 
+  LDA <TEMP0
+  ANDA #$0F                   ;print right 4px of character byte
+  JSR printByteM1sub
+  LEAY +79, Y                 ;move one pixel line down
+  BRA
+    
+printByteM1sub  
   LDB A, U                    ;get mask for the nibble 
   ANDB <MXINK                 ;and mask with ink
   STB <TEMP1                  ;store all ink bits
@@ -115,6 +123,14 @@ printByteM1
   COMB                        ;swap bits to create paper mask
   TST <OVER                   ;depending on OVER flag, use mask either against screen memory or against paper value
   BEQ printByteM1over0
+  ANDA ,Y
+  BRA printByteM1end
+printByteM1over0
+  ANDA <MXPAPER
+printByteM1end  
+  ORA <TEMP1
+  STA ,Y+
+  RTS 
 
 printByteM0
   ;print byte for mode 0
@@ -129,6 +145,7 @@ printByteM0over0
 
 
 printTabM1
-  
+  FCB $00, $03, $0C, $0F, $30, $33, $3C, $3F
+  FCB $C0, $C3, $CC, $CF, $F0, $F3, $FC, $FF
   
   
