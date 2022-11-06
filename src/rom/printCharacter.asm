@@ -101,7 +101,20 @@ printLoop
   
   
 printByteM1
-  ;print byte 
+  ;print byte
+  LDU #printTabM1
+  STA <TEMP0                  ;temporary store character byte
+  LSRA                        ;isolate higher nibble
+  LSRA                        ;and shift it right
+  LSRA
+  LSRA
+  LDB A, U                    ;get mask for the nibble 
+  ANDB <MXINK                 ;and mask with ink
+  STB <TEMP1                  ;store all ink bits
+  LDB A,U                     ;read mask again
+  COMB                        ;swap bits to create paper mask
+  TST <OVER                   ;depending on OVER flag, use mask either against screen memory or against paper value
+  BEQ printByteM1over0
 
 printByteM0
   ;print byte for mode 0
@@ -114,6 +127,8 @@ printByteM0over0
   BNE printLoop               ;repeat until done
   
 
+
+printTabM1
   
   
   
