@@ -95,8 +95,8 @@ printPosDone
   ;usage of temporary variables
   ;variable mode0        mode1        mode2
   ;TEMP0    charByte                  charByte
-  ;TEMP1                              bitsLoop 
-  ;TEMP2
+  ;TEMP1                              bits loop
+  ;TEMP2                              ink bits
   ;TEMP3    byteLoop     byteLoop     byteLoop
   
   LDA #$08                    ;counter for pixel lines in character
@@ -111,7 +111,7 @@ printLoop
   ;print byte for mode 2
   LDU #printTabM2
   STA <TEMP0
-  LDA #$04
+  LDA #$04                    ;
   STA <TEMP1
 printByteM2loop
   LDA <TEMP0
@@ -119,12 +119,13 @@ printByteM2loop
   ROLA
   STA <TEMP0
   ANDA #$03
-  
-  
+  LDB A, U
+  ANDB MXINK
+  STB <TEMP2
   
 printByteM1
   ;print byte for mode 1
-  STB <TEMP2                  ;store
+  ;expand 4 bits to whole byte of 4 two bit pixels 
   LDU #printTabM1
   STA <TEMP0                  ;temporary store character byte
   LSRA                        ;isolate higher nibble
@@ -136,8 +137,7 @@ printByteM1
   ANDA #$0F                   ;print right 4px of character byte
   JSR printByteM1sub
   LEAY +79, Y                 ;move one pixel line down
-  LDB <TEMP2
-  DECB
+  DEC <TEMP3
   BNE printLoop
   BRA
     
@@ -166,7 +166,7 @@ printByteM0
 printByteM0over0  
   STA ,Y                      ;store character byte
   LEAY +40,Y                  ;continue to next pixel line
-  DECB                        ;decrease loop counter
+  DEC <TEMP3                  ;decrease loop counter
   BNE printLoop               ;repeat until done
   
 
@@ -176,6 +176,6 @@ printTabM1
   FCB $C0, $C3, $CC, $CF, $F0, $F3, $FC, $FF
   
 printTabM2
-  FCB $
+  FCB $00, $0F, $F0, $FF
   
   
