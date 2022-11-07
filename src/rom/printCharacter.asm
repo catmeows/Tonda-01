@@ -158,23 +158,6 @@ printByteM1
   BNE printLoop
   BRA printCharNext
     
-printByteM1sub   
-  LDB A, U                    ;get mask for the nibble 
-  ANDB <MXINK                 ;and mask with ink
-  STB <TEMP1                  ;store all ink bits
-  LDB A,U                     ;read mask again
-  COMB                        ;swap bits to create paper mask
-  TST <OVER                   ;depending on OVER flag, use mask either against screen memory or against paper value
-  BEQ printByteM1over0
-  ANDA ,Y                     ;for OVER==1 use paper mask against byte in screen memory
-  BRA printByteM1end
-printByteM1over0
-  ANDA <MXPAPER               ;for OVER==1 use paper mask against color value
-printByteM1end  
-  ORA <TEMP1                  ;now compine prepared ink pixels with prepared paper pixels
-  STA ,Y+                     ;store 4 pixels and increase screen pointer to address next 4 pixels on right side
-  RTS 
-
 printByteM0
   ;print byte for mode 0
   TST <OVER                   ;test over mode
@@ -194,7 +177,30 @@ printByteM0over0
   TFR D,X
   LDA <MXINK                  ;get prepared ink
   STA ,X                      ;store attribute
-printCharNext  
+printCharNext
+  ;now update print position
+  LDA <PRTPOS_COL
+  CMPA <WINDOW_RGT
+  BNE printCharNextCol
+  
+
+printByteM1sub
+  ;print 4px of character byte 
+  LDB A, U                    ;get mask for the nibble 
+  ANDB <MXINK                 ;and mask with ink
+  STB <TEMP1                  ;store all ink bits
+  LDB A,U                     ;read mask again
+  COMB                        ;swap bits to create paper mask
+  TST <OVER                   ;depending on OVER flag, use mask either against screen memory or against paper value
+  BEQ printByteM1over0
+  ANDA ,Y                     ;for OVER==1 use paper mask against byte in screen memory
+  BRA printByteM1end
+printByteM1over0
+  ANDA <MXPAPER               ;for OVER==1 use paper mask against color value
+printByteM1end  
+  ORA <TEMP1                  ;now compine prepared ink pixels with prepared paper pixels
+  STA ,Y+                     ;store 4 pixels and increase screen pointer to address next 4 pixels on right side
+  RTS 
 
 
 printTabM1
