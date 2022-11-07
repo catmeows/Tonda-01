@@ -182,6 +182,10 @@ printCharNext
   LDA <PRTPOS_COL
   CMPA <WINDOW_RGT
   BNE printCharNextCol
+  LDA <PRTPOS_LINE
+  CMPA <WINDOW_BOT
+  BNE printCharNextLn
+  
   
 
 printByteM1sub
