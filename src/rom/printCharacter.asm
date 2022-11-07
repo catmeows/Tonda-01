@@ -122,6 +122,11 @@ printByteM2loop
   LDB A, U
   ANDB MXINK
   STB <TEMP2
+  LDB A,U
+  COMB
+  TST <OVER
+  BEQ printByteM2over0
+  
   
 printByteM1
   ;print byte for mode 1
