@@ -137,7 +137,7 @@ printByteM1
   ANDA #$0F                   ;print right 4px of character byte
   JSR printByteM1sub
   LEAY +79, Y                 ;move one pixel line down
-  DEC <TEMP3
+  DEC <TEMP3                  ;decrease character bytes counter
   BNE printLoop
   BRA
     
@@ -149,13 +149,13 @@ printByteM1sub
   COMB                        ;swap bits to create paper mask
   TST <OVER                   ;depending on OVER flag, use mask either against screen memory or against paper value
   BEQ printByteM1over0
-  ANDA ,Y
+  ANDA ,Y                     ;for OVER==1 use paper mask against byte in screen memory
   BRA printByteM1end
 printByteM1over0
-  ANDA <MXPAPER
+  ANDA <MXPAPER               ;for OVER==1 use paper mask against color value
 printByteM1end  
-  ORA <TEMP1
-  STA ,Y+
+  ORA <TEMP1                  ;now compine prepared ink pixels with prepared paper pixels
+  STA ,Y+                     ;store 4 pixels and increase screen pointer to address next 4 pixels on right side
   RTS 
 
 printByteM0
