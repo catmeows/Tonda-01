@@ -22,6 +22,10 @@ PAPER         EQU $BE1D
 GPAPER        EQU $BE1E
 INK           EQU $BE1F
 GINK          EQU $BE20
+MXINK         EQU $BE21
+MXPAPER       EQU $BE22
+PRTPOS_BCK    EQU $BE23
+WINDOW_T
 
 
 TEMP0         EQU $BEF0 
