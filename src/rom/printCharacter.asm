@@ -126,7 +126,19 @@ printByteM2loop
   COMB
   TST <OVER
   BEQ printByteM2over0
-  
+  ANDB ,Y
+  BRA printByteM2End
+printByteM2over0
+  ANDB <MXPAPER
+printByteM2End
+  ORB <TEMP2
+  STA ,Y+
+  DEC <TEMP1
+  BNE printByteM2loop
+  LEAY +76,Y
+  DEC <TEMP3
+  BNE printLoop
+  BRA printCharNext
   
 printByteM1
   ;print byte for mode 1
