@@ -4,9 +4,9 @@ printMessage
   ;A holds message number, X holds pointer to message table
   ;this routine is used to print tokens and error messages
   ;
-  ;mode 0 - 
-  ;mode 1 -
-  ;mode 2 -
+  ;mode 0 - 320x192 bitplane with attribute for each 8x8 pixel cell
+  ;mode 1 - 320x192 4 color screen 
+  ;mode 2 - 160x96  16 color screen
 
   TSTA                        ;initial test to see if message counter is zero already
 printMsg3  
@@ -94,7 +94,7 @@ printPosDone
   
   ;usage of temporary variables
   ;variable mode0        mode1        mode2
-  ;TEMP0    charByte                  charByte
+  ;TEMP0                 charByte     charByte
   ;TEMP1                              bits loop
   ;TEMP2                              ink bits
   ;TEMP3    byteLoop     byteLoop     byteLoop
@@ -110,15 +110,15 @@ printLoop
   
   ;print byte for mode 2
   LDU #printTabM2
-  STA <TEMP0
-  LDA #$04                    ;
-  STA <TEMP1
+  STA <TEMP0                  ;store character byte
+  LDA #$04                    ;8 pixels are described by 4 bytes
+  STA <TEMP1                  ;store counter
 printByteM2loop
-  LDA <TEMP0
+  LDA <TEMP0                  ;rotate two most left bits of character byte to two most right bits 
+  ROLA                        
   ROLA
-  ROLA
-  STA <TEMP0
-  ANDA #$03
+  STA <TEMP0                  ;store rotated character byte
+  ANDA #$03                   ;isolate 
   LDB A, U
   ANDB MXINK
   STB <TEMP2
@@ -139,7 +139,7 @@ printByteM1
   LEAY +79, Y                 ;move one pixel line down
   DEC <TEMP3                  ;decrease character bytes counter
   BNE printLoop
-  BRA
+  BRA printCharNext
     
 printByteM1sub   
   LDB A, U                    ;get mask for the nibble 
@@ -168,7 +168,16 @@ printByteM0over0
   LEAY +40,Y                  ;continue to next pixel line
   DEC <TEMP3                  ;decrease loop counter
   BNE printLoop               ;repeat until done
-  
+  LDA <PRTPOS_LINE            ;compute attribute address atr=line*40+column+$1E00
+  LDB #$28
+  MUL
+  ADCB <PRTPOS_COL
+  ADCA #$00
+  ADDD #$1E00
+  TFR D,X
+  LDA <MXINK                  ;get prepared ink
+  STA ,X                      ;store attribute
+printCharNext  
 
 
 printTabM1
