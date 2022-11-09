@@ -42,6 +42,9 @@ errorMsgs
   FCS "Disk is full"                  ;Z
 
 otherMsgs
-  "Start tape, then press any key"
-  "TONDA BASIC 2022"
+  FCS "Start tape, then press any key"
+  FCS "Insert disk, then press any key"
+  FCS "Retry ?"
+  FCS "Scroll?"
+  FCS "TONDA BASIC 2022"
   
