@@ -38,6 +38,7 @@ printAny
   LDX #TOKENS                 ;characters $9B..$FF are tokens
   SUBA #$9A
   JSR printMessage            ;print whole message
+printExit  
   PULS X,Y,U                  ;restore saved registers
   RTS                         ;and exit
 printCtrl
@@ -45,7 +46,17 @@ printCtrl
   CMPA #$0D                   ;is it carriage return ?
   LBEQ printCarriageReturn    ;if so continue right to next line
   ;TODO INVERSE ON/OFF
-  
+  CMPA #$0E                   ;is it INVERSE OFF ?
+  BNE printCtrlInvOn
+  CLRA
+  BRA printCtrlInvSet
+  CMPA #$0F                   ;is it INVERSE ON ?
+  BNE printCtrlUnknown
+  LDA #$01
+printCtrlInvSet  
+  STA <INVERSE                ;set new inverse mode
+  BRA printExit               ;and leave
+printCtrlUnknown  
   LDA #$3F                    ;otherwise print '?'
   BRA printChar               ;continue to print char
 
