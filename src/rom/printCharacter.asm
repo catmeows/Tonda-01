@@ -45,7 +45,6 @@ printCtrl
   ;now dispatch controll characters
   CMPA #$0D                   ;is it carriage return ?
   LBEQ printCarriageReturn    ;if so continue right to next line
-  ;TODO INVERSE ON/OFF
   CMPA #$0E                   ;is it INVERSE OFF ?
   BNE printCtrlInvOn
   CLRA
