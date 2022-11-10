@@ -41,7 +41,13 @@ printAny
   PULS X,Y,U                  ;restore saved registers
   RTS                         ;and exit
 printCtrl
-  ;TODO
+  ;now dispatch controll characters
+  CMPA #$0D                   ;is it carriage return ?
+  LBEQ printCarriageReturn    ;if so continue right to next line
+  ;TODO INVERSE ON/OFF
+  
+  LDA #$3F                    ;otherwise print '?'
+  BRA printChar               ;continue to print char
 
 printUdg
   LDX UDGPTR                  ;will print user defined graphics, set pointer to graphics pattern area
@@ -179,15 +185,25 @@ printByteM0over0
   STA ,X                      ;store attribute
 printCharNext
   ;now update print position
-  LDA <PRTPOS_COL
+  LDA <PRTPOS_COL             ;are we at the most right column of window ?
   CMPA <WINDOW_RGT
   BNE printCharNextCol
-  LDA <PRTPOS_LINE
+printCarriageReturn  
+  LDA <PRTPOS_LINE            ;are we at the most bottom line of window ?
   CMPA <WINDOW_BOT
   BNE printCharNextLn
+  ;TODO
+printCharNextLn
+  INCA
+  STA <PRTPOS_LINE            ;increase line number
+  LDA <WINDOW_LFT             ;and start from the most left column again
+  DECA                        ;decrease to allow continue directly to printCharNextCol
+printCharNextCol
+  INCA                        
+  STA <PRTPOS_COL             ;update column
+  PULS X,Y,U                  ;restore saved registers
+  RTS                         ;and exit
   
-  
-
 printByteM1sub
   ;print 4px of character byte 
   LDB A, U                    ;get mask for the nibble 
