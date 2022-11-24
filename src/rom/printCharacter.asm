@@ -1,8 +1,28 @@
 
+printMsgLowerWaitKey
+  ;print message to the last line of screen
+  ;and wait key
+  ;A holds message number, X holds pointer to message table
+  ;this routine is used to print messages and error messages
+  
+  STA <TEMP4                   ;store A for a while
+  LDB <PRTPOS_COL              ;as the very first thing we have to save text cursor position 
+  LDA <PRTPOS_LINE
+  PSHU D 
+  LDB <OVER                    ;also OVER and INVERSE
+  LDA <INVERSE
+  PSHU D
+  LDB <MXINK                   ;and finaly current colors
+  LDA <MXPAPER
+  PSHU D
+  
+  
+
+
 printMessage
   ;will print x-th message from a table
   ;A holds message number, X holds pointer to message table
-  ;this routine is used to print tokens and error messages
+  ;this routine is used to print tokens, messages and error messages
   ;
   ;mode 0 - 320x192 bitplane with attribute for each 8x8 pixel cell
   ;mode 1 - 320x192 4 color screen 
