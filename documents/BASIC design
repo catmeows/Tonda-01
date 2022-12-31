@@ -3,16 +3,16 @@
 BASIC PROGRAM
 
 BASIC LINE:
-LineNumber(2B),LineLength(1-2B),Statement(xB)[,Statement]:0x0C
+LineNumber(2B),LineLength(2B),Statement(xB)[,Statement]:0x0C 
 
-LineNumber - MSB.LSB, never more than 9999, MSB=128 is program terminator, LineNumber 0 not accepted, it is used 
-LineLenght - firstByte[.secondByte] - length=(firstByte<0xff)?firstByte+1:secondByte+256 - 0..511
+LineNumber - MSB.LSB, never more than 9999, MSB=128 is program terminator, LineNumber 0 not accepted, it is used for immediate mode 
+LineLenght - MSB.LSB
 
 STATEMENT:
 
 StatementLength, StatementToken[[,Modifier [Parameters];]Parameters] 
 
-StatementLength(1-2B) - firstByte[.secondByte] - length=(firstByte<0xff)?firstByte+1:secondByte+256 - 0..511
+StatementLength(1-2B) - firstByte[.secondByte] - length=(firstByte<0x80)?firstByte+1:secondByte<<7+(firstByte&0x7f)+1
 
 
 
