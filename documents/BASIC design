@@ -17,19 +17,12 @@ StatementLength(1-2B) - firstByte[.secondByte] - length=(firstByte<0x80)?firstBy
 
 
 
-FIND LINE
-ptr=PROGSTART
-lineNum=256*mem[ptr]+mem[ptr+1]
-if (lineNum==expectedLine) return ptr
-if (lineNum>(40*256-1)) ERROR:Line not found
-lineLen=mem[ptr+2]
-if (lineLen==255) lineLen=lineLen+mem[ptr+3]
-lineLen=lineLen+1
-ptr=ptr+lineLen
-repeat
+IF-ELSE
 
-FIND STATEMENT
-counter=
+DO - WHILE - REPEAT
+
+FOR - NEXT
+
 
 
 
