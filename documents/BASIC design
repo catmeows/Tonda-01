@@ -23,6 +23,14 @@ DO - WHILE - REPEAT
 
 FOR - NEXT
 
+GOSUB
+
+
+loop area:
+
+GOSUB -> 0x01,  line MSB, line LSB, statement
+
+
 
 
 
