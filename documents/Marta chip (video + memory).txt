@@ -2,21 +2,19 @@
 address decoding
 
 FEDCBA98 76543210
-00xxxxxx xxxxxxxx - selected memory bank mapped to $0000 - $3FFF
-01xxxxxx xxxxxxxx - RAM $4000 - RAM $7FFF mapped to $4000 - $7FFF
-10xxxxxx xxxxxxxx - RAM $8000 - RAM $BF7F mapped to $8000 - $BFBF
-10111111 10xxxxxx - Marta register ($BF80)
+000xxxxx xxxxxxxx - selected memory RAM bank mapped to $0000 - $1FFF
+001xxxxx xxxxxxxx .. 
+10111111 10xxxxxx - RAM $2000 - RAM $BFBF 
 10111111 11xxxxxR - Frida registers ($BFC0 - $BFC1) or external device (external decoding and external disable of Frida)
-10111111 1100000R - Frida registers conventions
-10111111 111LLLDx - floppy disk latch (LLL..latch select, D..data bit), A0 is not connected 
-11xxxxxx xxxxxxxx - 16KB ROM - mapped to $C000 - $FFFF
-11000000 00000000 - optional disk ROM
+10111111 1100000R - Frida registers conventions 
+11xxxxxx xxxxxxxx - (read) 16KB ROM - mapped to $C000 - $FFFF
+111xxxxx xxxxxxxx - (write only) MARTA 
 
 Video timing
 Each frame 311 lines are generated.
-Frame starts with 63 lines, either sync or border.
-In next 192 lines with pixels are generated.
-And finaly, 56 border lines of border follows.
+Frame starts with 71 lines, either sync or border.
+Next 176 lines with pixels are generated.
+And finaly, 64 border lines of border follows.
 
 Each line takes 114 cycles.
 First 22 cycles are sync and backporch, followed by 92 cycles of picture area. We can expect that about 85 cycles would be really visible on TV.
@@ -37,9 +35,9 @@ Marta will refresh DRAM on each line, accessing 16 rows in first 16 cycles of li
 Video modes
 
 mode  memory resolution  buffers  colors  
-0      8640  320*192     2        16 of 64 (each group of 8*8 pixels displays 2 colors selected from 16 color palete) 
-1      7680  160*96      2        16 of 16 (each pixel has own color) 
-2     15360  320*192     1        4 of 16  (each pixel has own color, colors hardwired to 0,1,2,3)
+0      7920  320*176     2        16 of 64 (each group of 8*8 pixels displays 2 colors selected from 16 color palete) 
+1      7040  160*88      2        16 of 16 (each pixel has own color) 
+2     14080  320*176     1        4 of 16  (each pixel has own color, colors hardwired to 0,1,2,3)
 
 
 Colors:
@@ -66,24 +64,24 @@ memory map
 
 BUILT-IN                   
                               
-$FFFF +-------+             
-      | ROM   |
-$C000 +-------+ 
-      | MAIN  |
-$4000 +-------+ +-------+
-      | BANK0 | | BANK1 |
-$0000 +-------+ +-------+
+$FFFF +--------+             
+      | ROM    |
+$C000 +--------+ 
+      | MAIN   |
+$2000 +--------+ +--------+ +--------+  
+      | VIDEO0 | | VIDEO1 | | EXRAM  |
+$0000 +--------+ +--------+ +--------+ 
 
 
 
 Marta registers
-port $BF80 - register (mapped $BF80 - $ BFBF)
+port $E000 (write only) - register (mapped $E000 - $FFFF)
 write 0xxRRRRR -> select register RRRRR
 write 1VVVVVVV -> write register
-read -> read register 00 (MAP): 111BP1MM
+
 
 registers:
-00     - 1xxBPxMM -> MAP (B..RAM bank at $0000-$3FFF,  P..page used for video buffer i.e. bank 0/1, MM..video mode)
+00     - 1xBBPxMM -> MAP (B..RAM bank at $0000-$1FFF,  P..page used for video buffer i.e. bank 0/1, MM..video mode)
 01     - 1TTTTTTT -> FIRQTIMER (every 1-127 line, 0-never)
 02     - 1xRRGGBB -> BORDERCOL (border color)
 16..31 - 1xRRGGBB -> COLOR0..COLORF (pallette entries)
