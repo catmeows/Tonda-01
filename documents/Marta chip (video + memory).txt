@@ -101,8 +101,8 @@ Pins:
 31    In:  Clock (17.734475 MHz main clock)
 32    In:  A15
 33    In:  A14
-34    In:  /IO (octal NAND A13, A12, A11, A10, A9, A8, A7, A6)
-35    In:  Marta/Frida select (A5)
+34    In:  /IO (octal NAND of A12, A11, A10, A9, A8, A7, A6, "1")
+35    In:  A13
 36    Out: /ROMCS (can be overriden from external bus)
 37    Out: /FRIDACS (can be overriden from external bus)
 38,39 In:  Vss, Vcc (ground, 5V)
