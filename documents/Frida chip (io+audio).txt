@@ -33,10 +33,12 @@ Registers:
 $BFC0 SELECT      - register select (register remains selected till change)
 $BFC1 REGISTER    - register write/read
 
-$00 - DIRECTION   - b7|b6|b5|b4|b3|b2|b1|b0 - direction of printer data lines, 0..read, 1..write    
-$01 - PORTA       - d7|d6|d5|d4|d3|d2|d1|d0 - printer data 
-$02 - PORTB       - ..|..|..|j1|j0|ks|ti|pb - joystick 1 serial data (j1), joystick 0 serial data (j0), keyboard serial data (ks), tape in (ti), printer busy (pb)
-$03 - PORTC       - cl|kc|kl|r2|r1|r0|to|ps - caps lock led (cl), serial clock, serial latch, select key row (s2-s0), tape out (to), printer strobe (ps)
+$00 - DIRA        - b7|b6|b5|b4|b3|b2|b1|b0 - direction of PORTA lines, 0..read, 1..write
+$01 - DIRB        - b7|b6|b5|b4|b3|b2|b1|b0 - direction of PORTB lines, 0..read, 1..write
+$02 - DIRB        - b7|b6|b5|b4|b3|b2|b1|b0 - direction of PORTC lines, 0..read, 1..write
+$04 - PORTA       - d7|d6|d5|d4|d3|d2|d1|d0 - printer data 
+$05 - PORTB       - ..|..|..|j1|j0|ks|ti|pb - joystick 1 serial data (j1), joystick 0 serial data (j0), keyboard serial data (ks), tape in (ti), printer busy (pb)
+$06 - PORTC       - cl|kc|kl|r2|r1|r0|to|ps - caps lock led (cl), serial clock, serial latch, select key row (s2-s0), tape out (to), printer strobe (ps)
 
 $10 - FREQHI1     - ....FFFF - FFFF..high 4 bits of frequency
 $11 - FREQLO1     - FFFFFFFF - low 8 bit of frequency (latch, loaded when FREQHI1 is written)
