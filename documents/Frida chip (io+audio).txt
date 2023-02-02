@@ -10,7 +10,8 @@ Pins:
 27 - CLK, clock
 28 - R/W, read/write
 29..36 - D0..D7, data lines
-37,38 - AUDL, AUDR, audio left, audio right
+37 - AUDIO, audio output
+38 - /RESET, reset (sets all lines to input to prevent chip or external device damage)
 39 - SELECT, register select
 
 PA..PA7 (in/out) are connected to data lines of printer port
