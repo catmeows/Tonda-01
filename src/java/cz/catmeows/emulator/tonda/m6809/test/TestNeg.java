@@ -43,7 +43,7 @@ public class TestNeg extends BaseTest {
     }
 
     public TestResult testNegDirectZero(Cpu6809 cpu, AddressSpace memory, TickCounter tickCounter) {
-        init("NEG direct negative number");
+        init("NEG direct number zero");
         memory.write(0x1000, 0x00);
         memory.write(0x1001, 0x00);
         memory.write(0x0000, 0x00);
@@ -61,7 +61,7 @@ public class TestNeg extends BaseTest {
     }
 
     public TestResult testNegDirect0x80(Cpu6809 cpu, AddressSpace memory, TickCounter tickCounter) {
-        init("NEG direct negative number");
+        init("NEG direct number 0x80");
         memory.write(0x1000, 0x00);
         memory.write(0x1001, 0x00);
         memory.write(0x0000, 0x80);

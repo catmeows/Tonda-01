@@ -8,9 +8,11 @@ public class Emulator {
     private final SwingDisplay display;
     private JFrame mainWindow;
 
+    private TondaSystem system;
+
     public Emulator() {
         display = new SwingDisplayImpl();
-        //system = new TondaSystem(display);
+        system = new TondaSystem(display);
         SwingUtilities.invokeLater(()->startGui());
         System.out.println("Started");
 
@@ -30,7 +32,7 @@ public class Emulator {
         System.out.println("Will start GUI");
         new Thread(display).start();
         System.out.println("Will start system");
-        //new Thread(system).start();
+        new Thread(system).start();
 
     }
 
