@@ -14,13 +14,13 @@ public class TestNeg extends BaseTest {
         cpu.setPCReg(0x1000);
         tickCounter.reset();
         cpu.nextInstruction();
-        expect(tickCounter.getTicks()==6);
-        expect(cpu.getPCReg()==0x1002);
-        expect(memory.read(0x0000)==0xFE);
-        expect(cpu.getCCNegative()==true);
-        expect(cpu.getCCZero()==false);
-        expect(cpu.getCCOverflow()==false);
-        expect(cpu.getCCCarry()==true);
+        expect(tickCounter.getTicks()==6, "ticks");
+        expect(cpu.getPCReg()==0x1002, "PC");
+        expect(memory.read(0x0000)==0xFF, "result");
+        expect(cpu.getCCNegative()==true, "CC Negative");
+        expect(cpu.getCCZero()==false, "CC Zero");
+        expect(cpu.getCCOverflow()==false, "CC Overflow");
+        expect(cpu.getCCCarry()==true, "CC Carry");
         return finish();
     }
 
@@ -32,13 +32,13 @@ public class TestNeg extends BaseTest {
         cpu.setPCReg(0x1000);
         tickCounter.reset();
         cpu.nextInstruction();
-        expect(tickCounter.getTicks()==6);
-        expect(cpu.getPCReg()==0x1002);
-        expect(memory.read(0x0000)==0x10);
-        expect(cpu.getCCNegative()==false);
-        expect(cpu.getCCZero()==false);
-        expect(cpu.getCCOverflow()==false);
-        expect(cpu.getCCCarry()==true);
+        expect(tickCounter.getTicks()==6, "ticks");
+        expect(cpu.getPCReg()==0x1002, "PC");
+        expect(memory.read(0x0000)==0x10, "result");
+        expect(cpu.getCCNegative()==false, "CC Negative");
+        expect(cpu.getCCZero()==false, "CC Zero");
+        expect(cpu.getCCOverflow()==false, "CC Overflow");
+        expect(cpu.getCCCarry()==true, "CC Carry");
         return finish();
     }
 
@@ -50,13 +50,13 @@ public class TestNeg extends BaseTest {
         cpu.setPCReg(0x1000);
         tickCounter.reset();
         cpu.nextInstruction();
-        expect(tickCounter.getTicks()==6);
-        expect(cpu.getPCReg()==0x1002);
-        expect(memory.read(0x0000)==0x00);
-        expect(cpu.getCCNegative()==false);
-        expect(cpu.getCCZero()==true);
-        expect(cpu.getCCOverflow()==false);
-        expect(cpu.getCCCarry()==false);
+        expect(tickCounter.getTicks()==6,"ticks");
+        expect(cpu.getPCReg()==0x1002, "PC");
+        expect(memory.read(0x0000)==0x00, "result");
+        expect(cpu.getCCNegative()==false, "CC Negative");
+        expect(cpu.getCCZero()==true, "CC Zero");
+        expect(cpu.getCCOverflow()==false, "CC Overflow");
+        expect(cpu.getCCCarry()==false, "CC Carry");
         return finish();
     }
 
@@ -68,13 +68,13 @@ public class TestNeg extends BaseTest {
         cpu.setPCReg(0x1000);
         tickCounter.reset();
         cpu.nextInstruction();
-        expect(tickCounter.getTicks()==6);
-        expect(cpu.getPCReg()==0x1002);
-        expect(memory.read(0x0000)==0x80);
-        expect(cpu.getCCNegative()==true);
-        expect(cpu.getCCZero()==false);
-        expect(cpu.getCCOverflow()==true);
-        expect(cpu.getCCCarry()==true);
+        expect(tickCounter.getTicks()==6, "ticks");
+        expect(cpu.getPCReg()==0x1002, "PC");
+        expect(memory.read(0x0000)==0x80, "result");
+        expect(cpu.getCCNegative()==true, "CC Negative");
+        expect(cpu.getCCZero()==false, "CC Zero");
+        expect(cpu.getCCOverflow()==true, "CC Overflow");
+        expect(cpu.getCCCarry()==true, "CC Carry");
         return finish();
     }
 }

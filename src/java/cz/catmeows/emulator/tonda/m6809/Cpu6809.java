@@ -155,6 +155,10 @@ public class Cpu6809 {
         setCCFlag(CC_CARRY, ccCarry);
     }
 
+    public void setCCNegative(boolean ccNegative) {
+        setCCFlag(CC_NEG, ccNegative);
+    }
+
     public void setCCOverflow(boolean ccOverflow) {
         setCCFlag(CC_OVER, ccOverflow);
     }
@@ -168,6 +172,58 @@ public class Cpu6809 {
     }
 
     public void nextInstruction() {
+        int ea, value;
+        int opcode = mem.read(regPC);
+        //TODO debugger
+        incPC();
+        tickListener.tick();
 
+        switch (opcode) {
+            case 0x00:
+                //NEG direct, 6
+                ea = getDirectLow();
+                tickListener.tick();
+                value = mem.read(ea);
+                tickListener.tick();
+                tickListener.tick();
+                mem.write(ea, helperNeg(value));
+                tickListener.tick();
+                break;
+            case 0x01:
+                //illegal NEG direct, 6
+                break;
+
+        }
+
+
+    }
+
+    private void incPC() {
+        regPC = (regPC+1)&0xffff;
+    }
+
+    private int getDirectLow() {
+        int lowEA = mem.read(regPC);
+        incPC();
+        tickListener.tick();
+        return (regDP<<8)+lowEA;
+    }
+
+    private int helperNeg(int value) {
+        int result = (0 - (value&0xff))&0xff;
+        setCCZero(result==0);
+        setCCNegative((result & 0x80)==0x80);
+        setCCCarry(result!=0);
+        setCCOverflow(result==0x80);
+        return result;
+    }
+
+    private int helperCom(int value) {
+        int result = (value^0xff)&0xff;
+        setCCZero(result==0);
+        setCCNegative((result & 0x80)==0x80);
+        setCCCarry(true);
+        setCCOverflow(false);
+        return result;
     }
 }

@@ -8,9 +8,10 @@ public class BaseTest {
         this.description = description;
         result = true;
     }
-    void expect(boolean expected) {
+    void expect(boolean expected, String detail) {
         if (!expected) {
             result = false;
+            description=description+" ["+detail+"] ";
         }
     }
     TestResult finish() {
