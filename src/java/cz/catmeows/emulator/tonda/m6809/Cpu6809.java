@@ -192,7 +192,34 @@ public class Cpu6809 {
             case 0x01:
                 //illegal NEG direct, 6
                 break;
-
+            case 0x02:
+                //illegal
+                break;
+            case 0x03:
+                //COM direct, 6
+                ea = getDirectLow();
+                tickListener.tick();
+                value = mem.read(ea);
+                tickListener.tick();
+                tickListener.tick();
+                mem.write(ea, helperCom(value));
+                tickListener.tick();
+                break;
+            case 0x04:
+                //LSR direct, 6
+                ea = getDirectLow();
+                tickListener.tick();
+                value = mem.read(ea);
+                tickListener.tick();
+                tickListener.tick();
+                mem.write(ea, helperLsr(value));
+                tickListener.tick();
+                break;
+            case 0x05:
+                //ilegal LSR direct, 6
+                break;
+            case 0x06:
+                //ROR direct, 6
         }
 
 
@@ -224,6 +251,14 @@ public class Cpu6809 {
         setCCNegative((result & 0x80)==0x80);
         setCCCarry(true);
         setCCOverflow(false);
+        return result;
+    }
+
+    private int helperLsr(int value) {
+        int result = ((value&0xff)>>1);
+        setCCZero(result==0);
+        setCCNegative(false);
+        setCCCarry((value&0x01)==0x01);
         return result;
     }
 }

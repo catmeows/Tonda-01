@@ -12,6 +12,7 @@ public class TestNeg extends BaseTest {
         memory.write(0x1001, 0x00);
         memory.write(0x0000, 0x01);
         cpu.setPCReg(0x1000);
+        cpu.setDPReg(0x00);
         tickCounter.reset();
         cpu.nextInstruction();
         expect(tickCounter.getTicks()==6, "ticks");
@@ -30,6 +31,7 @@ public class TestNeg extends BaseTest {
         memory.write(0x1001, 0x00);
         memory.write(0x0000, 0xF0);
         cpu.setPCReg(0x1000);
+        cpu.setDPReg(0x00);
         tickCounter.reset();
         cpu.nextInstruction();
         expect(tickCounter.getTicks()==6, "ticks");
@@ -48,6 +50,7 @@ public class TestNeg extends BaseTest {
         memory.write(0x1001, 0x00);
         memory.write(0x0000, 0x00);
         cpu.setPCReg(0x1000);
+        cpu.setDPReg(0x00);
         tickCounter.reset();
         cpu.nextInstruction();
         expect(tickCounter.getTicks()==6,"ticks");
@@ -66,6 +69,7 @@ public class TestNeg extends BaseTest {
         memory.write(0x1001, 0x00);
         memory.write(0x0000, 0x80);
         cpu.setPCReg(0x1000);
+        cpu.setDPReg(0x00);
         tickCounter.reset();
         cpu.nextInstruction();
         expect(tickCounter.getTicks()==6, "ticks");

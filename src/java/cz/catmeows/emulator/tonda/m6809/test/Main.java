@@ -12,13 +12,31 @@ public class Main {
         Ram ram = new Ram();
         TickCounter tickCounter = new TickCounter();
         Cpu6809 cpu = new Cpu6809(ram, tickCounter);
+
+        long start = System.currentTimeMillis();
+        long times = 0;
+        TestNeg instance = new TestNeg();
+        while ((System.currentTimeMillis()-start)<5000) {
+            instance.testNegDirectZero(cpu, ram, tickCounter);
+            times++;
+        }
+        System.out.println("CPU speed "+(6*times/5/1000000.0f));
+
         List<TestResult> results = new ArrayList<>();
 
         results.add(new TestNeg().testNegDirectNegative(cpu, ram, tickCounter));
         results.add(new TestNeg().testNegDirectPositive(cpu, ram, tickCounter));
         results.add(new TestNeg().testNegDirect0x80(cpu, ram, tickCounter));
         results.add(new TestNeg().testNegDirectZero(cpu, ram, tickCounter));
+        
+        results.add(new TestCom().testComPositive(cpu, ram, tickCounter));
+        results.add(new TestCom().testComNegative(cpu, ram, tickCounter));
+        results.add(new TestCom().testCom0xFF(cpu, ram, tickCounter));
 
+        results.add(new TestLsr().testLsrDirect0x01(cpu,ram, tickCounter));
+        results.add(new TestLsr().testLsrDirect0x00(cpu,ram, tickCounter));
+        results.add(new TestLsr().testLsrDirect0x81(cpu,ram, tickCounter));
+        results.add(new TestLsr().testLsrDirect0x40(cpu,ram, tickCounter));
 
         for (TestResult tr: results
              ) {
