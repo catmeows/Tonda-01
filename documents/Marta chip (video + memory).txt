@@ -100,8 +100,8 @@ Pins:
 31    In:  Clock (17.734475 MHz main clock)
 32    In:  A15
 33    In:  A14
-34    In:  /IO (octal NAND of A12, A11, A10, A9, A8, A7, A6, "1")
+34    In:  /IO (octal NAND of A15, A14, A13, A12, A11, A10, A9, A8)
 35    In:  A13
 36    Out: /ROMCS (can be overriden from external bus)
-37    Out: /MARTACS
+37    In:  A7 (used in conjuction with /IO to select MARTA)
 38,39 In:  Vss, Vcc (ground, 5V)
