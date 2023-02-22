@@ -64,6 +64,9 @@ public class Main {
         results.add(new TestTst().testTstDirect0x10(cpu, ram, tickCounter));
         results.add(new TestTst().testTstDirect0x80(cpu, ram, tickCounter));
 
+        results.add(new TestJmp().testJmpDirect0x00(cpu, ram, tickCounter));
+        results.add(new TestJmp().testJmpDirect0xff(cpu, ram, tickCounter));
+
         int errors=0;
         for (TestResult tr: results
              ) {

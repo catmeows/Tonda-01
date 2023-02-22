@@ -293,6 +293,9 @@ public class Cpu6809 {
                 break;
             case 0x0e:
                 //JMP direct, 3
+                ea = getDirectLow();
+                setPCReg(ea);
+                tickListener.tick();
                 break;
             case 0x0f:
                 //CLR direct, 6
