@@ -60,6 +60,10 @@ public class Main {
         results.add(new TestInc().testIncDirect0xff(cpu, ram, tickCounter));
         results.add(new TestInc().testIncDirect0x80(cpu, ram, tickCounter));
 
+        results.add(new TestTst().testTstDirect0x00(cpu, ram, tickCounter));
+        results.add(new TestTst().testTstDirect0x10(cpu, ram, tickCounter));
+        results.add(new TestTst().testTstDirect0x80(cpu, ram, tickCounter));
+
         int errors=0;
         for (TestResult tr: results
              ) {

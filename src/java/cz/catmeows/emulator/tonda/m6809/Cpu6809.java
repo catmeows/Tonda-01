@@ -283,6 +283,13 @@ public class Cpu6809 {
                 break;
             case 0x0d:
                 //TST direct, 6
+                ea = getDirectLow();
+                tickListener.tick();
+                value = mem.read(ea);
+                tickListener.tick();
+                tickListener.tick();
+                helperTst(value);
+                tickListener.tick();
                 break;
             case 0x0e:
                 //JMP direct, 3
@@ -378,5 +385,11 @@ public class Cpu6809 {
         setCCNegative((result&0x80)==0x80);
         setCCOverflow((value&0xff)==0x7f);
         return result;
+    }
+
+    private void helperTst(int value) {
+        setCCZero((value&0xff)==0);
+        setCCNegative((value&0x80)==0x80);
+        setCCOverflow(false);
     }
 }
