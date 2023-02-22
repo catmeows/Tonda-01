@@ -54,6 +54,12 @@ public class Main {
         results.add(new TestRol().testRolDirect0x40CarryReset(cpu, ram, tickCounter));
         results.add(new TestRol().testRolDirect0x81CarrySet(cpu, ram, tickCounter));
 
+        results.add(new TestDec().testDecDirect0x00(cpu, ram, tickCounter));
+        results.add(new TestDec().testDecDirect0x80(cpu, ram, tickCounter));
+
+        results.add(new TestInc().testIncDirect0xff(cpu, ram, tickCounter));
+        results.add(new TestInc().testIncDirect0x80(cpu, ram, tickCounter));
+
         int errors=0;
         for (TestResult tr: results
              ) {

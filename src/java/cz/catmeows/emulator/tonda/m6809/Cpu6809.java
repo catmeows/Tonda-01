@@ -258,6 +258,37 @@ public class Cpu6809 {
                 mem.write(ea, helperRol(value));
                 tickListener.tick();
                 break;
+            case 0x0a:
+                //DEC direct, 6
+                ea = getDirectLow();
+                tickListener.tick();
+                value = mem.read(ea);
+                tickListener.tick();
+                tickListener.tick();
+                mem.write(ea, helperDec(value));
+                tickListener.tick();
+                break;
+            case 0x0b:
+                //illegal
+                break;
+            case 0x0c:
+                //INC direct, 6
+                ea = getDirectLow();
+                tickListener.tick();
+                value = mem.read(ea);
+                tickListener.tick();
+                tickListener.tick();
+                mem.write(ea, helperInc(value));
+                tickListener.tick();
+                break;
+            case 0x0d:
+                //TST direct, 6
+                break;
+            case 0x0e:
+                //JMP direct, 3
+                break;
+            case 0x0f:
+                //CLR direct, 6
         }
 
 
@@ -330,6 +361,22 @@ public class Cpu6809 {
         setCCZero(result==0);
         setCCNegative((result&0x80)==0x80);
         setCCCarry((value&0x80)==0x80);
+        return result;
+    }
+
+    private int helperDec(int value) {
+        int result = (value-1)&0xff;
+        setCCZero(result==0);
+        setCCNegative((result&0x80)==0x80);
+        setCCOverflow((value&0xff)==0x80);
+        return result;
+    }
+
+    private int helperInc(int value) {
+        int result = (value+1)&0xff;
+        setCCZero(result==0);
+        setCCNegative((result&0x80)==0x80);
+        setCCOverflow((value&0xff)==0x7f);
         return result;
     }
 }
