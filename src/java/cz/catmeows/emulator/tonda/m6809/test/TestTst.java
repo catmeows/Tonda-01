@@ -58,8 +58,4 @@ public class TestTst extends BaseTest {
         expect(cpu.getCCOverflow()==false, "CC Overflow");
         return finish();
     }
-
-
-
-
 }
