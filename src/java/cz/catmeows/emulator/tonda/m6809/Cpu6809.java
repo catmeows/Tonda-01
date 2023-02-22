@@ -240,6 +240,13 @@ public class Cpu6809 {
                 break;
             case 0x08:
                 //ASL,LSL direct, 6
+                ea = getDirectLow();
+                tickListener.tick();
+                value = mem.read(ea);
+                tickListener.tick();
+                tickListener.tick();
+                mem.write(ea, helperAsl(value));
+                tickListener.tick();
                 break;
         }
 
