@@ -41,9 +41,18 @@ public class Main {
         results.add(new TestRor().testRorDirect0x00CarrySet(cpu,ram, tickCounter));
         results.add(new TestRor().testRorDirect0x01CarryReset(cpu, ram, tickCounter));
 
+        results.add(new TestAsr().testAsrDirect0x81(cpu, ram, tickCounter));
+        results.add(new TestAsr().testAsrDirect0x01(cpu, ram, tickCounter));
+        results.add(new TestAsr().testAsrDirect0x02(cpu, ram, tickCounter));
+
+        int errors=0;
         for (TestResult tr: results
              ) {
             System.out.println((tr.getResult()?"ok  :":"ERR :")+tr.getDescription());
+            if (!tr.getResult()) {
+                errors++;
+            }
         }
+        System.out.println("ERRORS: "+errors);
     }
 }

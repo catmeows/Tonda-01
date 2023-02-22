@@ -229,6 +229,17 @@ public class Cpu6809 {
                 tickListener.tick();
                 break;
             case 0x07:
+                //ASR direct, 6
+                ea = getDirectLow();
+                tickListener.tick();
+                value = mem.read(ea);
+                tickListener.tick();
+                tickListener.tick();
+                mem.write(ea, helperAsr(value));
+                tickListener.tick();
+                break;
+            case 0x08:
+                //ASL,LSL direct, 6
                 break;
         }
 
@@ -278,7 +289,22 @@ public class Cpu6809 {
         setCCNegative((result&0x80)==0x80);
         setCCCarry((value&0x01)==0x01);
         return result;
+    }
 
+    private int helperAsr(int value) {
+        int result = ((value&0xff)>>1)|(value&0x80);
+        setCCZero(result==0);
+        setCCNegative((result&0x80)==0x80);
+        setCCCarry((value&0x01)==0x01);
+        return result;
+    }
 
+    private int helperAsl(int value) {
+        int result = (value<<1)&0xff;
+        setCCZero(result==0);
+        setCCNegative((result&0x80)==0x80);
+        setCCCarry((value&0x80)==0x80);
+        setCCOverflow(((value^result)&0x80)==0x80); // b7 xor b6 of original operand
+        return result;
     }
 }
