@@ -49,6 +49,11 @@ public class Main {
         results.add(new TestAsl().testAslDirect0x80(cpu, ram, tickCounter));
         results.add(new TestAsl().testAslDirect0x40(cpu, ram, tickCounter));
 
+        results.add(new TestRol().testRolDirect0x00CarrySet(cpu, ram, tickCounter));
+        results.add(new TestRol().testRolDirect0x00CarryReset(cpu, ram, tickCounter));
+        results.add(new TestRol().testRolDirect0x40CarryReset(cpu, ram, tickCounter));
+        results.add(new TestRol().testRolDirect0x81CarrySet(cpu, ram, tickCounter));
+
         int errors=0;
         for (TestResult tr: results
              ) {

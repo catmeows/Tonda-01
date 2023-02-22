@@ -248,6 +248,16 @@ public class Cpu6809 {
                 mem.write(ea, helperAsl(value));
                 tickListener.tick();
                 break;
+            case 0x09:
+                //ROL direct, 6
+                ea = getDirectLow();
+                tickListener.tick();
+                value = mem.read(ea);
+                tickListener.tick();
+                tickListener.tick();
+                mem.write(ea, helperRol(value));
+                tickListener.tick();
+                break;
         }
 
 
@@ -312,6 +322,14 @@ public class Cpu6809 {
         setCCNegative((result&0x80)==0x80);
         setCCCarry((value&0x80)==0x80);
         setCCOverflow(((value^result)&0x80)==0x80); // b7 xor b6 of original operand
+        return result;
+    }
+
+    private int helperRol(int value) {
+        int result = ((value<<1)|(getCCCarry()?0x01:00))&0xff;
+        setCCZero(result==0);
+        setCCNegative((result&0x80)==0x80);
+        setCCCarry((value&0x80)==0x80);
         return result;
     }
 }
