@@ -38,6 +38,9 @@ public class Main {
         results.add(new TestLsr().testLsrDirect0x81(cpu,ram, tickCounter));
         results.add(new TestLsr().testLsrDirect0x40(cpu,ram, tickCounter));
 
+        results.add(new TestRor().testRorDirect0x00CarrySet(cpu,ram, tickCounter));
+        results.add(new TestRor().testRorDirect0x01CarryReset(cpu, ram, tickCounter));
+
         for (TestResult tr: results
              ) {
             System.out.println((tr.getResult()?"ok  :":"ERR :")+tr.getDescription());

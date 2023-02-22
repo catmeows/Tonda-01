@@ -220,6 +220,16 @@ public class Cpu6809 {
                 break;
             case 0x06:
                 //ROR direct, 6
+                ea = getDirectLow();
+                tickListener.tick();
+                value = mem.read(ea);
+                tickListener.tick();
+                tickListener.tick();
+                mem.write(ea, helperRor(value));
+                tickListener.tick();
+                break;
+            case 0x07:
+                break;
         }
 
 
@@ -260,5 +270,15 @@ public class Cpu6809 {
         setCCNegative(false);
         setCCCarry((value&0x01)==0x01);
         return result;
+    }
+
+    private int helperRor(int value) {
+        int result = ((value&0xff)>>1)|(getCCCarry()?0x80:0x00);
+        setCCZero(result==0);
+        setCCNegative((result&0x80)==0x80);
+        setCCCarry((value&0x01)==0x01);
+        return result;
+
+
     }
 }
