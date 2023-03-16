@@ -15,18 +15,20 @@ Pins:
 39 - SELECT, register select
 
 PA..PA7 (in/out) are connected to data lines of printer port
-PB0 (in) is connected to printer busy
+PB0 (out) is connected to tape out
 PB1 (in) is connected to tape in
 PB2 (in) is connected to keyboard serial data input
 PB3 (in) is connected to joystick 0 serial data input
 PB4 (in) is connected to joystick 1 serial data input
-PB5..PB7 not connected
+PB5 (out) is connected to keyboard latch, joystick 0 latch, joystick 1 latch
+PB6 (out) is connected to keyboard clock, joystick 0 clock, joystick 1 clock
+PB7 (out) is connected to caps lock led
 PC0 (out) is connected to printer strobe
-PC1 (out) is connected to tape out
+PC1 (in) is connected to printer busy
 PC2..PC4 (out) is connected to 74LS138 (3 to 8 line decoder) used to select keyboard row
-PC5 (out) is connected to keyboard latch, joystick 0 latch, joystick 1 latch
-PC6 (out) is connected to keyboard clock, joystick 0 clock, joystick 1 clock
-PC7 (out) is connected to caps lock led
+PC5 not connected
+PC6 not connected 
+PC7 not connected
 
 
 Registers:
@@ -37,8 +39,8 @@ $00 - DIRA        - b7|b6|b5|b4|b3|b2|b1|b0 - direction of PORTA lines, 0..read,
 $01 - DIRB        - b7|b6|b5|b4|b3|b2|b1|b0 - direction of PORTB lines, 0..read, 1..write
 $02 - DIRB        - b7|b6|b5|b4|b3|b2|b1|b0 - direction of PORTC lines, 0..read, 1..write
 $04 - PORTA       - d7|d6|d5|d4|d3|d2|d1|d0 - printer data 
-$05 - PORTB       - ..|..|..|j1|j0|ks|ti|pb - joystick 1 serial data (j1), joystick 0 serial data (j0), keyboard serial data (ks), tape in (ti), printer busy (pb)
-$06 - PORTC       - cl|kc|kl|r2|r1|r0|to|ps - caps lock led (cl), serial clock, serial latch, select key row (s2-s0), tape out (to), printer strobe (ps)
+$05 - PORTB       - cl|sc|sl|j1|j0|ks|ti|to - tape out (to), tape in (ti), keyboard serial data (ks), joystick 1 serial data (j1), joystick 0 serial data (j0), serial latch (sl), serial clock (sc), caps lock led (cl)  
+$06 - PORTC       - --|--|--|r2|r1|r0|pb|ps - printer busy (pb), printer strobe (ps), select key row (s2-s0)
 
 $10 - FREQHI1     - ....FFFF - FFFF..high 4 bits of frequency
 $11 - FREQLO1     - FFFFFFFF - low 8 bit of frequency (latch, loaded when FREQHI1 is written)
@@ -67,10 +69,10 @@ I/O
 KEYBOARD AND JOYSTICK
 
 Keyboard and both joysticks are read in serial fashion, via 4021 shift register.
-Latch line is connected to P/S pin of 4021. When latch goes hi, parallel mode is selected and state of buttons is latched.
+Latch line (PB5) is connected to P/S pin of 4021. When latch goes hi, parallel mode is selected and state of buttons is latched.
 Then, latch line goes low and serial mode is selected.
-Q7 of 4021 is connected to (keyboard/joystick0/joystick1) serial data in (PB4/PB3/PB2).
-PC6 is connected to 4021's CLOCK. This way, whenever PC6 goes hi, latched bits are shifted to next position.
+Q7 of 4021 is connected to (keyboard/joystick0/joystick1) serial data in (PB2/PB3/PB4).
+PB6 is connected to 4021's CLOCK. This way, whenever PB6 goes hi, latched bits are shifted to next position.
 This way is possible to read up to 8 buttons.
 To save Fridas pin count, latch and clock are common for keyboard and both joysticks.
 
@@ -80,17 +82,6 @@ Since keyboard has much more buttons, key row is selected by 3 to 8 decoder.
 KEYBOARD
 Tonda 01 has 56 key keyboards, organized as matrix of 8 rows of 7 buttons.
 
- Reading keyboard:
- 1) Write to SELECT ($BFE0) $03 (select PORTC)
- 2) Read REGISTER ($BFE1) and mask bits 2,3,4,5,6 - saving bit 0 (printer busy), bit 1 (tape out), bit 7 (caps lock led)
- 3) Write to REGISTER ($BFE1) combine saved bits with row select (bits 2,3,4), serial latch low, serial clock low
- 4) Write to REGISTER ($BFE1) again, now with latch bit (b5) set hi - buttons are latched.
- 5) Write to SELECT ($BFE0) $02 (select PORTB)
- 6) Read REGISTER (($BFE1), bit 2 is state of  button
- 7) Write to SELECT ($BFE0) $03 (select PORTC)
- 8) Write to REGISTER ($BFE1), with serial clock hi - button bits are shifted by one
- 9) Write to REGISTER ($BFE1), with serial clock low
- 10) Go back to step 5) and repeat until all button states are collected
 
 Physical layout looks like this 
 Regular and shift:
