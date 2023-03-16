@@ -155,12 +155,20 @@ public class Cpu6809 {
         setCCFlag(CC_ZERO, ccZero);
     }
 
+    public void setCCZero(int value) {
+        setCCZero((value&0xff)==0);
+    }
+
     public void setCCCarry(boolean ccCarry) {
         setCCFlag(CC_CARRY, ccCarry);
     }
 
     public void setCCNegative(boolean ccNegative) {
         setCCFlag(CC_NEG, ccNegative);
+    }
+
+    public void setCCNegative(int value) {
+        setCCNegative((value&0x80)==0x80);
     }
 
     public void setCCOverflow(boolean ccOverflow) {
@@ -179,6 +187,21 @@ public class Cpu6809 {
         lineFIRQ = firq;
     }
 
+    private int readByte(int address) {
+        int result = mem.read(address&0xffff);
+        tickListener.tick();
+        return result;
+    }
+
+    private void writeByte(int address, int value) {
+        mem.write(address, value);
+        tickListener.tick();
+    }
+
+    private int readByteAtFFFF() {
+        return readByte(0xffff);
+    }
+
     private void setCCFlag(int flagBit, boolean bit) {
         if (bit) {
             setCCReg(regCC|flagBit);
@@ -189,21 +212,19 @@ public class Cpu6809 {
 
     public void nextInstruction() {
         int ea, value;
-        int opcode = mem.read(regPC);
+        int opcode = readByte(regPC);
         //TODO debugger
         incPC();
-        tickListener.tick();
+
 
         switch (opcode) {
             case 0x00:
                 //NEG direct, 6
                 ea = getDirectLow();
-                tickListener.tick();
+                readByteAtFFFF();
                 value = mem.read(ea);
-                tickListener.tick();
-                tickListener.tick();
-                mem.write(ea, helperNeg(value));
-                tickListener.tick();
+                readByteAtFFFF();
+                writeByte(ea, helperNeg(value));
                 break;
             case 0x01:
                 //illegal NEG direct, 6
@@ -214,22 +235,18 @@ public class Cpu6809 {
             case 0x03:
                 //COM direct, 6
                 ea = getDirectLow();
-                tickListener.tick();
-                value = mem.read(ea);
-                tickListener.tick();
-                tickListener.tick();
-                mem.write(ea, helperCom(value));
-                tickListener.tick();
+                readByteAtFFFF();
+                value = readByte(ea);
+                readByteAtFFFF();
+                writeByte(ea, helperCom(value));
                 break;
             case 0x04:
                 //LSR direct, 6
                 ea = getDirectLow();
-                tickListener.tick();
-                value = mem.read(ea);
-                tickListener.tick();
-                tickListener.tick();
-                mem.write(ea, helperLsr(value));
-                tickListener.tick();
+                readByteAtFFFF();
+                value = readByte(ea);
+                readByteAtFFFF();
+                writeByte(ea, helperLsr(value));
                 break;
             case 0x05:
                 //ilegal LSR direct, 6
@@ -237,52 +254,42 @@ public class Cpu6809 {
             case 0x06:
                 //ROR direct, 6
                 ea = getDirectLow();
-                tickListener.tick();
-                value = mem.read(ea);
-                tickListener.tick();
-                tickListener.tick();
-                mem.write(ea, helperRor(value));
-                tickListener.tick();
+                readByteAtFFFF();
+                value = readByte(ea);
+                readByteAtFFFF();
+                writeByte(ea, helperRor(value));
                 break;
             case 0x07:
                 //ASR direct, 6
                 ea = getDirectLow();
-                tickListener.tick();
-                value = mem.read(ea);
-                tickListener.tick();
-                tickListener.tick();
-                mem.write(ea, helperAsr(value));
-                tickListener.tick();
+                readByteAtFFFF();
+                value = readByte(ea);
+                readByteAtFFFF();
+                writeByte(ea, helperAsr(value));
                 break;
             case 0x08:
                 //ASL,LSL direct, 6
                 ea = getDirectLow();
-                tickListener.tick();
-                value = mem.read(ea);
-                tickListener.tick();
-                tickListener.tick();
-                mem.write(ea, helperAsl(value));
-                tickListener.tick();
+                readByteAtFFFF();
+                value = readByte(ea);
+                readByteAtFFFF();
+                writeByte(ea, helperAsl(value));
                 break;
             case 0x09:
                 //ROL direct, 6
                 ea = getDirectLow();
-                tickListener.tick();
-                value = mem.read(ea);
-                tickListener.tick();
-                tickListener.tick();
-                mem.write(ea, helperRol(value));
-                tickListener.tick();
+                readByteAtFFFF();
+                value = readByte(ea);
+                readByteAtFFFF();
+                writeByte(ea, helperRol(value));
                 break;
             case 0x0a:
                 //DEC direct, 6
                 ea = getDirectLow();
-                tickListener.tick();
-                value = mem.read(ea);
-                tickListener.tick();
-                tickListener.tick();
-                mem.write(ea, helperDec(value));
-                tickListener.tick();
+                readByteAtFFFF();
+                value = readByte(ea);
+                readByteAtFFFF();
+                writeByte(ea, helperDec(value));
                 break;
             case 0x0b:
                 //illegal
@@ -290,38 +297,33 @@ public class Cpu6809 {
             case 0x0c:
                 //INC direct, 6
                 ea = getDirectLow();
-                tickListener.tick();
-                value = mem.read(ea);
-                tickListener.tick();
-                tickListener.tick();
-                mem.write(ea, helperInc(value));
-                tickListener.tick();
+                readByteAtFFFF();
+                value = readByte(ea);
+                readByteAtFFFF();
+                writeByte(ea, helperInc(value));
                 break;
             case 0x0d:
                 //TST direct, 6
                 ea = getDirectLow();
-                tickListener.tick();
-                value = mem.read(ea);
-                tickListener.tick();
-                tickListener.tick();
+                readByteAtFFFF();
+                value = readByte(ea);
+                readByteAtFFFF();
                 helperTst(value);
-                tickListener.tick();
+                readByteAtFFFF();
                 break;
             case 0x0e:
                 //JMP direct, 3
                 ea = getDirectLow();
                 setPCReg(ea);
-                tickListener.tick();
+                readByteAtFFFF();
                 break;
             case 0x0f:
                 //CLR direct, 6
                 ea = getDirectLow();
-                tickListener.tick();
-                mem.read(ea);
-                tickListener.tick();
-                tickListener.tick();
-                mem.write(ea, helperClr());
-                tickListener.tick();
+                readByteAtFFFF();
+                readByte(ea);
+                readByteAtFFFF();
+                writeByte(ea, helperClr());
                 break;
             case 0x10:
                 //Page 2
@@ -333,12 +335,13 @@ public class Cpu6809 {
                 break;
             case 0x12:
                 //NOP, 2
-                tickListener.tick();
+                readByte(regPC);
                 break;
             case 0x13:
                 //SYNC, 4+
-                tickListener.tick();
+                readByte(regPC);
                 do {
+                    //while waiting for interrupt, address lines are in high impendance state
                     tickListener.tick();
                 } while (!(lineNMI||lineIRQ||lineFIRQ));
                 tickListener.tick();
@@ -458,11 +461,41 @@ public class Cpu6809 {
                 break;
             case 0x30:
                 //LEAX ,4+
-
+                value = indexedEa();
+                setCCZero(value==0);
+                regX = value;
+                readByteAtFFFF();
+                break;
             case 0x31:
                 //LEAY ,4+
+                value = indexedEa();
+                setCCZero(value==0);
+                regY = value;
+                readByteAtFFFF();
+                break;
+            case 0x32:
+                //LEAS ,4+
+                regS = indexedEa();
+                readByteAtFFFF();
+                break;
+            case 0x33:
+                //LEAU ,4+
+                regU = indexedEa();
+                readByteAtFFFF();
+                break;
+            case 0x34:
+                //PSHS, 5+
+                helperPush(false);
+                break;
+            case 0x35:
+                //PULS, 5+
 
-
+            case 0x36:
+                //PSHU, 5+
+                helperPush(true);
+                break;
+            case 0x37:
+                //PULU, 5+
         }
 
 
@@ -473,33 +506,26 @@ public class Cpu6809 {
     }
 
     private int getDirectLow() {
-        int lowEA = mem.read(regPC);
-        incPC();
-        tickListener.tick();
+        int lowEA = getImmediate();
         return (regDP<<8)+lowEA;
     }
 
     private int getImmediate() {
-        int value = mem.read(regPC)&0xff;
+        int value = readByte(regPC)&0xff;
         incPC();
-        tickListener.tick();
         return value;
     }
 
     private int getImmediateWord() {
-        int ofsHi = mem.read(regPC);
-        incPC();
-        tickListener.tick();
-        int ofsLo = mem.read(regPC);
-        incPC();
-        tickListener.tick();
+        int ofsHi = getImmediate();
+        int ofsLo = getImmediate();
         return ((ofsHi<<8)+ofsLo)&0xffff;
     }
 
     private int helperNeg(int value) {
         int result = (0 - (value&0xff))&0xff;
-        setCCZero(result==0);
-        setCCNegative((result & 0x80)==0x80);
+        setCCZero(result);
+        setCCNegative(result);
         setCCCarry(result!=0);
         setCCOverflow(result==0x80);
         return result;
@@ -507,8 +533,8 @@ public class Cpu6809 {
 
     private int helperCom(int value) {
         int result = (value^0xff)&0xff;
-        setCCZero(result==0);
-        setCCNegative((result & 0x80)==0x80);
+        setCCZero(result);
+        setCCNegative(result);
         setCCCarry(true);
         setCCOverflow(false);
         return result;
@@ -516,7 +542,7 @@ public class Cpu6809 {
 
     private int helperLsr(int value) {
         int result = ((value&0xff)>>1);
-        setCCZero(result==0);
+        setCCZero(result);
         setCCNegative(false);
         setCCCarry((value&0x01)==0x01);
         return result;
@@ -524,24 +550,24 @@ public class Cpu6809 {
 
     private int helperRor(int value) {
         int result = ((value&0xff)>>1)|(getCCCarry()?0x80:0x00);
-        setCCZero(result==0);
-        setCCNegative((result&0x80)==0x80);
+        setCCZero(result);
+        setCCNegative(result);
         setCCCarry((value&0x01)==0x01);
         return result;
     }
 
     private int helperAsr(int value) {
         int result = ((value&0xff)>>1)|(value&0x80);
-        setCCZero(result==0);
-        setCCNegative((result&0x80)==0x80);
+        setCCZero(result);
+        setCCNegative(result);
         setCCCarry((value&0x01)==0x01);
         return result;
     }
 
     private int helperAsl(int value) {
         int result = (value<<1)&0xff;
-        setCCZero(result==0);
-        setCCNegative((result&0x80)==0x80);
+        setCCZero(result);
+        setCCNegative(result);
         setCCCarry((value&0x80)==0x80);
         setCCOverflow(((value^result)&0x80)==0x80); // b7 xor b6 of original operand
         return result;
@@ -549,31 +575,31 @@ public class Cpu6809 {
 
     private int helperRol(int value) {
         int result = ((value<<1)|(getCCCarry()?0x01:00))&0xff;
-        setCCZero(result==0);
-        setCCNegative((result&0x80)==0x80);
+        setCCZero(result);
+        setCCNegative(result);
         setCCCarry((value&0x80)==0x80);
         return result;
     }
 
     private int helperDec(int value) {
         int result = (value-1)&0xff;
-        setCCZero(result==0);
-        setCCNegative((result&0x80)==0x80);
+        setCCZero(result);
+        setCCNegative(result);
         setCCOverflow((value&0xff)==0x80);
         return result;
     }
 
     private int helperInc(int value) {
         int result = (value+1)&0xff;
-        setCCZero(result==0);
-        setCCNegative((result&0x80)==0x80);
+        setCCZero(result);
+        setCCNegative(result);
         setCCOverflow((value&0xff)==0x7f);
         return result;
     }
 
     private void helperTst(int value) {
-        setCCZero((value&0xff)==0);
-        setCCNegative((value&0x80)==0x80);
+        setCCZero(value);
+        setCCNegative(value);
         setCCOverflow(false);
     }
 
@@ -586,50 +612,35 @@ public class Cpu6809 {
     }
 
     private void helperBranch(boolean condition) {
-        int ofsLo = mem.read(regPC);
-        incPC();
-        tickListener.tick();
+        int ofsLo = getImmediate();
         int ofsHi = ((ofsLo&0x80)==0x80)?0xff:0x00;
-        tickListener.tick();
+        readByteAtFFFF();
         if (condition) {
             setPCReg((regPC+((ofsHi<<8)+ofsLo))&0xffff);
         }
     }
 
     private void helperLongBranch(boolean condition) {
-        int ofsHi = mem.read(regPC);
-        incPC();
-        tickListener.tick();
-        int ofsLo = mem.read(regPC);
-        incPC();
-        tickListener.tick();
-        tickListener.tick();
+        int offset = getImmediateWord();
+        readByteAtFFFF();
         if (condition) {
-            setPCReg((regPC+((ofsHi<<8)+ofsLo))&0xffff);
-            tickListener.tick();
+            setPCReg((regPC+offset)&0xffff);
+            readByteAtFFFF();
         }
     }
 
     private void helperLongSubroutine() {
-        int ofsHi = mem.read(regPC);
-        incPC();
-        tickListener.tick();
-        int ofsLo = mem.read(regPC);
-        incPC();
-        tickListener.tick();
-        tickListener.tick();
-        tickListener.tick();
-        int ea = (regPC+((ofsHi<<8)+ofsLo))&0xffff;
-        mem.read(ea);
-        tickListener.tick();
-        tickListener.tick();
-        regS=(regS-1)&0xffff;
-        mem.write(regS, regPC&0xff);
-        tickListener.tick();
-        regS=(regS-1)&0xffff;
-        mem.write(regS, (regPC&0xff00)>>8);
+        int offset = getImmediateWord();
+        readByteAtFFFF();
+        readByteAtFFFF();
+        int ea = (regPC+offset)&0xffff;
+        readByte(ea);
+        readByteAtFFFF();
+        regS = decWord(regS);
+        writeByte(regS, regPC&0xff);
+        regS = decWord(regS);
+        writeByte(regS, (regPC&0xff00)>>8);
         regPC = ea;
-        tickListener.tick();
     }
 
     private void helperDaa() {
@@ -657,10 +668,10 @@ public class Cpu6809 {
             if there was carry after last ADCA/ADDA e.g. 0x90+0x90=0x120, we need it to preserve for following ADCA
         */
         setCCCarry(getCCCarry() || ((result&0x100) == 0x100));
-        setCCZero((result&0xff)==0);
-        setCCNegative((result&0x80)==0x80);
+        setCCZero(result);
+        setCCNegative(result);
         regA = result;
-        tickListener.tick();
+        readByte(regPC);
     }
 
     private void helperExg(int postByte) {
@@ -670,20 +681,20 @@ public class Cpu6809 {
         int r2Value = getRegByPostByte(r2);
         setRegByPostByte(r1, r2Value);
         setRegByPostByte(r2, r1Value);
-        tickListener.tick();
-        tickListener.tick();
-        tickListener.tick();
-        tickListener.tick();
-        tickListener.tick();
-        tickListener.tick();
+        readByteAtFFFF();
+        readByteAtFFFF();
+        readByteAtFFFF();
+        readByteAtFFFF();
+        readByteAtFFFF();
+        readByteAtFFFF();
     }
 
     private void helperTfr(int postByte) {
         setRegByPostByte((postByte>>4)&0xf, getRegByPostByte(postByte&0xf));
-        tickListener.tick();
-        tickListener.tick();
-        tickListener.tick();
-        tickListener.tick();
+        readByteAtFFFF();
+        readByteAtFFFF();
+        readByteAtFFFF();
+        readByteAtFFFF();
     }
 
     private void setRegByPostByte(int code, int value) {
@@ -750,12 +761,16 @@ public class Cpu6809 {
     private int indexedEa() {
         int postByte = getImmediate();
         if ((postByte&0x80)==0) {
+            // 5b,R
             int ea = indexedGetReg(postByte);
+            readByte(regPC+1);
+            readByteAtFFFF();
             return (ea + ((postByte&0x1f)|(((postByte&0x10)==0x10)?0xffe0:0x0000)))&0xffff;
         }
         if (postByte==0x9f) {
+            // [addr]
             int addr = getImmediateWord();
-            tickListener.tick();
+            readByte(regPC+1);
             return getIndirectEa(addr);
         }
         int ea=-1;
@@ -764,90 +779,90 @@ public class Cpu6809 {
                 //R+
                 ea = indexedGetReg(postByte);
                 indexedRegPlus(postByte);
-                tickListener.tick();
-                tickListener.tick();
-                tickListener.tick();
+                readByte(regPC+1);
+                readByteAtFFFF();
+                readByteAtFFFF();
                 break;
             case 0x1:
                 //R++
                 ea = indexedGetReg(postByte);
                 indexedRegPlus(postByte);
                 indexedRegPlus(postByte);
-                tickListener.tick();
-                tickListener.tick();
-                tickListener.tick();
-                tickListener.tick();
+                readByte(regPC+1);
+                readByteAtFFFF();
+                readByteAtFFFF();
+                readByteAtFFFF();
                 break;
             case 0x2:
                 //-R
                 indexedRegMinus(postByte);
                 ea = indexedGetReg(postByte);
-                tickListener.tick();
-                tickListener.tick();
-                tickListener.tick();
+                readByte(regPC+1);
+                readByteAtFFFF();
+                readByteAtFFFF();
                 break;
             case 0x3:
                 //--R
                 indexedRegMinus(postByte);
                 indexedRegMinus(postByte);
                 ea = indexedGetReg(postByte);
-                tickListener.tick();
-                tickListener.tick();
-                tickListener.tick();
-                tickListener.tick();
+                readByte(regPC+1);
+                readByteAtFFFF();
+                readByteAtFFFF();
+                readByteAtFFFF();
                 break;
             case 0x4:
                 //,R
                 ea = indexedGetReg(postByte);
-                tickListener.tick();
+                readByte(regPC+1);
                 break;
             case 0x5:
                 //B,R
                 ea = addExtended8BitTo16Bit(indexedGetReg(postByte),regB);
-                tickListener.tick();
-                tickListener.tick();
+                readByte(regPC+1);
+                readByteAtFFFF();
                 break;
             case 0x6:
                 //A,R
                 ea = addExtended8BitTo16Bit(indexedGetReg(postByte),regA);
-                tickListener.tick();
-                tickListener.tick();
+                readByte(regPC+1);
+                readByteAtFFFF();
                 break;
             case 0x8:
                 //n,R
                 ea = addExtended8BitTo16Bit(indexedGetReg(postByte),getImmediate());
-                tickListener.tick();
+                readByteAtFFFF();
                 break;
             case 0x9:
                 //nn,R
                 ea = add16BitTo16Bit(indexedGetReg(postByte),getImmediateWord());
-                tickListener.tick();
-                tickListener.tick();
-                tickListener.tick();
+                readByte(regPC+1);
+                readByteAtFFFF();
+                readByteAtFFFF();
                 break;
             case 0xB:
                 //D,R
                 ea = add16BitTo16Bit(indexedGetReg(postByte), getDReg());
-                tickListener.tick();
-                tickListener.tick();
-                tickListener.tick();
-                tickListener.tick();
-                tickListener.tick();
+                readByte(regPC+1);
+                readByte(regPC+2);
+                readByte(regPC+3);
+                readByteAtFFFF();
+                readByteAtFFFF();
                 break;
             case 0xC:
                 //n,PC
                 int ofs = getImmediate();
                 ea = addExtended8BitTo16Bit(regPC, ofs);
-                tickListener.tick();
+                readByteAtFFFF();
                 break;
             case 0xD:
                 //nn,PC
                 ofs = getImmediateWord();
                 ea = add16BitTo16Bit(regPC, ofs);
-                tickListener.tick();
-                tickListener.tick();
-                tickListener.tick();
-                tickListener.tick();
+                readByte(regPC+1);
+                readByteAtFFFF();
+                readByteAtFFFF();
+                readByteAtFFFF();
                 break;
         }
         if ((postByte&0x10)==0x10) {
@@ -857,11 +872,9 @@ public class Cpu6809 {
     }
 
     private int getIndirectEa(int addr) {
-        int hi = mem.read(addr);
-        tickListener.tick();
-        int lo = mem.read((addr+1)&0xffff);
-        tickListener.tick();
-        tickListener.tick();
+        int hi = readByte(addr);
+        int lo = readByte((addr+1)&0xffff);
+        readByteAtFFFF();
         return ((hi<<8)+lo)&0xffff;
     }
 
@@ -911,12 +924,80 @@ public class Cpu6809 {
         }
     }
 
-    private int addExtended8BitTo16Bit(int aWord, int aByte) {
+    private void helperPush(boolean uStack) {
+        int postByte = getImmediate();
+        int sp = uStack?regU:regS;
+        int otherSp = uStack?regS:regU;
+        readByteAtFFFF();
+        readByteAtFFFF();
+        readByte(sp);
+        if ((postByte&0x80)==0x80) {
+            sp = decWord(sp);
+            writeByte(sp, getLowByte(regPC));
+            sp = decWord(sp);
+            writeByte(sp, getHighByte(regPC));
+        }
+        if ((postByte&0x40)==0x40) {
+            sp = decWord(sp);
+            writeByte(sp, getLowByte(otherSp));
+            sp = decWord(sp);
+            writeByte(sp, getHighByte(otherSp));
+        }
+        if ((postByte&0x20)==0x20) {
+            sp = decWord(sp);
+            writeByte(sp, getLowByte(regY));
+            sp = decWord(sp);
+            writeByte(sp, getHighByte(regY));
+        }
+        if ((postByte&0x10)==0x10) {
+            sp = decWord(sp);
+            writeByte(sp, getLowByte(regX));
+            sp = decWord(sp);
+            writeByte(sp, getHighByte(regX));
+        }
+        if ((postByte&0x08)==0x08) {
+            sp = decWord(sp);
+            writeByte(sp, getLowByte(regDP));
+        }
+        if ((postByte&0x04)==0x04) {
+            sp = decWord(sp);
+            writeByte(sp, regB);
+        }
+        if ((postByte&0x02)==0x02) {
+            sp = decWord(sp);
+            writeByte(sp, regA);
+        }
+        if ((postByte&0x01)==0x01) {
+            sp = decWord(sp);
+            writeByte(sp, regCC);
+        }
+        if (uStack) {
+            regU = sp;
+        } else {
+            regS = sp;
+        }
+    }
+
+    private static int addExtended8BitTo16Bit(int aWord, int aByte) {
         return (aWord + ((aByte&0x80)==0x80?0xffff:0x0000))&0xffff;
     }
 
-    private int add16BitTo16Bit(int aWord, int anotherWord) {
+    private static int add16BitTo16Bit(int aWord, int anotherWord) {
         return (aWord+anotherWord)&0xffff;
+    }
+
+    private static int decWord(int word) {
+         return (word-1)&0xffff;
+    }
+
+
+
+    private int getLowByte(int word) {
+        return word&0xff;
+    }
+
+    private int getHighByte(int word) {
+        return (word&0xff00)>>8;
     }
 
 }
