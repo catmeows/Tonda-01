@@ -188,7 +188,7 @@ public class Cpu6809 {
     }
 
     private int readByte(int address) {
-        int result = mem.read(address&0xffff);
+        int result = mem.read(address&0xffff)&0xff;
         tickListener.tick();
         return result;
     }
@@ -370,7 +370,7 @@ public class Cpu6809 {
             case 0x1A:
                 //ORCC immediate, 3
                 setCCReg((getImmediate()|getCCReg())&0xff);
-                tickListener.tick();
+                readByteAtFFFF();
                 break;
             case 0x1B:
                 //illegal
@@ -378,14 +378,14 @@ public class Cpu6809 {
             case 0x1C:
                 //ANDCC immediate, 3
                 setCCReg((getImmediate()&getCCReg())&0xff);
-                tickListener.tick();
+                readByteAtFFFF();
                 break;
             case 0x1D:
                 //SEX, 2
                 regA = ((regB&0x80)==0x80)?0xff:0x00;
-                setCCNegative((regB&0x80)==0x80);
-                setCCZero(regB==0);
-                tickListener.tick();
+                setCCNegative(regB);
+                setCCZero(regB);
+                readByteAtFFFF();
                 break;
             case 0x1E:
                 //EXG postbyte, 8
@@ -489,13 +489,61 @@ public class Cpu6809 {
                 break;
             case 0x35:
                 //PULS, 5+
-
+                helperPull(false);
             case 0x36:
                 //PSHU, 5+
                 helperPush(true);
                 break;
             case 0x37:
                 //PULU, 5+
+                helperPull(true);
+                break;
+            case 0x38:
+                //illegal
+                break;
+            case 0x39:
+                //RTS, 5
+                readByteAtFFFF();
+                helperReturn();
+                break;
+            case 0x3A:
+                //ABX, 3
+                break;
+            case 0x3B:
+                //RTI, 6/15
+                break;
+            case 0x3C:
+                //CWAI, 20
+                break;
+            case 0x3D:
+                //MUL, 11
+                break;
+            case 0x3E:
+                //illegal
+                break;
+            case 0x3F:
+                //SWI, 19
+                break;
+            case 0x40:
+                //NEGA, 2
+                break;
+            case 0x41:
+                //illegal
+                break;
+            case 0x42:
+                //illegal
+                break;
+            case 0x43:
+                //COMA, 2
+                break;
+            case 0x44:
+                //LSRA, 2
+                break;
+            case 0x45:
+                //illegal
+                break;
+            case 0x46:
+                //RORA, 2
         }
 
 
@@ -978,6 +1026,75 @@ public class Cpu6809 {
         }
     }
 
+    private void helperPull(boolean uStack) {
+        int postByte = getImmediate();
+        int sp = uStack?regU:regS;
+        int lo,hi;
+        readByteAtFFFF();
+        readByteAtFFFF();
+        if ((postByte&0x01)==0x01) {
+            regCC = readByte(sp);
+            sp = incWord(sp);
+        }
+        if ((postByte&0x02)==0x02) {
+            regA = readByte(sp);
+            sp = incWord(sp);
+        }
+        if ((postByte&0x04)==0x04) {
+            regB = readByte(sp);
+            sp = incWord(sp);
+        }
+        if ((postByte&0x08)==0x08) {
+            regDP = readByte(sp);
+            sp = incWord(sp);
+        }
+        if ((postByte&0x10)==0x10) {
+            hi = readByte(sp);
+            sp = incWord(sp);
+            lo = readByte(sp);
+            sp = incWord(sp);
+            regX = (hi<<8)+lo;
+        }
+        if ((postByte&0x20)==0x20) {
+            hi = readByte(sp);
+            sp = incWord(sp);
+            lo = readByte(sp);
+            sp = incWord(sp);
+            regY = (hi<<8)+lo;
+        }
+        if ((postByte&0x40)==0x40) {
+            hi = readByte(sp);
+            sp = incWord(sp);
+            lo = readByte(sp);
+            sp = incWord(sp);
+            if (uStack) {
+                regU = (hi<<8)+lo;
+            } else {
+                regS = (hi<<8)+lo;
+            }
+        }
+        if ((postByte&0x80)==0x80) {
+            hi = readByte(sp);
+            sp = incWord(sp);
+            lo = readByte(sp);
+            sp = incWord(sp);
+            regPC = (hi<<8)+lo;
+        }
+        if (uStack) {
+            regU = sp;
+        } else {
+            regS = sp;
+        }
+    }
+
+    private void helperReturn() {
+        int hi = readByte(regS);
+        regS = incWord(regS);
+        int lo = readByte(regS);
+        regS = incWord(regS);
+        readByteAtFFFF();
+    }
+
     private static int addExtended8BitTo16Bit(int aWord, int aByte) {
         return (aWord + ((aByte&0x80)==0x80?0xffff:0x0000))&0xffff;
     }
@@ -990,13 +1107,15 @@ public class Cpu6809 {
          return (word-1)&0xffff;
     }
 
+    private static int incWord(int word) {
+        return (word+1)&0xffff;
+    }
 
-
-    private int getLowByte(int word) {
+    private static int getLowByte(int word) {
         return word&0xff;
     }
 
-    private int getHighByte(int word) {
+    private static int getHighByte(int word) {
         return (word&0xff00)>>8;
     }
 
