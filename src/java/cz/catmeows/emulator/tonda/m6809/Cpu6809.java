@@ -508,9 +508,13 @@ public class Cpu6809 {
                 break;
             case 0x3A:
                 //ABX, 3
+                readByte(regPC);
+                readByteAtFFFF();
+                regX = (regX+regB)&0xffff;
                 break;
             case 0x3B:
                 //RTI, 6/15
+                helperRti();
                 break;
             case 0x3C:
                 //CWAI, 20
@@ -1088,11 +1092,35 @@ public class Cpu6809 {
     }
 
     private void helperReturn() {
+        regPC = popWord();
+        readByteAtFFFF();
+    }
+
+    private void helperRti() {
+        readByte(regPC);
+        regCC = readByte(regS);
+        regS = incWord(regS);
+        if (getCCEntire()) {
+            regA = readByte(regS);
+            regS = incWord(regS);
+            regB = readByte(regS);
+            regS = incWord(regS);
+            regDP = readByte(regS);
+            regS = incWord(regS);
+            regX = popWord();
+            regY = popWord();
+            regU = popWord();
+        }
+        regPC = popWord();
+        readByteAtFFFF();
+    }
+
+    private int popWord() {
         int hi = readByte(regS);
         regS = incWord(regS);
         int lo = readByte(regS);
         regS = incWord(regS);
-        readByteAtFFFF();
+        return (hi<<8)+lo;
     }
 
     private static int addExtended8BitTo16Bit(int aWord, int aByte) {
