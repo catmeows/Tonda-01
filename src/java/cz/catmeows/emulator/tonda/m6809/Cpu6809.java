@@ -175,6 +175,10 @@ public class Cpu6809 {
         setCCFlag(CC_OVER, ccOverflow);
     }
 
+    public void setCCHalf(boolean ccHalf) {
+        setCCFlag(CC_HALF, ccHalf);
+    }
+
     public void setLineNMI(boolean nmi) {
         lineNMI = nmi;
     }
@@ -207,6 +211,13 @@ public class Cpu6809 {
         return ((hi<<8)+readByte(address+1))&0xffff;
     }
 
+    private void writeWord(int address, int value) {
+        int lo = value&0xff;
+        int hi = (value>>8)&0xff;
+        writeByte(address, hi);
+        writeByte(address, lo);
+    }
+
     private void setCCFlag(int flagBit, boolean bit) {
         if (bit) {
             setCCReg(regCC|flagBit);
@@ -225,7 +236,7 @@ public class Cpu6809 {
         switch (opcode) {
             case 0x00:
                 //NEG direct, 6
-                ea = getDirectLow();
+                ea = getEaDirect();
                 readByteAtFFFF();
                 value = mem.read(ea);
                 readByteAtFFFF();
@@ -239,7 +250,7 @@ public class Cpu6809 {
                 break;
             case 0x03:
                 //COM direct, 6
-                ea = getDirectLow();
+                ea = getEaDirect();
                 readByteAtFFFF();
                 value = readByte(ea);
                 readByteAtFFFF();
@@ -247,7 +258,7 @@ public class Cpu6809 {
                 break;
             case 0x04:
                 //LSR direct, 6
-                ea = getDirectLow();
+                ea = getEaDirect();
                 readByteAtFFFF();
                 value = readByte(ea);
                 readByteAtFFFF();
@@ -258,7 +269,7 @@ public class Cpu6809 {
                 break;
             case 0x06:
                 //ROR direct, 6
-                ea = getDirectLow();
+                ea = getEaDirect();
                 readByteAtFFFF();
                 value = readByte(ea);
                 readByteAtFFFF();
@@ -266,7 +277,7 @@ public class Cpu6809 {
                 break;
             case 0x07:
                 //ASR direct, 6
-                ea = getDirectLow();
+                ea = getEaDirect();
                 readByteAtFFFF();
                 value = readByte(ea);
                 readByteAtFFFF();
@@ -274,7 +285,7 @@ public class Cpu6809 {
                 break;
             case 0x08:
                 //ASL,LSL direct, 6
-                ea = getDirectLow();
+                ea = getEaDirect();
                 readByteAtFFFF();
                 value = readByte(ea);
                 readByteAtFFFF();
@@ -282,7 +293,7 @@ public class Cpu6809 {
                 break;
             case 0x09:
                 //ROL direct, 6
-                ea = getDirectLow();
+                ea = getEaDirect();
                 readByteAtFFFF();
                 value = readByte(ea);
                 readByteAtFFFF();
@@ -290,7 +301,7 @@ public class Cpu6809 {
                 break;
             case 0x0a:
                 //DEC direct, 6
-                ea = getDirectLow();
+                ea = getEaDirect();
                 readByteAtFFFF();
                 value = readByte(ea);
                 readByteAtFFFF();
@@ -301,7 +312,7 @@ public class Cpu6809 {
                 break;
             case 0x0c:
                 //INC direct, 6
-                ea = getDirectLow();
+                ea = getEaDirect();
                 readByteAtFFFF();
                 value = readByte(ea);
                 readByteAtFFFF();
@@ -309,7 +320,7 @@ public class Cpu6809 {
                 break;
             case 0x0d:
                 //TST direct, 6
-                ea = getDirectLow();
+                ea = getEaDirect();
                 readByteAtFFFF();
                 value = readByte(ea);
                 readByteAtFFFF();
@@ -318,13 +329,13 @@ public class Cpu6809 {
                 break;
             case 0x0e:
                 //JMP direct, 3
-                ea = getDirectLow();
+                ea = getEaDirect();
                 setPCReg(ea);
                 readByteAtFFFF();
                 break;
             case 0x0f:
                 //CLR direct, 6
-                ea = getDirectLow();
+                ea = getEaDirect();
                 readByteAtFFFF();
                 readByte(ea);
                 readByteAtFFFF();
@@ -879,13 +890,281 @@ public class Cpu6809 {
                 break;
             case 0x83:
                 //SUBD immediate, 4
+                setDReg(helperSub16(getDReg(), getImmediateWord()));
                 break;
             case 0x84:
                 //ANDA immediate, 2
+                regA = helperAnd(regA, getImmediate());
                 break;
             case 0x85:
-
-
+                //BITA immediate, 2
+                helperAnd(regA, getImmediate());
+                break;
+            case 0x86:
+                //LDA immediate, 2
+                regA = helperLd(getImmediate());
+                break;
+            case 0x87:
+                //illegal
+                break;
+            case 0x88:
+                //EORA immediate, 2
+                regA = helperEor(regA, getImmediate());
+                break;
+            case 0x89:
+                //ADCA immediate, 2
+                regA = helperAdc(regA, getImmediate());
+                break;
+            case 0x8A:
+                //ORA immediate, 2
+                regA = helperOr(regA, getImmediate());
+                break;
+            case 0x8B:
+                //ADDA immediate, 2
+                regA = helperAdd(regA, getImmediate());
+                break;
+            case 0x8C:
+                //CMPX immediate, 4
+                helperSub16(regX, getImmediateWord());
+                break;
+            case 0x8D:
+                //BSR relative, 7
+                helperBranchSubroutine();
+                break;
+            case 0x8E:
+                //LDX immediate, 3
+                regX = helperLd16(getImmediateWord());
+                break;
+            case 0x8F:
+                //illegal
+                break;
+            case 0x90:
+                //SUBA direct, 4
+                ea = getEaDirect();
+                readByteAtFFFF();
+                regA = helperSub(regA, readByte(ea));
+                break;
+            case 0x91:
+                //CMPA direct, 4
+                ea = getEaDirect();
+                readByteAtFFFF();
+                helperSub(regA, readByte(ea));
+                break;
+            case 0x92:
+                //SBCA direct, 4
+                ea = getEaDirect();
+                readByteAtFFFF();
+                regA = helperSub(regA, readByte(ea)+(getCCCarry()?1:0));
+                break;
+            case 0x93:
+                //SUBD direct, 6
+                ea = getEaDirect();
+                readByteAtFFFF();
+                setDReg(helperSub16(getDReg(), readWord(ea)));
+                break;
+            case 0x94:
+                //ANDA direct, 4
+                ea = getEaDirect();
+                readByteAtFFFF();
+                regA = helperAnd(regA, readByte(ea));
+                break;
+            case 0x95:
+                //BITA direct, 4
+                ea = getEaDirect();
+                readByteAtFFFF();
+                helperAnd(regA, readByte(ea));
+                break;
+            case 0x96:
+                //LDA direct, 4
+                ea = getEaDirect();
+                readByteAtFFFF();
+                regA = helperLd(readByte(ea));
+                break;
+            case 0x97:
+                //STA direct, 4
+                ea = getEaDirect();
+                readByteAtFFFF();
+                helperLd(regA);
+                writeByte(ea, regA);
+                break;
+            case 0x98:
+                //EORA direct, 4
+                ea = getEaDirect();
+                readByteAtFFFF();
+                regA = helperEor(regA, readByte(ea));
+                break;
+            case 0x99:
+                //ADCA direct, 4
+                ea = getEaDirect();
+                readByteAtFFFF();
+                regA = helperAdc(regA, readByte(ea));
+                break;
+            case 0x9A:
+                //ORA direct, 4
+                ea = getEaDirect();
+                readByteAtFFFF();
+                regA = helperOr(regA, readByte(ea));
+                break;
+            case 0x9B:
+                //ADDA direct, 4
+                ea = getEaDirect();
+                readByteAtFFFF();
+                regA = helperAdd(regA, readByte(ea));
+                break;
+            case 0x9C:
+                //CMPX direct, 6
+                ea = getEaDirect();
+                readByteAtFFFF();
+                helperSub16(regX, readWord(ea));
+                break;
+            case 0x9D:
+                //JSR direct, 7
+                ea = getEaDirect();
+                readByteAtFFFF();
+                readByte(ea);
+                readByteAtFFFF();
+                pushWord(regPC);
+                regPC = ea;
+                break;
+            case 0x9E:
+                //LDX direct, 5
+                ea = getEaDirect();
+                readByteAtFFFF();
+                regX = helperLd16(readWord(ea));
+                break;
+            case 0x9F:
+                //STX direct, 5
+                ea = getEaDirect();
+                readByteAtFFFF();
+                helperLd16(regX);
+                writeWord(ea, regX);
+                break;
+            case 0xA0:
+                //SUBA indexed, 4+
+                ea = indexedEa();
+                regA = helperSub(regA, readByte(ea));
+                break;
+            case 0xA1:
+                //CMPA indexed, 4+
+                ea = indexedEa();
+                helperSub(regA, readByte(ea));
+                break;
+            case 0xA2:
+                //SBCA indexed, 4+
+                ea = indexedEa();
+                regA = helperSbc(regA, readByte(ea));
+                break;
+            case 0xA3:
+                //SUBD indexed, 6+
+                ea = indexedEa();
+                setDReg(helperSub16(getDReg(), readWord(ea)));
+                break;
+            case 0xA4:
+                //ANDA indexed, 4+
+                ea = indexedEa();
+                regA = helperAnd(regA, readByte(ea));
+                break;
+            case 0xA5:
+                //BITA indexed, 4+
+                ea = indexedEa();
+                helperAnd(regA, readByte(ea));
+                break;
+            case 0xA6:
+                //LDA indexed, 4+
+                ea = indexedEa();
+                regA = helperLd(readByte(ea));
+                break;
+            case 0xA7:
+                //STA indexed, 4+
+                ea = indexedEa();
+                writeByte(ea, helperLd(regA));
+                break;
+            case 0xA8:
+                //EORA indexed, 4+
+                ea = indexedEa();
+                regA = helperEor(regA, readByte(ea));
+                break;
+            case 0xA9:
+                //ADCA indexed, 4+
+                ea = indexedEa();
+                regA = helperAdc(regA, readByte(ea));
+                break;
+            case 0xAA:
+                //ORA indexed, 4+
+                ea = indexedEa();
+                regA = helperOr(regA, readByte(ea));
+                break;
+            case 0xAB:
+                //ADDA indexed, 4+
+                ea = indexedEa();
+                regA = helperAdd(regA, readByte(ea));
+                break;
+            case 0xAC:
+                //CMPX indexed, 6+
+                ea = indexedEa();
+                regX = helperLd16(readWord(ea));
+                break;
+            case 0xAD:
+                //JSR indexed, 7+
+                ea = indexedEa();
+                readByte(ea);
+                readByteAtFFFF();
+                pushWord(regPC);
+                regPC = ea;
+                break;
+            case 0xAE:
+                //LDX indexed, 5+
+                ea = indexedEa();
+                regX = helperLd16(ea);
+                break;
+            case 0xAF:
+                //STX indexed, 5+
+                ea = indexedEa();
+                helperLd16(regX);
+                writeWord(ea, regX);
+                break;
+            case 0xB0:
+                //SUBA extended, 5
+                ea = extendedEA();
+                regA = helperSub(regA, readByte(ea));
+                break;
+            case 0xB1:
+                //CMPA extended, 5
+                ea = extendedEA();
+                helperSub(regA, readByte(ea));
+                break;
+            case 0xB2:
+                //SBCA extended, 5
+                ea = extendedEA();
+                regA = helperSbc(regA, readByte(ea));
+                break;
+            case 0xB3:
+                //SUBD extended, 7
+                ea = extendedEA();
+                setDReg(helperSub16(getDReg(), readWord(ea)));
+                break;
+            case 0xB4:
+                //ANDA extended, 5
+                ea = extendedEA();
+                regA = helperAnd(regA, readByte(ea));
+                break;
+            case 0xB5:
+                //BITA extended, 5
+                ea = extendedEA();
+                helperAnd(regA, readByte(ea));
+                break;
+            case 0xB6:
+                //LDA extended, 5
+                ea = extendedEA();
+                regA = helperLd(readByte(ea));
+                break;
+            case 0xB7:
+                //STA extended, 5
+                ea = extendedEA();
+                writeByte(ea, helperLd(regA));
+                break;
+            case 0xB8:
+                //
         }
 
 
@@ -895,7 +1174,7 @@ public class Cpu6809 {
         regPC = (regPC+1)&0xffff;
     }
 
-    private int getDirectLow() {
+    private int getEaDirect() {
         int lowEA = getImmediate();
         return (regDP<<8)+lowEA;
     }
@@ -1030,6 +1309,17 @@ public class Cpu6809 {
         writeByte(regS, regPC&0xff);
         regS = decWord(regS);
         writeByte(regS, (regPC&0xff00)>>8);
+        regPC = ea;
+    }
+
+    private void helperBranchSubroutine() {
+        int ofsLo = getImmediate();
+        int ofsHi = ((ofsLo&0x80)==0x80)?0xff:0x00;
+        int ea = (regPC+((ofsHi<<8)+ofsLo))&0xffff;
+        readByteAtFFFF();
+        readByte(ea);
+        readByteAtFFFF();
+        pushWord(regPC);
         regPC = ea;
     }
 
@@ -1513,8 +1803,67 @@ public class Cpu6809 {
         return helperSub(minuend, subtrahend + (getCCCarry()?1:0));
     }
 
+    private int helperSub16(int minuend, int subtrahend) {
+        int result = minuend - subtrahend;
+        setCCNegative((result&0x8000)==0x8000);
+        setCCZero((result&0xffff)==0x0000);
+        setCCCarry((result&0x10000)==0x10000);
+        setCCOverflow(((result ^ minuend ^ subtrahend ^ (result>>1)) & 0x8000) == 0x8000);
+        readByteAtFFFF();
+        return result & 0xffff;
+    }
 
+    private int helperAnd(int destination, int source) {
+        int result = (destination & source)&0xff;
+        setCCZero(result);
+        setCCNegative(result);
+        setCCOverflow(false);
+        return result;
+    }
 
+    private int helperEor(int destination, int source) {
+        int result = (destination ^ source)&0xff;
+        setCCZero(result);
+        setCCNegative(result);
+        setCCOverflow(false);
+        return result;
+    }
+
+    private int helperOr(int destination, int source) {
+        int result = (destination | source)&0xff;
+        setCCZero(result);
+        setCCNegative(result);
+        setCCOverflow(false);
+        return result;
+    }
+
+    private int helperAdd(int destination, int source) {
+        int result = destination + source;
+        setCCZero(result);
+        setCCNegative(result);
+        setCCCarry((result&0x100)==0x100);
+        setCCOverflow(((result ^ destination ^ source ^ (result>>1)) & 0x80) == 0x80);
+        setCCHalf(((result ^ destination ^ source)&0x10)==0x10);
+        return result&0xff;
+    }
+
+    private int helperAdc(int destination, int source) {
+        return helperAdd(destination, source + (getCCCarry()?1:0));
+    }
+
+    private int helperLd(int value) {
+        setCCZero(value);
+        setCCNegative(value);
+        setCCOverflow(false);
+        return value&0xff;
+    }
+
+    private int helperLd16(int value) {
+        setCCZero((value&0xffff)==0x0000);
+        setCCNegative((value&0x8000)==0x8000);
+        setCCOverflow(false);
+        return value&0xffff;
+    }
 
     private void pushAll() {
         pushWord(regPC);
