@@ -202,6 +202,11 @@ public class Cpu6809 {
         return readByte(0xffff);
     }
 
+    private int readWord(int address) {
+        int hi = readByte(address);
+        return ((hi<<8)+readByte(address+1))&0xffff;
+    }
+
     private void setCCFlag(int flagBit, boolean bit) {
         if (bit) {
             setCCReg(regCC|flagBit);
@@ -518,18 +523,23 @@ public class Cpu6809 {
                 break;
             case 0x3C:
                 //CWAI, 20
+                helperCwai();
                 break;
             case 0x3D:
                 //MUL, 11
+                helperMul();
                 break;
             case 0x3E:
                 //illegal
                 break;
             case 0x3F:
                 //SWI, 19
+                helperSwi();
                 break;
             case 0x40:
                 //NEGA, 2
+                regA = helperNeg(regA);
+                readByte(regPC);
                 break;
             case 0x41:
                 //illegal
@@ -539,15 +549,343 @@ public class Cpu6809 {
                 break;
             case 0x43:
                 //COMA, 2
+                regA = helperCom(regA);
+                readByte(regPC);
                 break;
             case 0x44:
                 //LSRA, 2
+                regA = helperLsr(regA);
+                readByte(regPC);
                 break;
             case 0x45:
                 //illegal
                 break;
             case 0x46:
                 //RORA, 2
+                regA = helperRor(regA);
+                readByte(regPC);
+                break;
+            case 0x47:
+                //ASRA, 2
+                regA = helperAsr(regA);
+                readByte(regPC);
+                break;
+            case 0x48:
+                //ASLA, 2
+                regA = helperAsl(regA);
+                readByte(regPC);
+                break;
+            case 0x49:
+                //ROLA, 2
+                regA = helperRol(regA);
+                readByte(regPC);
+                break;
+            case 0x4A:
+                //DECA, 2
+                regA = helperDec(regA);
+                readByte(regPC);
+                break;
+            case 0x4B:
+                //illegal
+                break;
+            case 0x4C:
+                //INCA, 2
+                regA = helperInc(regA);
+                readByte(regPC);
+                break;
+            case 0x4D:
+                //TSTA, 2
+                helperTst(regA);
+                readByte(regPC);
+                break;
+            case 0x4E:
+                //illegal
+                break;
+            case 0x4F:
+                //CLRA, 2
+                regA = helperClr();
+                readByte(regPC);
+                break;
+            case 0x50:
+                //NEGB, 2
+                regB = helperNeg(regB);
+                readByte(regPC);
+                break;
+            case 0x51:
+                //illegal
+                break;
+            case 0x52:
+                //illegal
+                break;
+            case 0x53:
+                //COMB, 2
+                regB = helperCom(regB);
+                readByte(regPC);
+                break;
+            case 0x54:
+                //LSRB, 2
+                regB = helperLsr(regB);
+                readByte(regPC);
+                break;
+            case 0x55:
+                //illegal
+                break;
+            case 0x56:
+                //RORB, 2
+                regB = helperRor(regB);
+                readByte(regPC);
+                break;
+            case 0x57:
+                //ASRB, 2
+                regB = helperAsr(regB);
+                readByte(regPC);
+                break;
+            case 0x58:
+                //ASLB, 2
+                regB = helperAsl(regB);
+                readByte(regPC);
+                break;
+            case 0x59:
+                //ROLB, 2
+                regB = helperRol(regB);
+                readByte(regPC);
+                break;
+            case 0x5A:
+                //DECB, 2
+                regB = helperDec(regB);
+                readByte(regPC);
+                break;
+            case 0x5B:
+                //illegal
+                break;
+            case 0x5C:
+                //INCB, 2
+                regB = helperInc(regB);
+                readByte(regPC);
+                break;
+            case 0x5D:
+                //TSTB, 2
+                helperTst(regB);
+                readByte(regPC);
+                break;
+            case 0x5E:
+                //illegal
+                break;
+            case 0x5F:
+                //CLRB, 2
+                regB = helperClr();
+                readByte(regPC);
+                break;
+            case 0x60:
+                //NEG indexed, 6+
+                ea = indexedEa();
+                value = helperNeg(readByte(ea));
+                readByteAtFFFF();
+                writeByte(ea, value);
+                break;
+            case 0x61:
+                //illegal
+                break;
+            case 0x62:
+                //illegal
+                break;
+            case 0x63:
+                //COM indexed, 6+
+                ea = indexedEa();
+                value = helperCom(readByte(ea));
+                readByteAtFFFF();
+                writeByte(ea, value);
+                break;
+            case 0x64:
+                //LSR indexed, 6+
+                ea = indexedEa();
+                value = helperLsr(readByte(ea));
+                readByteAtFFFF();
+                writeByte(ea, value);
+                break;
+            case 0x65:
+                //illegal
+                break;
+            case 0x66:
+                //ROR indexed, 6+
+                ea = indexedEa();
+                value = helperRor(readByte(ea));
+                readByteAtFFFF();
+                writeByte(ea, value);
+                break;
+            case 0x67:
+                //ASR indexed, 6+
+                ea = indexedEa();
+                value = helperAsr(readByte(ea));
+                readByteAtFFFF();
+                writeByte(ea, value);
+                break;
+            case 0x68:
+                //ASL indexed, 6+
+                ea = indexedEa();
+                value = helperAsl(readByte(ea));
+                readByteAtFFFF();
+                writeByte(ea, value);
+                break;
+            case 0x69:
+                //ROL indexed, 6+
+                ea = indexedEa();
+                value = helperRol(readByte(ea));
+                readByteAtFFFF();
+                writeByte(ea, value);
+                break;
+            case 0x6A:
+                //DEC indexed, 6+
+                ea = indexedEa();
+                value = helperDec(readByte(ea));
+                readByteAtFFFF();
+                writeByte(ea, value);
+                break;
+            case 0x6B:
+                //illegal
+                break;
+            case 0x6C:
+                //INC indexed, 6+
+                ea = indexedEa();
+                value = helperInc(readByte(ea));
+                readByteAtFFFF();
+                writeByte(ea, value);
+                break;
+            case 0x6D:
+                //TST indexed, 6+
+                ea = indexedEa();
+                helperTst(readByte(ea));
+                readByteAtFFFF();
+                readByteAtFFFF();
+                break;
+            case 0x6E:
+                //JMP indexed, 3+
+                regPC = indexedEa();
+                break;
+            case 0x6F:
+                //CLR indexed, 6+
+                ea = indexedEa();
+                readByte(ea);
+                value = helperClr();
+                readByteAtFFFF();
+                writeByte(ea, value);
+                break;
+            case 0x70:
+                //NEG extended, 7
+                ea = extendedEA();
+                value = helperNeg(readByte(ea));
+                readByteAtFFFF();
+                writeByte(ea, value);
+                break;
+            case 0x71:
+                //illegal
+                break;
+            case 0x72:
+                //illegal
+                break;
+            case 0x73:
+                //COM extended, 7
+                ea = extendedEA();
+                value = helperCom(readByte(ea));
+                readByteAtFFFF();
+                writeByte(ea, value);
+                break;
+            case 0x74:
+                //LSR extended, 7
+                ea = extendedEA();
+                value = helperLsr(readByte(ea));
+                readByteAtFFFF();
+                writeByte(ea, value);
+                break;
+            case 0x75:
+                //illegal
+                break;
+            case 0x76:
+                //ROR extended, 7
+                ea = extendedEA();
+                value = helperRor(readByte(ea));
+                readByteAtFFFF();
+                writeByte(ea, value);
+                break;
+            case 0x77:
+                //ASR extended, 7
+                ea = extendedEA();
+                value = helperAsr(readByte(ea));
+                readByteAtFFFF();
+                writeByte(ea, value);
+                break;
+            case 0x78:
+                //ASL extended, 7
+                ea = extendedEA();
+                value = helperAsl(readByte(ea));
+                readByteAtFFFF();
+                writeByte(ea, value);
+                break;
+            case 0x79:
+                //ROL extended, 7
+                ea = extendedEA();
+                value = helperRol(readByte(ea));
+                readByteAtFFFF();
+                writeByte(ea, value);
+                break;
+            case 0x7A:
+                //DEC extended, 7
+                ea = extendedEA();
+                value = helperDec(readByte(ea));
+                readByteAtFFFF();
+                writeByte(ea, value);
+                break;
+            case 0x7B:
+                //illegal
+                break;
+            case 0x7C:
+                //INC extended, 7
+                ea = extendedEA();
+                value = helperInc(readByte(ea));
+                readByteAtFFFF();
+                writeByte(ea, value);
+                break;
+            case 0x7D:
+                //TST extended, 7
+                ea = extendedEA();
+                helperTst(readByte(ea));
+                readByteAtFFFF();
+                readByteAtFFFF();
+                break;
+            case 0x7E:
+                //JMP extended, 4
+                regPC = extendedEA();
+                readByteAtFFFF();
+                break;
+            case 0x7F:
+                //CLR extended, 7
+                ea = extendedEA();
+                readByte(ea);
+                value = helperClr();
+                readByteAtFFFF();
+                writeByte(ea, value);
+                break;
+            case 0x80:
+                //SUBA immediate, 2
+                regA = helperSub(regA,getImmediate());
+                break;
+            case 0x81:
+                //CMPA immediate, 2
+                helperSub(regA, getImmediate());
+                break;
+            case 0x82:
+                //SBC immediate, 2
+                regA = helperSbc(regA, getImmediate());
+                break;
+            case 0x83:
+                //SUBD immediate, 4
+                break;
+            case 0x84:
+                //ANDA immediate, 2
+                break;
+            case 0x85:
+
+
         }
 
 
@@ -808,6 +1146,12 @@ public class Cpu6809 {
                 return 0xff00+regDP;
         }
         return 0xffff;
+    }
+
+    private int extendedEA() {
+        int ea = getImmediateWord();
+        readByteAtFFFF();
+        return ea;
     }
 
     private int indexedEa() {
@@ -1098,21 +1442,112 @@ public class Cpu6809 {
 
     private void helperRti() {
         readByte(regPC);
-        regCC = readByte(regS);
-        regS = incWord(regS);
+        regCC = popByte();
         if (getCCEntire()) {
-            regA = readByte(regS);
-            regS = incWord(regS);
-            regB = readByte(regS);
-            regS = incWord(regS);
-            regDP = readByte(regS);
-            regS = incWord(regS);
+            regA = popByte();
+            regB = popByte();
+            regDP = popByte();
             regX = popWord();
             regY = popWord();
             regU = popWord();
         }
         regPC = popWord();
         readByteAtFFFF();
+    }
+
+    private void helperCwai() {
+        regCC = (regCC&getImmediate())|CC_ENTIRE;
+        readByte(regPC);
+        readByteAtFFFF();
+        pushAll();
+        do {
+            readByteAtFFFF();
+        } while (!(lineNMI||lineIRQ||lineFIRQ));
+        if (lineNMI) {
+            regPC = readWord(0xfffc);
+        } else if (lineIRQ) {
+            regPC = readWord(0xfff8);
+        } else {
+            regPC = readWord(0xfff6);
+        }
+        readByteAtFFFF();
+    }
+
+    private void helperMul() {
+        int result = regA * regB;
+        regA = (result & 0xff00) >> 8;
+        regB = result & 0xff;
+        setCCZero((result & 0xffff) == 0);
+        setCCCarry((result & 0x80) == 0x80);
+        readByte(regPC);
+        readByteAtFFFF();
+        readByteAtFFFF();
+        readByteAtFFFF();
+        readByteAtFFFF();
+        readByteAtFFFF();
+        readByteAtFFFF();
+        readByteAtFFFF();
+        readByteAtFFFF();
+        readByteAtFFFF();
+    }
+
+    private void helperSwi() {
+        readByte(regPC);
+        readByteAtFFFF();
+        pushAll();
+        readByteAtFFFF();
+        regPC = readWord(0xfffa);
+        readByteAtFFFF();
+    }
+
+    private int helperSub(int minuend, int subtrahend) {
+        int result = minuend - subtrahend;
+        setCCNegative(result);
+        setCCZero(result);
+        setCCCarry((result&0x100)==0x100);
+        setCCOverflow(((result ^ minuend ^ subtrahend ^ (result>>1)) & 0x80) == 0x80);
+        return result&0xff;
+    }
+
+    private int helperSbc(int minuend, int subtrahend) {
+        return helperSub(minuend, subtrahend + (getCCCarry()?1:0));
+    }
+
+
+
+
+    private void pushAll() {
+        pushWord(regPC);
+        pushWord(regU);
+        pushWord(regY);
+        pushWord(regX);
+        pushByte(regDP);
+        pushByte(regB);
+        pushByte(regA);
+        pushByte(regCC);
+    }
+
+    private void pushPCAndCC() {
+        pushWord(regPC);
+        pushByte(regCC);
+    }
+
+    private void pushByte(int aByte) {
+        regS = decWord(regS);
+        writeByte(regS, aByte);
+    }
+
+    private void pushWord(int aWord) {
+        regS = decWord(regS);
+        writeByte(regS, aWord&0xff);
+        regS = decWord(regS);
+        writeByte(regS, (aWord&0xff00)>>8);
+    }
+
+    private int popByte() {
+        int result = readByte(regS);
+        regS = incWord(regS);
+        return result;
     }
 
     private int popWord() {
