@@ -230,6 +230,7 @@ public class Cpu6809 {
         int ea, value;
         int opcode = readByte(regPC);
         //TODO debugger
+        //TODO interrupts
         incPC();
 
         switch (opcode) {
@@ -532,7 +533,7 @@ public class Cpu6809 {
                 break;
             case 0x3F:
                 //SWI, 19
-                helperSwi();
+                helperSwi(0xfffa);
                 break;
             case 0x40:
                 //NEGA, 2
@@ -1497,6 +1498,7 @@ public class Cpu6809 {
 
     private void page0x10() {
         int opcode = readByte(regPC);
+        int ea;
         switch (opcode&0xff) {
             case 0x21:
                 //LBRN 5
@@ -1560,72 +1562,118 @@ public class Cpu6809 {
                 break;
             case 0x3F:
                 //SWI2 20
+                helperSwi(0xfff4);
                 break;
             case 0x83:
                 //CMPD immediate, 5
+                helperSub16(getDReg(),getImmediateWord());
                 break;
             case 0x8C:
                 //CMPY immediate, 5
+                helperSub16(regY, getImmediateWord());
                 break;
             case 0x8E:
                 //LDY  immediate, 4
+                regY = helperLd16(getImmediateWord());
                 break;
             case 0x93:
                 //CMPD direct, 7
+                ea = getEaDirect();
+                helperSub16(getDReg(), readWord(ea));
                 break;
             case 0x9C:
                 //CMPY direct, 7
+                ea = getEaDirect();
+                helperSub16(regY, readWord(ea));
                 break;
             case 0x9E:
                 //LDY direct, 6
+                ea = getEaDirect();
+                regY = helperLd16(readWord(ea));
                 break;
             case 0x9F:
                 //STY direct, 6
+                ea = getEaDirect();
+                helperLd16(regY);
+                writeWord(ea, regY);
                 break;
             case 0xA3:
                 //CMPD indexed, 7+
+                ea = indexedEa();
+                helperSub16(getDReg(), readWord(ea));
                 break;
             case 0xAC:
                 //CMPY indexed, 7+
+                ea = indexedEa();
+                helperSub16(regY, readWord(ea));
                 break;
             case 0xAE:
                 //LDY indexed, 6+
+                ea = indexedEa();
                 break;
             case 0xAF:
                 //STY indexed, 6+
+                ea = indexedEa();
+                helperLd16(regY);
+                writeWord(ea, regY);
                 break;
             case 0xB3:
                 //CMPD extended, 8
+                ea = extendedEA();
+                helperSub16(getDReg(), readWord(ea));
                 break;
             case 0xBC:
                 //CMPY extended, 8
+                ea = extendedEA();
+                helperSub16(regY, readWord(ea));
                 break;
             case 0xBE:
                 //LDY extended, 7
+                ea = extendedEA();
+                regY = helperLd16(readWord(ea));
                 break;
             case 0xBF:
                 //STY extended, 7
+                ea = extendedEA();
+                helperLd16(regY);
+                writeWord(ea, regY);
                 break;
             case 0xCE:
                 //LDS immediate, 4
+                regS = helperLd16(getImmediateWord());
                 break;
             case 0xDE:
                 //LDS direct, 6
+                ea = getEaDirect();
+                regS = helperLd16(readWord(ea));
                 break;
             case 0xDF:
                 //STS direct, 6
+                ea = getEaDirect();
+                helperLd16(regS);
+                writeWord(ea, regS);
                 break;
             case 0xEE:
                 //LDS indexed, 6+
+                ea = indexedEa();
+                regS = helperLd16(readWord(ea));
                 break;
             case 0xEF:
                 //STS indexed, 6+
+                ea = indexedEa();
+                helperLd16(regS);
+                writeWord(ea, regS);
                 break;
             case 0xFE:
                 //LDS extended, 7
+                ea = extendedEA();
+                regS = helperLd16(readWord(ea));
                 break;
             case 0xFF:
                 //STS extended, 7
+                ea = extendedEA();
+                helperLd16(regS);
+                writeWord(ea, regS);
                 break;
             default:
                 //TODO illegal opcode
@@ -1638,6 +1686,7 @@ public class Cpu6809 {
         switch (opcode&0xff) {
             case 0x3F:
                 //SWI3 20
+                helperSwi(0xfff2);
                 break;
             case 0x83:
                 //CMPU immediate, 5
@@ -2275,12 +2324,12 @@ public class Cpu6809 {
         }
     }
 
-    private void helperSwi() {
+    private void helperSwi(int vector) {
         readByte(regPC);
         readByteAtFFFF();
         pushAll();
         readByteAtFFFF();
-        regPC = readWord(0xfffa);
+        regPC = readWord(vector);
         readByteAtFFFF();
     }
 
