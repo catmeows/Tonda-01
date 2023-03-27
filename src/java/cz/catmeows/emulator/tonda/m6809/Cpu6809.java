@@ -1683,6 +1683,7 @@ public class Cpu6809 {
 
     private void page0x11() {
         int opcode = readByte(regPC);
+        int ea;
         switch (opcode&0xff) {
             case 0x3F:
                 //SWI3 20
@@ -1690,27 +1691,41 @@ public class Cpu6809 {
                 break;
             case 0x83:
                 //CMPU immediate, 5
+                helperSub16(regU, getImmediateWord());
                 break;
             case 0x8C:
                 //CMPS immediate, 5
+                helperSub16(regS, getImmediateWord());
                 break;
             case 0x93:
                 //CMPU direct, 7
+                ea = getEaDirect();
+                helperSub16(regU, readWord(ea));
                 break;
             case 0x9C:
                 //CMPS direct, 7
+                ea = getEaDirect();
+                helperSub16(regS, readWord(ea));
                 break;
             case 0xA3:
                 //CMPU indexed, 7+
+                ea = indexedEa();
+                helperSub16(regU, readWord(ea));
                 break;
             case 0xAC:
                 //CMPS indexed, 7+
+                ea = indexedEa();
+                helperSub16(regS, readWord(ea));
                 break;
             case 0xB3:
                 //CMPU extended, 8
+                ea = extendedEA();
+                helperSub16(regU, readWord(ea));
                 break;
             case 0xBC:
                 //CMPS extended, 8
+                ea = extendedEA();
+                helperSub16(regS, readWord(ea));
                 break;
             default:
                 //TODO illegal
