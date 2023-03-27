@@ -29,6 +29,10 @@ public class Cpu6809 {
     private boolean lineIRQ;
     private boolean lineFIRQ;
 
+    private boolean lineReset;
+
+    private boolean nmiArmed;
+
     private AddressSpace mem;
     private TickListener tickListener;
 
@@ -36,6 +40,7 @@ public class Cpu6809 {
     public Cpu6809(AddressSpace memory, TickListener tickListener) {
         this.mem = memory;
         this.tickListener = tickListener;
+        lineReset = true;
     }
 
     public int getDReg() {
@@ -179,26 +184,34 @@ public class Cpu6809 {
         setCCFlag(CC_HALF, ccHalf);
     }
 
-    public void setLineNMI(boolean nmi) {
-        lineNMI = nmi;
+    public void nmi() {
+        lineNMI = true;
     }
 
-    public void setLineIRQ(boolean irq) {
-        lineIRQ = irq;
+    public void irq() {
+        lineIRQ = true;
     }
 
-    public void setLineFIRQ(boolean firq) {
-        lineFIRQ = firq;
+    public void firq() {
+        lineFIRQ = true;
+    }
+
+    public void reset() {
+        lineReset = true;
     }
 
     private int readByte(int address) {
         int result = mem.read(address&0xffff)&0xff;
+        lineIRQ = false;
+        lineFIRQ = false;
         tickListener.tick();
         return result;
     }
 
     private void writeByte(int address, int value) {
         mem.write(address, value);
+        lineIRQ = false;
+        lineFIRQ = false;
         tickListener.tick();
     }
 
@@ -231,1266 +244,1280 @@ public class Cpu6809 {
         int opcode = readByte(regPC);
         //TODO debugger
         //TODO interrupts
-        incPC();
-
-        switch (opcode) {
-            case 0x00:
-                //NEG direct, 6
-                ea = getEaDirect();
-                value = mem.read(ea);
-                readByteAtFFFF();
-                writeByte(ea, helperNeg(value));
-                break;
-            case 0x01:
-                //illegal NEG direct, 6
-                break;
-            case 0x02:
-                //illegal
-                break;
-            case 0x03:
-                //COM direct, 6
-                ea = getEaDirect();
-                value = readByte(ea);
-                readByteAtFFFF();
-                writeByte(ea, helperCom(value));
-                break;
-            case 0x04:
-                //LSR direct, 6
-                ea = getEaDirect();
-                value = readByte(ea);
-                readByteAtFFFF();
-                writeByte(ea, helperLsr(value));
-                break;
-            case 0x05:
-                //ilegal LSR direct, 6
-                break;
-            case 0x06:
-                //ROR direct, 6
-                ea = getEaDirect();
-                value = readByte(ea);
-                readByteAtFFFF();
-                writeByte(ea, helperRor(value));
-                break;
-            case 0x07:
-                //ASR direct, 6
-                ea = getEaDirect();
-                value = readByte(ea);
-                readByteAtFFFF();
-                writeByte(ea, helperAsr(value));
-                break;
-            case 0x08:
-                //ASL,LSL direct, 6
-                ea = getEaDirect();
-                value = readByte(ea);
-                readByteAtFFFF();
-                writeByte(ea, helperAsl(value));
-                break;
-            case 0x09:
-                //ROL direct, 6
-                ea = getEaDirect();
-                value = readByte(ea);
-                readByteAtFFFF();
-                writeByte(ea, helperRol(value));
-                break;
-            case 0x0a:
-                //DEC direct, 6
-                ea = getEaDirect();
-                value = readByte(ea);
-                readByteAtFFFF();
-                writeByte(ea, helperDec(value));
-                break;
-            case 0x0b:
-                //illegal
-                break;
-            case 0x0c:
-                //INC direct, 6
-                ea = getEaDirect();
-                value = readByte(ea);
-                readByteAtFFFF();
-                writeByte(ea, helperInc(value));
-                break;
-            case 0x0d:
-                //TST direct, 6
-                ea = getEaDirect();
-                value = readByte(ea);
-                readByteAtFFFF();
-                helperTst(value);
-                readByteAtFFFF();
-                break;
-            case 0x0e:
-                //JMP direct, 3
-                ea = getEaDirect();
-                setPCReg(ea);
-                break;
-            case 0x0f:
-                //CLR direct, 6
-                ea = getEaDirect();
-                readByte(ea);
-                readByteAtFFFF();
-                writeByte(ea, helperClr());
-                break;
-            case 0x10:
-                //Page 2
-                page0x10();
-                break;
-            case 0x11:
-                //Page 3
-                page0x11();
-                break;
-            case 0x12:
-                //NOP, 2
-                readByte(regPC);
-                break;
-            case 0x13:
-                //SYNC, 4+
-                readByte(regPC);
-                do {
-                    //while waiting for interrupt, address lines are in high impendance state
+        if (lineReset) {
+            helperReset();
+        } else if (lineNMI&&nmiArmed) {
+            helperNmi();
+        } else if (lineFIRQ&&(!getCCFIRQ())) {
+            helperFirq();
+        } else if (lineIRQ&&(!getCCIRQ())) {
+            helperIrq();
+        } else {
+            incPC();
+            switch (opcode) {
+                case 0x00:
+                    //NEG direct, 6
+                    ea = getEaDirect();
+                    value = mem.read(ea);
+                    readByteAtFFFF();
+                    writeByte(ea, helperNeg(value));
+                    break;
+                case 0x01:
+                    //illegal NEG direct, 6
+                    break;
+                case 0x02:
+                    //illegal
+                    break;
+                case 0x03:
+                    //COM direct, 6
+                    ea = getEaDirect();
+                    value = readByte(ea);
+                    readByteAtFFFF();
+                    writeByte(ea, helperCom(value));
+                    break;
+                case 0x04:
+                    //LSR direct, 6
+                    ea = getEaDirect();
+                    value = readByte(ea);
+                    readByteAtFFFF();
+                    writeByte(ea, helperLsr(value));
+                    break;
+                case 0x05:
+                    //ilegal LSR direct, 6
+                    break;
+                case 0x06:
+                    //ROR direct, 6
+                    ea = getEaDirect();
+                    value = readByte(ea);
+                    readByteAtFFFF();
+                    writeByte(ea, helperRor(value));
+                    break;
+                case 0x07:
+                    //ASR direct, 6
+                    ea = getEaDirect();
+                    value = readByte(ea);
+                    readByteAtFFFF();
+                    writeByte(ea, helperAsr(value));
+                    break;
+                case 0x08:
+                    //ASL,LSL direct, 6
+                    ea = getEaDirect();
+                    value = readByte(ea);
+                    readByteAtFFFF();
+                    writeByte(ea, helperAsl(value));
+                    break;
+                case 0x09:
+                    //ROL direct, 6
+                    ea = getEaDirect();
+                    value = readByte(ea);
+                    readByteAtFFFF();
+                    writeByte(ea, helperRol(value));
+                    break;
+                case 0x0a:
+                    //DEC direct, 6
+                    ea = getEaDirect();
+                    value = readByte(ea);
+                    readByteAtFFFF();
+                    writeByte(ea, helperDec(value));
+                    break;
+                case 0x0b:
+                    //illegal
+                    break;
+                case 0x0c:
+                    //INC direct, 6
+                    ea = getEaDirect();
+                    value = readByte(ea);
+                    readByteAtFFFF();
+                    writeByte(ea, helperInc(value));
+                    break;
+                case 0x0d:
+                    //TST direct, 6
+                    ea = getEaDirect();
+                    value = readByte(ea);
+                    readByteAtFFFF();
+                    helperTst(value);
+                    readByteAtFFFF();
+                    break;
+                case 0x0e:
+                    //JMP direct, 3
+                    ea = getEaDirect();
+                    setPCReg(ea);
+                    break;
+                case 0x0f:
+                    //CLR direct, 6
+                    ea = getEaDirect();
+                    readByte(ea);
+                    readByteAtFFFF();
+                    writeByte(ea, helperClr());
+                    break;
+                case 0x10:
+                    //Page 2
+                    page0x10();
+                    break;
+                case 0x11:
+                    //Page 3
+                    page0x11();
+                    break;
+                case 0x12:
+                    //NOP, 2
+                    readByte(regPC);
+                    break;
+                case 0x13:
+                    //SYNC, 4+
+                    readByte(regPC);
+                    do {
+                        //while waiting for interrupt, address lines are in high impendance state
+                        tickListener.tick();
+                    } while (!(lineNMI || lineIRQ || lineFIRQ||lineReset));
+                    //we clear IRQ, FIRQ lines during memory read, right before tick
+                    //but for sync we need to do it here
+                    lineFIRQ = false;
+                    lineIRQ = false;
                     tickListener.tick();
-                } while (!(lineNMI||lineIRQ||lineFIRQ));
-                tickListener.tick();
-                break;
-            case 0x14:
-                //illegal
-                break;
-            case 0x15:
-                //illegal
-                break;
-            case 0x16:
-                //LBRA, 5
-                helperLongBranch(true);
-                break;
-            case 0x17:
-                //LBSR, 9
-                helperLongSubroutine();
-                break;
-            case 0x18:
-                //illegal
-                break;
-            case 0x19:
-                //DAA, 2
-                helperDaa();
-                break;
-            case 0x1A:
-                //ORCC immediate, 3
-                setCCReg((getImmediate()|getCCReg())&0xff);
-                readByteAtFFFF();
-                break;
-            case 0x1B:
-                //illegal
-                break;
-            case 0x1C:
-                //ANDCC immediate, 3
-                setCCReg((getImmediate()&getCCReg())&0xff);
-                readByteAtFFFF();
-                break;
-            case 0x1D:
-                //SEX, 2
-                regA = ((regB&0x80)==0x80)?0xff:0x00;
-                setCCNegative(regB);
-                setCCZero(regB);
-                readByteAtFFFF();
-                break;
-            case 0x1E:
-                //EXG postbyte, 8
-                helperExg(getImmediate());
-                break;
-            case 0x1F:
-                //TFR postbyte, 6
-                helperTfr(getImmediate());
-                break;
-            case 0x20:
-                //BRA offset, 3
-                helperBranch(true);
-                break;
-            case 0x21:
-                //BRN offset, 3
-                helperBranch(false);
-                break;
-            case 0x22:
-                //BHI offset, 3
-                helperBranch(!(getCCCarry()||getCCZero()));
-                break;
-            case 0x23:
-                //BLS offset, 3
-                helperBranch(getCCCarry()||getCCZero());
-                break;
-            case 0x24:
-                //BCC offset, 3
-                helperBranch(!getCCCarry());
-                break;
-            case 0x25:
-                //BCS offset, 3
-                helperBranch(getCCCarry());
-                break;
-            case 0x26:
-                //BNE offset, 3
-                helperBranch(!getCCZero());
-                break;
-            case 0x27:
-                //BEQ offset, 3
-                helperBranch(getCCZero());
-                break;
-            case 0x28:
-                //BVC offset, 3
-                helperBranch(!getCCOverflow());
-                break;
-            case 0x29:
-                //BVS offset, 3
-                helperBranch(getCCOverflow());
-                break;
-            case 0x2A:
-                //BPL offset, 3
-                helperBranch(!getCCNegative());
-                break;
-            case 0x2B:
-                //BMI offset, 3
-                helperBranch(getCCNegative());
-                break;
-            case 0x2C:
-                //BGE offset, 3
-                helperBranch(getCCNegative()==getCCOverflow());
-                break;
-            case 0x2D:
-                //BLT offset, 3
-                helperBranch(getCCNegative()!=getCCOverflow());
-                break;
-            case 0x2E:
-                //BGT offset, 3
-                helperBranch((!getCCZero())&&(getCCNegative()==getCCOverflow()));
-                break;
-            case 0x2F:
-                //BLE offset, 3
-                helperBranch(getCCZero()||(getCCNegative()!=getCCOverflow()));
-                break;
-            case 0x30:
-                //LEAX ,4+
-                value = indexedEa();
-                setCCZero(value==0);
-                regX = value;
-                readByteAtFFFF();
-                break;
-            case 0x31:
-                //LEAY ,4+
-                value = indexedEa();
-                setCCZero(value==0);
-                regY = value;
-                readByteAtFFFF();
-                break;
-            case 0x32:
-                //LEAS ,4+
-                regS = indexedEa();
-                readByteAtFFFF();
-                break;
-            case 0x33:
-                //LEAU ,4+
-                regU = indexedEa();
-                readByteAtFFFF();
-                break;
-            case 0x34:
-                //PSHS, 5+
-                helperPush(false);
-                break;
-            case 0x35:
-                //PULS, 5+
-                helperPull(false);
-            case 0x36:
-                //PSHU, 5+
-                helperPush(true);
-                break;
-            case 0x37:
-                //PULU, 5+
-                helperPull(true);
-                break;
-            case 0x38:
-                //illegal
-                break;
-            case 0x39:
-                //RTS, 5
-                readByteAtFFFF();
-                helperReturn();
-                break;
-            case 0x3A:
-                //ABX, 3
-                readByte(regPC);
-                readByteAtFFFF();
-                regX = (regX+regB)&0xffff;
-                break;
-            case 0x3B:
-                //RTI, 6/15
-                helperRti();
-                break;
-            case 0x3C:
-                //CWAI, 20
-                helperCwai();
-                break;
-            case 0x3D:
-                //MUL, 11
-                helperMul();
-                break;
-            case 0x3E:
-                //illegal
-                break;
-            case 0x3F:
-                //SWI, 19
-                helperSwi(0xfffa);
-                break;
-            case 0x40:
-                //NEGA, 2
-                regA = helperNeg(regA);
-                readByte(regPC);
-                break;
-            case 0x41:
-                //illegal
-                break;
-            case 0x42:
-                //illegal
-                break;
-            case 0x43:
-                //COMA, 2
-                regA = helperCom(regA);
-                readByte(regPC);
-                break;
-            case 0x44:
-                //LSRA, 2
-                regA = helperLsr(regA);
-                readByte(regPC);
-                break;
-            case 0x45:
-                //illegal
-                break;
-            case 0x46:
-                //RORA, 2
-                regA = helperRor(regA);
-                readByte(regPC);
-                break;
-            case 0x47:
-                //ASRA, 2
-                regA = helperAsr(regA);
-                readByte(regPC);
-                break;
-            case 0x48:
-                //ASLA, 2
-                regA = helperAsl(regA);
-                readByte(regPC);
-                break;
-            case 0x49:
-                //ROLA, 2
-                regA = helperRol(regA);
-                readByte(regPC);
-                break;
-            case 0x4A:
-                //DECA, 2
-                regA = helperDec(regA);
-                readByte(regPC);
-                break;
-            case 0x4B:
-                //illegal
-                break;
-            case 0x4C:
-                //INCA, 2
-                regA = helperInc(regA);
-                readByte(regPC);
-                break;
-            case 0x4D:
-                //TSTA, 2
-                helperTst(regA);
-                readByte(regPC);
-                break;
-            case 0x4E:
-                //illegal
-                break;
-            case 0x4F:
-                //CLRA, 2
-                regA = helperClr();
-                readByte(regPC);
-                break;
-            case 0x50:
-                //NEGB, 2
-                regB = helperNeg(regB);
-                readByte(regPC);
-                break;
-            case 0x51:
-                //illegal
-                break;
-            case 0x52:
-                //illegal
-                break;
-            case 0x53:
-                //COMB, 2
-                regB = helperCom(regB);
-                readByte(regPC);
-                break;
-            case 0x54:
-                //LSRB, 2
-                regB = helperLsr(regB);
-                readByte(regPC);
-                break;
-            case 0x55:
-                //illegal
-                break;
-            case 0x56:
-                //RORB, 2
-                regB = helperRor(regB);
-                readByte(regPC);
-                break;
-            case 0x57:
-                //ASRB, 2
-                regB = helperAsr(regB);
-                readByte(regPC);
-                break;
-            case 0x58:
-                //ASLB, 2
-                regB = helperAsl(regB);
-                readByte(regPC);
-                break;
-            case 0x59:
-                //ROLB, 2
-                regB = helperRol(regB);
-                readByte(regPC);
-                break;
-            case 0x5A:
-                //DECB, 2
-                regB = helperDec(regB);
-                readByte(regPC);
-                break;
-            case 0x5B:
-                //illegal
-                break;
-            case 0x5C:
-                //INCB, 2
-                regB = helperInc(regB);
-                readByte(regPC);
-                break;
-            case 0x5D:
-                //TSTB, 2
-                helperTst(regB);
-                readByte(regPC);
-                break;
-            case 0x5E:
-                //illegal
-                break;
-            case 0x5F:
-                //CLRB, 2
-                regB = helperClr();
-                readByte(regPC);
-                break;
-            case 0x60:
-                //NEG indexed, 6+
-                ea = indexedEa();
-                value = helperNeg(readByte(ea));
-                readByteAtFFFF();
-                writeByte(ea, value);
-                break;
-            case 0x61:
-                //illegal
-                break;
-            case 0x62:
-                //illegal
-                break;
-            case 0x63:
-                //COM indexed, 6+
-                ea = indexedEa();
-                value = helperCom(readByte(ea));
-                readByteAtFFFF();
-                writeByte(ea, value);
-                break;
-            case 0x64:
-                //LSR indexed, 6+
-                ea = indexedEa();
-                value = helperLsr(readByte(ea));
-                readByteAtFFFF();
-                writeByte(ea, value);
-                break;
-            case 0x65:
-                //illegal
-                break;
-            case 0x66:
-                //ROR indexed, 6+
-                ea = indexedEa();
-                value = helperRor(readByte(ea));
-                readByteAtFFFF();
-                writeByte(ea, value);
-                break;
-            case 0x67:
-                //ASR indexed, 6+
-                ea = indexedEa();
-                value = helperAsr(readByte(ea));
-                readByteAtFFFF();
-                writeByte(ea, value);
-                break;
-            case 0x68:
-                //ASL indexed, 6+
-                ea = indexedEa();
-                value = helperAsl(readByte(ea));
-                readByteAtFFFF();
-                writeByte(ea, value);
-                break;
-            case 0x69:
-                //ROL indexed, 6+
-                ea = indexedEa();
-                value = helperRol(readByte(ea));
-                readByteAtFFFF();
-                writeByte(ea, value);
-                break;
-            case 0x6A:
-                //DEC indexed, 6+
-                ea = indexedEa();
-                value = helperDec(readByte(ea));
-                readByteAtFFFF();
-                writeByte(ea, value);
-                break;
-            case 0x6B:
-                //illegal
-                break;
-            case 0x6C:
-                //INC indexed, 6+
-                ea = indexedEa();
-                value = helperInc(readByte(ea));
-                readByteAtFFFF();
-                writeByte(ea, value);
-                break;
-            case 0x6D:
-                //TST indexed, 6+
-                ea = indexedEa();
-                helperTst(readByte(ea));
-                readByteAtFFFF();
-                readByteAtFFFF();
-                break;
-            case 0x6E:
-                //JMP indexed, 3+
-                regPC = indexedEa();
-                break;
-            case 0x6F:
-                //CLR indexed, 6+
-                ea = indexedEa();
-                readByte(ea);
-                value = helperClr();
-                readByteAtFFFF();
-                writeByte(ea, value);
-                break;
-            case 0x70:
-                //NEG extended, 7
-                ea = extendedEA();
-                value = helperNeg(readByte(ea));
-                readByteAtFFFF();
-                writeByte(ea, value);
-                break;
-            case 0x71:
-                //illegal
-                break;
-            case 0x72:
-                //illegal
-                break;
-            case 0x73:
-                //COM extended, 7
-                ea = extendedEA();
-                value = helperCom(readByte(ea));
-                readByteAtFFFF();
-                writeByte(ea, value);
-                break;
-            case 0x74:
-                //LSR extended, 7
-                ea = extendedEA();
-                value = helperLsr(readByte(ea));
-                readByteAtFFFF();
-                writeByte(ea, value);
-                break;
-            case 0x75:
-                //illegal
-                break;
-            case 0x76:
-                //ROR extended, 7
-                ea = extendedEA();
-                value = helperRor(readByte(ea));
-                readByteAtFFFF();
-                writeByte(ea, value);
-                break;
-            case 0x77:
-                //ASR extended, 7
-                ea = extendedEA();
-                value = helperAsr(readByte(ea));
-                readByteAtFFFF();
-                writeByte(ea, value);
-                break;
-            case 0x78:
-                //ASL extended, 7
-                ea = extendedEA();
-                value = helperAsl(readByte(ea));
-                readByteAtFFFF();
-                writeByte(ea, value);
-                break;
-            case 0x79:
-                //ROL extended, 7
-                ea = extendedEA();
-                value = helperRol(readByte(ea));
-                readByteAtFFFF();
-                writeByte(ea, value);
-                break;
-            case 0x7A:
-                //DEC extended, 7
-                ea = extendedEA();
-                value = helperDec(readByte(ea));
-                readByteAtFFFF();
-                writeByte(ea, value);
-                break;
-            case 0x7B:
-                //illegal
-                break;
-            case 0x7C:
-                //INC extended, 7
-                ea = extendedEA();
-                value = helperInc(readByte(ea));
-                readByteAtFFFF();
-                writeByte(ea, value);
-                break;
-            case 0x7D:
-                //TST extended, 7
-                ea = extendedEA();
-                helperTst(readByte(ea));
-                readByteAtFFFF();
-                readByteAtFFFF();
-                break;
-            case 0x7E:
-                //JMP extended, 4
-                regPC = extendedEA();
-                readByteAtFFFF();
-                break;
-            case 0x7F:
-                //CLR extended, 7
-                ea = extendedEA();
-                readByte(ea);
-                value = helperClr();
-                readByteAtFFFF();
-                writeByte(ea, value);
-                break;
-            case 0x80:
-                //SUBA immediate, 2
-                regA = helperSub(regA,getImmediate());
-                break;
-            case 0x81:
-                //CMPA immediate, 2
-                helperSub(regA, getImmediate());
-                break;
-            case 0x82:
-                //SBC immediate, 2
-                regA = helperSbc(regA, getImmediate());
-                break;
-            case 0x83:
-                //SUBD immediate, 4
-                setDReg(helperSub16(getDReg(), getImmediateWord()));
-                break;
-            case 0x84:
-                //ANDA immediate, 2
-                regA = helperAnd(regA, getImmediate());
-                break;
-            case 0x85:
-                //BITA immediate, 2
-                helperAnd(regA, getImmediate());
-                break;
-            case 0x86:
-                //LDA immediate, 2
-                regA = helperLd(getImmediate());
-                break;
-            case 0x87:
-                //illegal
-                break;
-            case 0x88:
-                //EORA immediate, 2
-                regA = helperEor(regA, getImmediate());
-                break;
-            case 0x89:
-                //ADCA immediate, 2
-                regA = helperAdc(regA, getImmediate());
-                break;
-            case 0x8A:
-                //ORA immediate, 2
-                regA = helperOr(regA, getImmediate());
-                break;
-            case 0x8B:
-                //ADDA immediate, 2
-                regA = helperAdd(regA, getImmediate());
-                break;
-            case 0x8C:
-                //CMPX immediate, 4
-                helperSub16(regX, getImmediateWord());
-                break;
-            case 0x8D:
-                //BSR relative, 7
-                helperBranchSubroutine();
-                break;
-            case 0x8E:
-                //LDX immediate, 3
-                regX = helperLd16(getImmediateWord());
-                break;
-            case 0x8F:
-                //illegal
-                break;
-            case 0x90:
-                //SUBA direct, 4
-                ea = getEaDirect();
-                regA = helperSub(regA, readByte(ea));
-                break;
-            case 0x91:
-                //CMPA direct, 4
-                ea = getEaDirect();
-                helperSub(regA, readByte(ea));
-                break;
-            case 0x92:
-                //SBCA direct, 4
-                ea = getEaDirect();
-                regA = helperSub(regA, readByte(ea)+(getCCCarry()?1:0));
-                break;
-            case 0x93:
-                //SUBD direct, 6
-                ea = getEaDirect();
-                setDReg(helperSub16(getDReg(), readWord(ea)));
-                break;
-            case 0x94:
-                //ANDA direct, 4
-                ea = getEaDirect();
-                regA = helperAnd(regA, readByte(ea));
-                break;
-            case 0x95:
-                //BITA direct, 4
-                ea = getEaDirect();
-                helperAnd(regA, readByte(ea));
-                break;
-            case 0x96:
-                //LDA direct, 4
-                ea = getEaDirect();
-                regA = helperLd(readByte(ea));
-                break;
-            case 0x97:
-                //STA direct, 4
-                ea = getEaDirect();
-                helperLd(regA);
-                writeByte(ea, regA);
-                break;
-            case 0x98:
-                //EORA direct, 4
-                ea = getEaDirect();
-                regA = helperEor(regA, readByte(ea));
-                break;
-            case 0x99:
-                //ADCA direct, 4
-                ea = getEaDirect();
-                regA = helperAdc(regA, readByte(ea));
-                break;
-            case 0x9A:
-                //ORA direct, 4
-                ea = getEaDirect();
-                regA = helperOr(regA, readByte(ea));
-                break;
-            case 0x9B:
-                //ADDA direct, 4
-                ea = getEaDirect();
-                regA = helperAdd(regA, readByte(ea));
-                break;
-            case 0x9C:
-                //CMPX direct, 6
-                ea = getEaDirect();
-                helperSub16(regX, readWord(ea));
-                break;
-            case 0x9D:
-                //JSR direct, 7
-                ea = getEaDirect();
-                readByte(ea);
-                readByteAtFFFF();
-                pushWord(regPC);
-                regPC = ea;
-                break;
-            case 0x9E:
-                //LDX direct, 5
-                ea = getEaDirect();
-                regX = helperLd16(readWord(ea));
-                break;
-            case 0x9F:
-                //STX direct, 5
-                ea = getEaDirect();
-                helperLd16(regX);
-                writeWord(ea, regX);
-                break;
-            case 0xA0:
-                //SUBA indexed, 4+
-                ea = indexedEa();
-                regA = helperSub(regA, readByte(ea));
-                break;
-            case 0xA1:
-                //CMPA indexed, 4+
-                ea = indexedEa();
-                helperSub(regA, readByte(ea));
-                break;
-            case 0xA2:
-                //SBCA indexed, 4+
-                ea = indexedEa();
-                regA = helperSbc(regA, readByte(ea));
-                break;
-            case 0xA3:
-                //SUBD indexed, 6+
-                ea = indexedEa();
-                setDReg(helperSub16(getDReg(), readWord(ea)));
-                break;
-            case 0xA4:
-                //ANDA indexed, 4+
-                ea = indexedEa();
-                regA = helperAnd(regA, readByte(ea));
-                break;
-            case 0xA5:
-                //BITA indexed, 4+
-                ea = indexedEa();
-                helperAnd(regA, readByte(ea));
-                break;
-            case 0xA6:
-                //LDA indexed, 4+
-                ea = indexedEa();
-                regA = helperLd(readByte(ea));
-                break;
-            case 0xA7:
-                //STA indexed, 4+
-                ea = indexedEa();
-                writeByte(ea, helperLd(regA));
-                break;
-            case 0xA8:
-                //EORA indexed, 4+
-                ea = indexedEa();
-                regA = helperEor(regA, readByte(ea));
-                break;
-            case 0xA9:
-                //ADCA indexed, 4+
-                ea = indexedEa();
-                regA = helperAdc(regA, readByte(ea));
-                break;
-            case 0xAA:
-                //ORA indexed, 4+
-                ea = indexedEa();
-                regA = helperOr(regA, readByte(ea));
-                break;
-            case 0xAB:
-                //ADDA indexed, 4+
-                ea = indexedEa();
-                regA = helperAdd(regA, readByte(ea));
-                break;
-            case 0xAC:
-                //CMPX indexed, 6+
-                ea = indexedEa();
-                helperSub16(regX, readWord(ea));
-                break;
-            case 0xAD:
-                //JSR indexed, 7+
-                ea = indexedEa();
-                readByte(ea);
-                readByteAtFFFF();
-                pushWord(regPC);
-                regPC = ea;
-                break;
-            case 0xAE:
-                //LDX indexed, 5+
-                ea = indexedEa();
-                regX = helperLd16(ea);
-                break;
-            case 0xAF:
-                //STX indexed, 5+
-                ea = indexedEa();
-                helperLd16(regX);
-                writeWord(ea, regX);
-                break;
-            case 0xB0:
-                //SUBA extended, 5
-                ea = extendedEA();
-                regA = helperSub(regA, readByte(ea));
-                break;
-            case 0xB1:
-                //CMPA extended, 5
-                ea = extendedEA();
-                helperSub(regA, readByte(ea));
-                break;
-            case 0xB2:
-                //SBCA extended, 5
-                ea = extendedEA();
-                regA = helperSbc(regA, readByte(ea));
-                break;
-            case 0xB3:
-                //SUBD extended, 7
-                ea = extendedEA();
-                setDReg(helperSub16(getDReg(), readWord(ea)));
-                break;
-            case 0xB4:
-                //ANDA extended, 5
-                ea = extendedEA();
-                regA = helperAnd(regA, readByte(ea));
-                break;
-            case 0xB5:
-                //BITA extended, 5
-                ea = extendedEA();
-                helperAnd(regA, readByte(ea));
-                break;
-            case 0xB6:
-                //LDA extended, 5
-                ea = extendedEA();
-                regA = helperLd(readByte(ea));
-                break;
-            case 0xB7:
-                //STA extended, 5
-                ea = extendedEA();
-                writeByte(ea, helperLd(regA));
-                break;
-            case 0xB8:
-                //EORA extended, 5
-                ea = extendedEA();
-                regA = helperEor(regA, readByte(ea));
-                break;
-            case 0xB9:
-                //ADCA extended, 5
-                ea = extendedEA();
-                regA = helperAdc(regA, readByte(ea));
-                break;
-            case 0xBA:
-                //ORA extended, 5
-                ea = extendedEA();
-                regA = helperOr(regA, readByte(ea));
-                break;
-            case 0xBB:
-                //ADDA extended, 5
-                ea = extendedEA();
-                regA = helperAdd(regA, readByte(ea));
-                break;
-            case 0xBC:
-                //CMPX extended, 7
-                ea = extendedEA();
-                helperSub16(regX, readWord(ea));
-                break;
-            case 0xBD:
-                //JSR extended, 8
-                ea = extendedEA();
-                readByte(ea);
-                readByteAtFFFF();
-                pushWord(regPC);
-                regPC = ea;
-                break;
-            case 0xBE:
-                //LDX extended, 6
-                ea = extendedEA();
-                regX = helperLd16(ea);
-                break;
-            case 0xBF:
-                //STX extended, 6
-                ea = extendedEA();
-                helperLd16(regX);
-                writeWord(ea, regX);
-                break;
-            case 0xC0:
-                //SUBB immed, 2
-                regB = helperSub(regB,getImmediate());
-                break;
-            case 0xC1:
-                //CMPB immed, 2
-                helperSub(regB, getImmediate());
-                break;
-            case 0xC2:
-                //SBCB immed, 2
-                regB = helperSbc(regB,getImmediate());
-                break;
-            case 0xC3:
-                //ADDD immed, 4
-                setDReg(helperAdd16(getDReg(),getImmediateWord()));
-                break;
-            case 0xC4:
-                //ANDB immed, 2
-                regB = helperAnd(regB,getImmediate());
-                break;
-            case 0xC5:
-                //BITB immed, 2
-                helperAnd(regB,getImmediate());
-                break;
-            case 0xC6:
-                //LDB immed, 2
-                regB = helperLd(getImmediate());
-                break;
-            case 0xC7:
-                //illegal
-                break;
-            case 0xC8:
-                //EORB immed, 2
-                regB = helperEor(regB, getImmediate());
-                break;
-            case 0xC9:
-                //ADCB immed, 2
-                regB = helperAdc(regB, getImmediate());
-                break;
-            case 0xCA:
-                //ORB immed, 2
-                regB = helperOr(regB, getImmediate());
-                break;
-            case 0xCB:
-                //ADDB immed, 2
-                regB = helperAdd(regB, getImmediate());
-                break;
-            case 0xCC:
-                //LDD immed, 3
-                setDReg(helperLd16(getImmediateWord()));
-                break;
-            case 0xCD:
-                //illegal
-                break;
-            case 0xCE:
-                //LDU immed, 3
-                regU = helperLd16(getImmediateWord());
-                break;
-            case 0xCF:
-                //illegal
-                break;
-            case 0xD0:
-                //SUBB direct, 4
-                ea = getEaDirect();
-                regB = helperSub(regB, readByte(ea));
-                break;
-            case 0xD1:
-                //CMPB direct, 4
-                ea = getEaDirect();
-                helperSub(regB, readByte(ea));
-                break;
-            case 0xD2:
-                //SBCB direct, 4
-                ea = getEaDirect();
-                regB = helperSbc(regB, readByte(ea));
-                break;
-            case 0xD3:
-                //ADDD direct, 6
-                ea = getEaDirect();
-                setDReg(helperAdd16(getDReg(),readWord(ea)));
-                break;
-            case 0xD4:
-                //ANDB direct, 4
-                ea = getEaDirect();
-                regB = helperAnd(regB, readByte(ea));
-                break;
-            case 0xD5:
-                //BITB direct, 4
-                ea = getEaDirect();
-                helperAnd(regB, readByte(ea));
-                break;
-            case 0xD6:
-                //LDB direct, 4
-                ea = getEaDirect();
-                regB = helperLd(readByte(ea));
-                break;
-            case 0xD7:
-                //STB direct, 4
-                ea = getEaDirect();
-                helperLd(regB);
-                writeByte(ea, regB);
-                break;
-            case 0xD8:
-                //EORB direct, 4
-                ea = getEaDirect();
-                regB = helperEor(regB, readByte(ea));
-                break;
-            case 0xD9:
-                //ADCB direct, 4
-                ea = getEaDirect();
-                regB = helperAdc(regB, readByte(ea));
-                break;
-            case 0xDA:
-                //ORB direct, 4
-                ea = getEaDirect();
-                regB = helperOr(regB, readByte(ea));
-                break;
-            case 0xDB:
-                //ADDB direct, 4
-                ea = getEaDirect();
-                regB = helperAdd(regB, readByte(ea));
-                break;
-            case 0xDC:
-                //LDD direct, 5
-                ea = getEaDirect();
-                setDReg(helperLd16(readWord(ea)));
-                break;
-            case 0xDD:
-                //STD direct, 5
-                ea = getEaDirect();
-                helperLd16(getDReg());
-                writeWord(ea, getDReg());
-                break;
-            case 0xDE:
-                //LDU direct, 5
-                ea = getEaDirect();
-                regU = helperLd16(readWord(ea));
-                break;
-            case 0xDF:
-                //STU direct, 5
-                ea = getEaDirect();
-                helperLd16(regU);
-                writeWord(ea, regU);
-                break;
-            case 0xE0:
-                //SUBB indexed, 4+
-                ea = indexedEa();
-                regB = helperSub(regB, readByte(ea));
-                break;
-            case 0xE1:
-                //CMPB indexed, 4+
-                ea = indexedEa();
-                helperSub(regB, readByte(ea));
-                break;
-            case 0xE2:
-                //SBCB indexed, 4+
-                ea = indexedEa();
-                regB = helperSbc(regB, readByte(ea));
-                break;
-            case 0xE3:
-                //ADDD indexed, 6+
-                ea = indexedEa();
-                setDReg(helperAdd16(getDReg(),readWord(ea)));
-                break;
-            case 0xE4:
-                //ANDB indexed, 4+
-                ea = indexedEa();
-                regB = helperAnd(regB, readByte(ea));
-                break;
-            case 0xE5:
-                //BITB indexed, 4+
-                ea = indexedEa();
-                helperAnd(regB, readByte(ea));
-                break;
-            case 0xE6:
-                //LDB indexed, 4+
-                ea = indexedEa();
-                regB = helperLd(readByte(ea));
-                break;
-            case 0xE7:
-                //STB indexed, 4+
-                ea = indexedEa();
-                helperLd(regB);
-                writeByte(ea, regB);
-                break;
-            case 0xE8:
-                //EORB indexed, 4+
-                ea = indexedEa();
-                regB = helperEor(regB, readByte(ea));
-                break;
-            case 0xE9:
-                //ADCB indexed, 4+
-                ea = indexedEa();
-                regB = helperAdc(regB, readByte(ea));
-                break;
-            case 0xEA:
-                //ORB indexed, 4+
-                ea = indexedEa();
-                regB = helperOr(regB, readByte(ea));
-                break;
-            case 0xEB:
-                //ADDB indexed, 4+
-                ea = indexedEa();
-                regB = helperAdd(regB, readByte(ea));
-                break;
-            case 0xEC:
-                //LDD indexed, 5+
-                ea = indexedEa();
-                setDReg(helperLd16(readWord(ea)));
-                break;
-            case 0xED:
-                //STD indexed, 5+
-                ea = indexedEa();
-                helperLd16(getDReg());
-                writeWord(ea, getDReg());
-                break;
-            case 0xEE:
-                //LDU indexed, 5+
-                ea = indexedEa();
-                regU = helperLd16(readWord(ea));
-                break;
-            case 0xEF:
-                //STU indexed, 5+
-                ea = indexedEa();
-                helperLd16(regU);
-                writeWord(ea, regU);
-                break;
-            case 0xF0:
-                //SUBB extended, 5
-                ea = extendedEA();
-                regB = helperSub(regB, readByte(ea));
-                break;
-            case 0xF1:
-                //CMPB extended, 5
-                ea = extendedEA();
-                helperSub(regB, readByte(ea));
-                break;
-            case 0xF2:
-                //SBCB extended, 5
-                ea = extendedEA();
-                regB = helperSbc(regB, readByte(ea));
-                break;
-            case 0xF3:
-                //ADDD extended, 7
-                ea = extendedEA();
-                setDReg(helperAdd16(getDReg(),readWord(ea)));
-                break;
-            case 0xF4:
-                //ANDB extended, 5
-                ea = extendedEA();
-                regB = helperAnd(regB, readByte(ea));
-                break;
-            case 0xF5:
-                //BITB extended, 5
-                ea = extendedEA();
-                helperAnd(regB, readByte(ea));
-                break;
-            case 0xF6:
-                //LDB extended, 5
-                ea = extendedEA();
-                regB = helperLd(readByte(ea));
-                break;
-            case 0xF7:
-                //STB extended, 5
-                ea = extendedEA();
-                helperLd(regB);
-                writeByte(ea, regB);
-                break;
-            case 0xF8:
-                //EORB extended, 5
-                ea = extendedEA();
-                regB = helperEor(regB, readByte(ea));
-                break;
-            case 0xF9:
-                //ADCB extended, 5
-                ea = extendedEA();
-                regB = helperAdc(regB, readByte(ea));
-                break;
-            case 0xFA:
-                //ORB extended, 5
-                ea = extendedEA();
-                regB = helperOr(regB, readByte(ea));
-                break;
-            case 0xFB:
-                //ADDB extended, 5
-                ea = extendedEA();
-                regB = helperAdd(regB, readByte(ea));
-                break;
-            case 0xFC:
-                //LDD extended, 6
-                ea = extendedEA();
-                setDReg(helperLd16(readWord(ea)));
-                break;
-            case 0xFD:
-                //STD extended, 6
-                ea = extendedEA();
-                helperLd16(getDReg());
-                writeWord(ea, getDReg());
-                break;
-            case 0xFE:
-                //LDU extended, 6
-                ea = extendedEA();
-                regU = helperLd16(readWord(ea));
-                break;
-            case 0xFF:
-                //STU extended, 6
-                ea = extendedEA();
-                helperLd16(getDReg());
-                writeWord(ea, regU);
-                break;
-            default:
+                    break;
+                case 0x14:
+                    //illegal
+                    break;
+                case 0x15:
+                    //illegal
+                    break;
+                case 0x16:
+                    //LBRA, 5
+                    helperLongBranch(true);
+                    break;
+                case 0x17:
+                    //LBSR, 9
+                    helperLongSubroutine();
+                    break;
+                case 0x18:
+                    //illegal
+                    break;
+                case 0x19:
+                    //DAA, 2
+                    helperDaa();
+                    break;
+                case 0x1A:
+                    //ORCC immediate, 3
+                    setCCReg((getImmediate() | getCCReg()) & 0xff);
+                    readByteAtFFFF();
+                    break;
+                case 0x1B:
+                    //illegal
+                    break;
+                case 0x1C:
+                    //ANDCC immediate, 3
+                    setCCReg((getImmediate() & getCCReg()) & 0xff);
+                    readByteAtFFFF();
+                    break;
+                case 0x1D:
+                    //SEX, 2
+                    regA = ((regB & 0x80) == 0x80) ? 0xff : 0x00;
+                    setCCNegative(regB);
+                    setCCZero(regB);
+                    readByteAtFFFF();
+                    break;
+                case 0x1E:
+                    //EXG postbyte, 8
+                    helperExg(getImmediate());
+                    break;
+                case 0x1F:
+                    //TFR postbyte, 6
+                    helperTfr(getImmediate());
+                    break;
+                case 0x20:
+                    //BRA offset, 3
+                    helperBranch(true);
+                    break;
+                case 0x21:
+                    //BRN offset, 3
+                    helperBranch(false);
+                    break;
+                case 0x22:
+                    //BHI offset, 3
+                    helperBranch(!(getCCCarry() || getCCZero()));
+                    break;
+                case 0x23:
+                    //BLS offset, 3
+                    helperBranch(getCCCarry() || getCCZero());
+                    break;
+                case 0x24:
+                    //BCC offset, 3
+                    helperBranch(!getCCCarry());
+                    break;
+                case 0x25:
+                    //BCS offset, 3
+                    helperBranch(getCCCarry());
+                    break;
+                case 0x26:
+                    //BNE offset, 3
+                    helperBranch(!getCCZero());
+                    break;
+                case 0x27:
+                    //BEQ offset, 3
+                    helperBranch(getCCZero());
+                    break;
+                case 0x28:
+                    //BVC offset, 3
+                    helperBranch(!getCCOverflow());
+                    break;
+                case 0x29:
+                    //BVS offset, 3
+                    helperBranch(getCCOverflow());
+                    break;
+                case 0x2A:
+                    //BPL offset, 3
+                    helperBranch(!getCCNegative());
+                    break;
+                case 0x2B:
+                    //BMI offset, 3
+                    helperBranch(getCCNegative());
+                    break;
+                case 0x2C:
+                    //BGE offset, 3
+                    helperBranch(getCCNegative() == getCCOverflow());
+                    break;
+                case 0x2D:
+                    //BLT offset, 3
+                    helperBranch(getCCNegative() != getCCOverflow());
+                    break;
+                case 0x2E:
+                    //BGT offset, 3
+                    helperBranch((!getCCZero()) && (getCCNegative() == getCCOverflow()));
+                    break;
+                case 0x2F:
+                    //BLE offset, 3
+                    helperBranch(getCCZero() || (getCCNegative() != getCCOverflow()));
+                    break;
+                case 0x30:
+                    //LEAX ,4+
+                    value = indexedEa();
+                    setCCZero(value == 0);
+                    regX = value;
+                    readByteAtFFFF();
+                    break;
+                case 0x31:
+                    //LEAY ,4+
+                    value = indexedEa();
+                    setCCZero(value == 0);
+                    regY = value;
+                    readByteAtFFFF();
+                    break;
+                case 0x32:
+                    //LEAS ,4+
+                    regS = indexedEa();
+                    readByteAtFFFF();
+                    nmiArmed = true;
+                    break;
+                case 0x33:
+                    //LEAU ,4+
+                    regU = indexedEa();
+                    readByteAtFFFF();
+                    break;
+                case 0x34:
+                    //PSHS, 5+
+                    helperPush(false);
+                    break;
+                case 0x35:
+                    //PULS, 5+
+                    helperPull(false);
+                case 0x36:
+                    //PSHU, 5+
+                    helperPush(true);
+                    break;
+                case 0x37:
+                    //PULU, 5+
+                    helperPull(true);
+                    break;
+                case 0x38:
+                    //illegal
+                    break;
+                case 0x39:
+                    //RTS, 5
+                    readByteAtFFFF();
+                    helperReturn();
+                    break;
+                case 0x3A:
+                    //ABX, 3
+                    readByte(regPC);
+                    readByteAtFFFF();
+                    regX = (regX + regB) & 0xffff;
+                    break;
+                case 0x3B:
+                    //RTI, 6/15
+                    helperRti();
+                    break;
+                case 0x3C:
+                    //CWAI, 20
+                    helperCwai();
+                    break;
+                case 0x3D:
+                    //MUL, 11
+                    helperMul();
+                    break;
+                case 0x3E:
+                    //illegal
+                    break;
+                case 0x3F:
+                    //SWI, 19
+                    helperSwi(0xfffa);
+                    break;
+                case 0x40:
+                    //NEGA, 2
+                    regA = helperNeg(regA);
+                    readByte(regPC);
+                    break;
+                case 0x41:
+                    //illegal
+                    break;
+                case 0x42:
+                    //illegal
+                    break;
+                case 0x43:
+                    //COMA, 2
+                    regA = helperCom(regA);
+                    readByte(regPC);
+                    break;
+                case 0x44:
+                    //LSRA, 2
+                    regA = helperLsr(regA);
+                    readByte(regPC);
+                    break;
+                case 0x45:
+                    //illegal
+                    break;
+                case 0x46:
+                    //RORA, 2
+                    regA = helperRor(regA);
+                    readByte(regPC);
+                    break;
+                case 0x47:
+                    //ASRA, 2
+                    regA = helperAsr(regA);
+                    readByte(regPC);
+                    break;
+                case 0x48:
+                    //ASLA, 2
+                    regA = helperAsl(regA);
+                    readByte(regPC);
+                    break;
+                case 0x49:
+                    //ROLA, 2
+                    regA = helperRol(regA);
+                    readByte(regPC);
+                    break;
+                case 0x4A:
+                    //DECA, 2
+                    regA = helperDec(regA);
+                    readByte(regPC);
+                    break;
+                case 0x4B:
+                    //illegal
+                    break;
+                case 0x4C:
+                    //INCA, 2
+                    regA = helperInc(regA);
+                    readByte(regPC);
+                    break;
+                case 0x4D:
+                    //TSTA, 2
+                    helperTst(regA);
+                    readByte(regPC);
+                    break;
+                case 0x4E:
+                    //illegal
+                    break;
+                case 0x4F:
+                    //CLRA, 2
+                    regA = helperClr();
+                    readByte(regPC);
+                    break;
+                case 0x50:
+                    //NEGB, 2
+                    regB = helperNeg(regB);
+                    readByte(regPC);
+                    break;
+                case 0x51:
+                    //illegal
+                    break;
+                case 0x52:
+                    //illegal
+                    break;
+                case 0x53:
+                    //COMB, 2
+                    regB = helperCom(regB);
+                    readByte(regPC);
+                    break;
+                case 0x54:
+                    //LSRB, 2
+                    regB = helperLsr(regB);
+                    readByte(regPC);
+                    break;
+                case 0x55:
+                    //illegal
+                    break;
+                case 0x56:
+                    //RORB, 2
+                    regB = helperRor(regB);
+                    readByte(regPC);
+                    break;
+                case 0x57:
+                    //ASRB, 2
+                    regB = helperAsr(regB);
+                    readByte(regPC);
+                    break;
+                case 0x58:
+                    //ASLB, 2
+                    regB = helperAsl(regB);
+                    readByte(regPC);
+                    break;
+                case 0x59:
+                    //ROLB, 2
+                    regB = helperRol(regB);
+                    readByte(regPC);
+                    break;
+                case 0x5A:
+                    //DECB, 2
+                    regB = helperDec(regB);
+                    readByte(regPC);
+                    break;
+                case 0x5B:
+                    //illegal
+                    break;
+                case 0x5C:
+                    //INCB, 2
+                    regB = helperInc(regB);
+                    readByte(regPC);
+                    break;
+                case 0x5D:
+                    //TSTB, 2
+                    helperTst(regB);
+                    readByte(regPC);
+                    break;
+                case 0x5E:
+                    //illegal
+                    break;
+                case 0x5F:
+                    //CLRB, 2
+                    regB = helperClr();
+                    readByte(regPC);
+                    break;
+                case 0x60:
+                    //NEG indexed, 6+
+                    ea = indexedEa();
+                    value = helperNeg(readByte(ea));
+                    readByteAtFFFF();
+                    writeByte(ea, value);
+                    break;
+                case 0x61:
+                    //illegal
+                    break;
+                case 0x62:
+                    //illegal
+                    break;
+                case 0x63:
+                    //COM indexed, 6+
+                    ea = indexedEa();
+                    value = helperCom(readByte(ea));
+                    readByteAtFFFF();
+                    writeByte(ea, value);
+                    break;
+                case 0x64:
+                    //LSR indexed, 6+
+                    ea = indexedEa();
+                    value = helperLsr(readByte(ea));
+                    readByteAtFFFF();
+                    writeByte(ea, value);
+                    break;
+                case 0x65:
+                    //illegal
+                    break;
+                case 0x66:
+                    //ROR indexed, 6+
+                    ea = indexedEa();
+                    value = helperRor(readByte(ea));
+                    readByteAtFFFF();
+                    writeByte(ea, value);
+                    break;
+                case 0x67:
+                    //ASR indexed, 6+
+                    ea = indexedEa();
+                    value = helperAsr(readByte(ea));
+                    readByteAtFFFF();
+                    writeByte(ea, value);
+                    break;
+                case 0x68:
+                    //ASL indexed, 6+
+                    ea = indexedEa();
+                    value = helperAsl(readByte(ea));
+                    readByteAtFFFF();
+                    writeByte(ea, value);
+                    break;
+                case 0x69:
+                    //ROL indexed, 6+
+                    ea = indexedEa();
+                    value = helperRol(readByte(ea));
+                    readByteAtFFFF();
+                    writeByte(ea, value);
+                    break;
+                case 0x6A:
+                    //DEC indexed, 6+
+                    ea = indexedEa();
+                    value = helperDec(readByte(ea));
+                    readByteAtFFFF();
+                    writeByte(ea, value);
+                    break;
+                case 0x6B:
+                    //illegal
+                    break;
+                case 0x6C:
+                    //INC indexed, 6+
+                    ea = indexedEa();
+                    value = helperInc(readByte(ea));
+                    readByteAtFFFF();
+                    writeByte(ea, value);
+                    break;
+                case 0x6D:
+                    //TST indexed, 6+
+                    ea = indexedEa();
+                    helperTst(readByte(ea));
+                    readByteAtFFFF();
+                    readByteAtFFFF();
+                    break;
+                case 0x6E:
+                    //JMP indexed, 3+
+                    regPC = indexedEa();
+                    break;
+                case 0x6F:
+                    //CLR indexed, 6+
+                    ea = indexedEa();
+                    readByte(ea);
+                    value = helperClr();
+                    readByteAtFFFF();
+                    writeByte(ea, value);
+                    break;
+                case 0x70:
+                    //NEG extended, 7
+                    ea = extendedEA();
+                    value = helperNeg(readByte(ea));
+                    readByteAtFFFF();
+                    writeByte(ea, value);
+                    break;
+                case 0x71:
+                    //illegal
+                    break;
+                case 0x72:
+                    //illegal
+                    break;
+                case 0x73:
+                    //COM extended, 7
+                    ea = extendedEA();
+                    value = helperCom(readByte(ea));
+                    readByteAtFFFF();
+                    writeByte(ea, value);
+                    break;
+                case 0x74:
+                    //LSR extended, 7
+                    ea = extendedEA();
+                    value = helperLsr(readByte(ea));
+                    readByteAtFFFF();
+                    writeByte(ea, value);
+                    break;
+                case 0x75:
+                    //illegal
+                    break;
+                case 0x76:
+                    //ROR extended, 7
+                    ea = extendedEA();
+                    value = helperRor(readByte(ea));
+                    readByteAtFFFF();
+                    writeByte(ea, value);
+                    break;
+                case 0x77:
+                    //ASR extended, 7
+                    ea = extendedEA();
+                    value = helperAsr(readByte(ea));
+                    readByteAtFFFF();
+                    writeByte(ea, value);
+                    break;
+                case 0x78:
+                    //ASL extended, 7
+                    ea = extendedEA();
+                    value = helperAsl(readByte(ea));
+                    readByteAtFFFF();
+                    writeByte(ea, value);
+                    break;
+                case 0x79:
+                    //ROL extended, 7
+                    ea = extendedEA();
+                    value = helperRol(readByte(ea));
+                    readByteAtFFFF();
+                    writeByte(ea, value);
+                    break;
+                case 0x7A:
+                    //DEC extended, 7
+                    ea = extendedEA();
+                    value = helperDec(readByte(ea));
+                    readByteAtFFFF();
+                    writeByte(ea, value);
+                    break;
+                case 0x7B:
+                    //illegal
+                    break;
+                case 0x7C:
+                    //INC extended, 7
+                    ea = extendedEA();
+                    value = helperInc(readByte(ea));
+                    readByteAtFFFF();
+                    writeByte(ea, value);
+                    break;
+                case 0x7D:
+                    //TST extended, 7
+                    ea = extendedEA();
+                    helperTst(readByte(ea));
+                    readByteAtFFFF();
+                    readByteAtFFFF();
+                    break;
+                case 0x7E:
+                    //JMP extended, 4
+                    regPC = extendedEA();
+                    readByteAtFFFF();
+                    break;
+                case 0x7F:
+                    //CLR extended, 7
+                    ea = extendedEA();
+                    readByte(ea);
+                    value = helperClr();
+                    readByteAtFFFF();
+                    writeByte(ea, value);
+                    break;
+                case 0x80:
+                    //SUBA immediate, 2
+                    regA = helperSub(regA, getImmediate());
+                    break;
+                case 0x81:
+                    //CMPA immediate, 2
+                    helperSub(regA, getImmediate());
+                    break;
+                case 0x82:
+                    //SBC immediate, 2
+                    regA = helperSbc(regA, getImmediate());
+                    break;
+                case 0x83:
+                    //SUBD immediate, 4
+                    setDReg(helperSub16(getDReg(), getImmediateWord()));
+                    break;
+                case 0x84:
+                    //ANDA immediate, 2
+                    regA = helperAnd(regA, getImmediate());
+                    break;
+                case 0x85:
+                    //BITA immediate, 2
+                    helperAnd(regA, getImmediate());
+                    break;
+                case 0x86:
+                    //LDA immediate, 2
+                    regA = helperLd(getImmediate());
+                    break;
+                case 0x87:
+                    //illegal
+                    break;
+                case 0x88:
+                    //EORA immediate, 2
+                    regA = helperEor(regA, getImmediate());
+                    break;
+                case 0x89:
+                    //ADCA immediate, 2
+                    regA = helperAdc(regA, getImmediate());
+                    break;
+                case 0x8A:
+                    //ORA immediate, 2
+                    regA = helperOr(regA, getImmediate());
+                    break;
+                case 0x8B:
+                    //ADDA immediate, 2
+                    regA = helperAdd(regA, getImmediate());
+                    break;
+                case 0x8C:
+                    //CMPX immediate, 4
+                    helperSub16(regX, getImmediateWord());
+                    break;
+                case 0x8D:
+                    //BSR relative, 7
+                    helperBranchSubroutine();
+                    break;
+                case 0x8E:
+                    //LDX immediate, 3
+                    regX = helperLd16(getImmediateWord());
+                    break;
+                case 0x8F:
+                    //illegal
+                    break;
+                case 0x90:
+                    //SUBA direct, 4
+                    ea = getEaDirect();
+                    regA = helperSub(regA, readByte(ea));
+                    break;
+                case 0x91:
+                    //CMPA direct, 4
+                    ea = getEaDirect();
+                    helperSub(regA, readByte(ea));
+                    break;
+                case 0x92:
+                    //SBCA direct, 4
+                    ea = getEaDirect();
+                    regA = helperSub(regA, readByte(ea) + (getCCCarry() ? 1 : 0));
+                    break;
+                case 0x93:
+                    //SUBD direct, 6
+                    ea = getEaDirect();
+                    setDReg(helperSub16(getDReg(), readWord(ea)));
+                    break;
+                case 0x94:
+                    //ANDA direct, 4
+                    ea = getEaDirect();
+                    regA = helperAnd(regA, readByte(ea));
+                    break;
+                case 0x95:
+                    //BITA direct, 4
+                    ea = getEaDirect();
+                    helperAnd(regA, readByte(ea));
+                    break;
+                case 0x96:
+                    //LDA direct, 4
+                    ea = getEaDirect();
+                    regA = helperLd(readByte(ea));
+                    break;
+                case 0x97:
+                    //STA direct, 4
+                    ea = getEaDirect();
+                    helperLd(regA);
+                    writeByte(ea, regA);
+                    break;
+                case 0x98:
+                    //EORA direct, 4
+                    ea = getEaDirect();
+                    regA = helperEor(regA, readByte(ea));
+                    break;
+                case 0x99:
+                    //ADCA direct, 4
+                    ea = getEaDirect();
+                    regA = helperAdc(regA, readByte(ea));
+                    break;
+                case 0x9A:
+                    //ORA direct, 4
+                    ea = getEaDirect();
+                    regA = helperOr(regA, readByte(ea));
+                    break;
+                case 0x9B:
+                    //ADDA direct, 4
+                    ea = getEaDirect();
+                    regA = helperAdd(regA, readByte(ea));
+                    break;
+                case 0x9C:
+                    //CMPX direct, 6
+                    ea = getEaDirect();
+                    helperSub16(regX, readWord(ea));
+                    break;
+                case 0x9D:
+                    //JSR direct, 7
+                    ea = getEaDirect();
+                    readByte(ea);
+                    readByteAtFFFF();
+                    pushWord(regPC);
+                    regPC = ea;
+                    break;
+                case 0x9E:
+                    //LDX direct, 5
+                    ea = getEaDirect();
+                    regX = helperLd16(readWord(ea));
+                    break;
+                case 0x9F:
+                    //STX direct, 5
+                    ea = getEaDirect();
+                    helperLd16(regX);
+                    writeWord(ea, regX);
+                    break;
+                case 0xA0:
+                    //SUBA indexed, 4+
+                    ea = indexedEa();
+                    regA = helperSub(regA, readByte(ea));
+                    break;
+                case 0xA1:
+                    //CMPA indexed, 4+
+                    ea = indexedEa();
+                    helperSub(regA, readByte(ea));
+                    break;
+                case 0xA2:
+                    //SBCA indexed, 4+
+                    ea = indexedEa();
+                    regA = helperSbc(regA, readByte(ea));
+                    break;
+                case 0xA3:
+                    //SUBD indexed, 6+
+                    ea = indexedEa();
+                    setDReg(helperSub16(getDReg(), readWord(ea)));
+                    break;
+                case 0xA4:
+                    //ANDA indexed, 4+
+                    ea = indexedEa();
+                    regA = helperAnd(regA, readByte(ea));
+                    break;
+                case 0xA5:
+                    //BITA indexed, 4+
+                    ea = indexedEa();
+                    helperAnd(regA, readByte(ea));
+                    break;
+                case 0xA6:
+                    //LDA indexed, 4+
+                    ea = indexedEa();
+                    regA = helperLd(readByte(ea));
+                    break;
+                case 0xA7:
+                    //STA indexed, 4+
+                    ea = indexedEa();
+                    writeByte(ea, helperLd(regA));
+                    break;
+                case 0xA8:
+                    //EORA indexed, 4+
+                    ea = indexedEa();
+                    regA = helperEor(regA, readByte(ea));
+                    break;
+                case 0xA9:
+                    //ADCA indexed, 4+
+                    ea = indexedEa();
+                    regA = helperAdc(regA, readByte(ea));
+                    break;
+                case 0xAA:
+                    //ORA indexed, 4+
+                    ea = indexedEa();
+                    regA = helperOr(regA, readByte(ea));
+                    break;
+                case 0xAB:
+                    //ADDA indexed, 4+
+                    ea = indexedEa();
+                    regA = helperAdd(regA, readByte(ea));
+                    break;
+                case 0xAC:
+                    //CMPX indexed, 6+
+                    ea = indexedEa();
+                    helperSub16(regX, readWord(ea));
+                    break;
+                case 0xAD:
+                    //JSR indexed, 7+
+                    ea = indexedEa();
+                    readByte(ea);
+                    readByteAtFFFF();
+                    pushWord(regPC);
+                    regPC = ea;
+                    break;
+                case 0xAE:
+                    //LDX indexed, 5+
+                    ea = indexedEa();
+                    regX = helperLd16(ea);
+                    break;
+                case 0xAF:
+                    //STX indexed, 5+
+                    ea = indexedEa();
+                    helperLd16(regX);
+                    writeWord(ea, regX);
+                    break;
+                case 0xB0:
+                    //SUBA extended, 5
+                    ea = extendedEA();
+                    regA = helperSub(regA, readByte(ea));
+                    break;
+                case 0xB1:
+                    //CMPA extended, 5
+                    ea = extendedEA();
+                    helperSub(regA, readByte(ea));
+                    break;
+                case 0xB2:
+                    //SBCA extended, 5
+                    ea = extendedEA();
+                    regA = helperSbc(regA, readByte(ea));
+                    break;
+                case 0xB3:
+                    //SUBD extended, 7
+                    ea = extendedEA();
+                    setDReg(helperSub16(getDReg(), readWord(ea)));
+                    break;
+                case 0xB4:
+                    //ANDA extended, 5
+                    ea = extendedEA();
+                    regA = helperAnd(regA, readByte(ea));
+                    break;
+                case 0xB5:
+                    //BITA extended, 5
+                    ea = extendedEA();
+                    helperAnd(regA, readByte(ea));
+                    break;
+                case 0xB6:
+                    //LDA extended, 5
+                    ea = extendedEA();
+                    regA = helperLd(readByte(ea));
+                    break;
+                case 0xB7:
+                    //STA extended, 5
+                    ea = extendedEA();
+                    writeByte(ea, helperLd(regA));
+                    break;
+                case 0xB8:
+                    //EORA extended, 5
+                    ea = extendedEA();
+                    regA = helperEor(regA, readByte(ea));
+                    break;
+                case 0xB9:
+                    //ADCA extended, 5
+                    ea = extendedEA();
+                    regA = helperAdc(regA, readByte(ea));
+                    break;
+                case 0xBA:
+                    //ORA extended, 5
+                    ea = extendedEA();
+                    regA = helperOr(regA, readByte(ea));
+                    break;
+                case 0xBB:
+                    //ADDA extended, 5
+                    ea = extendedEA();
+                    regA = helperAdd(regA, readByte(ea));
+                    break;
+                case 0xBC:
+                    //CMPX extended, 7
+                    ea = extendedEA();
+                    helperSub16(regX, readWord(ea));
+                    break;
+                case 0xBD:
+                    //JSR extended, 8
+                    ea = extendedEA();
+                    readByte(ea);
+                    readByteAtFFFF();
+                    pushWord(regPC);
+                    regPC = ea;
+                    break;
+                case 0xBE:
+                    //LDX extended, 6
+                    ea = extendedEA();
+                    regX = helperLd16(ea);
+                    break;
+                case 0xBF:
+                    //STX extended, 6
+                    ea = extendedEA();
+                    helperLd16(regX);
+                    writeWord(ea, regX);
+                    break;
+                case 0xC0:
+                    //SUBB immed, 2
+                    regB = helperSub(regB, getImmediate());
+                    break;
+                case 0xC1:
+                    //CMPB immed, 2
+                    helperSub(regB, getImmediate());
+                    break;
+                case 0xC2:
+                    //SBCB immed, 2
+                    regB = helperSbc(regB, getImmediate());
+                    break;
+                case 0xC3:
+                    //ADDD immed, 4
+                    setDReg(helperAdd16(getDReg(), getImmediateWord()));
+                    break;
+                case 0xC4:
+                    //ANDB immed, 2
+                    regB = helperAnd(regB, getImmediate());
+                    break;
+                case 0xC5:
+                    //BITB immed, 2
+                    helperAnd(regB, getImmediate());
+                    break;
+                case 0xC6:
+                    //LDB immed, 2
+                    regB = helperLd(getImmediate());
+                    break;
+                case 0xC7:
+                    //illegal
+                    break;
+                case 0xC8:
+                    //EORB immed, 2
+                    regB = helperEor(regB, getImmediate());
+                    break;
+                case 0xC9:
+                    //ADCB immed, 2
+                    regB = helperAdc(regB, getImmediate());
+                    break;
+                case 0xCA:
+                    //ORB immed, 2
+                    regB = helperOr(regB, getImmediate());
+                    break;
+                case 0xCB:
+                    //ADDB immed, 2
+                    regB = helperAdd(regB, getImmediate());
+                    break;
+                case 0xCC:
+                    //LDD immed, 3
+                    setDReg(helperLd16(getImmediateWord()));
+                    break;
+                case 0xCD:
+                    //illegal
+                    break;
+                case 0xCE:
+                    //LDU immed, 3
+                    regU = helperLd16(getImmediateWord());
+                    break;
+                case 0xCF:
+                    //illegal
+                    break;
+                case 0xD0:
+                    //SUBB direct, 4
+                    ea = getEaDirect();
+                    regB = helperSub(regB, readByte(ea));
+                    break;
+                case 0xD1:
+                    //CMPB direct, 4
+                    ea = getEaDirect();
+                    helperSub(regB, readByte(ea));
+                    break;
+                case 0xD2:
+                    //SBCB direct, 4
+                    ea = getEaDirect();
+                    regB = helperSbc(regB, readByte(ea));
+                    break;
+                case 0xD3:
+                    //ADDD direct, 6
+                    ea = getEaDirect();
+                    setDReg(helperAdd16(getDReg(), readWord(ea)));
+                    break;
+                case 0xD4:
+                    //ANDB direct, 4
+                    ea = getEaDirect();
+                    regB = helperAnd(regB, readByte(ea));
+                    break;
+                case 0xD5:
+                    //BITB direct, 4
+                    ea = getEaDirect();
+                    helperAnd(regB, readByte(ea));
+                    break;
+                case 0xD6:
+                    //LDB direct, 4
+                    ea = getEaDirect();
+                    regB = helperLd(readByte(ea));
+                    break;
+                case 0xD7:
+                    //STB direct, 4
+                    ea = getEaDirect();
+                    helperLd(regB);
+                    writeByte(ea, regB);
+                    break;
+                case 0xD8:
+                    //EORB direct, 4
+                    ea = getEaDirect();
+                    regB = helperEor(regB, readByte(ea));
+                    break;
+                case 0xD9:
+                    //ADCB direct, 4
+                    ea = getEaDirect();
+                    regB = helperAdc(regB, readByte(ea));
+                    break;
+                case 0xDA:
+                    //ORB direct, 4
+                    ea = getEaDirect();
+                    regB = helperOr(regB, readByte(ea));
+                    break;
+                case 0xDB:
+                    //ADDB direct, 4
+                    ea = getEaDirect();
+                    regB = helperAdd(regB, readByte(ea));
+                    break;
+                case 0xDC:
+                    //LDD direct, 5
+                    ea = getEaDirect();
+                    setDReg(helperLd16(readWord(ea)));
+                    break;
+                case 0xDD:
+                    //STD direct, 5
+                    ea = getEaDirect();
+                    helperLd16(getDReg());
+                    writeWord(ea, getDReg());
+                    break;
+                case 0xDE:
+                    //LDU direct, 5
+                    ea = getEaDirect();
+                    regU = helperLd16(readWord(ea));
+                    break;
+                case 0xDF:
+                    //STU direct, 5
+                    ea = getEaDirect();
+                    helperLd16(regU);
+                    writeWord(ea, regU);
+                    break;
+                case 0xE0:
+                    //SUBB indexed, 4+
+                    ea = indexedEa();
+                    regB = helperSub(regB, readByte(ea));
+                    break;
+                case 0xE1:
+                    //CMPB indexed, 4+
+                    ea = indexedEa();
+                    helperSub(regB, readByte(ea));
+                    break;
+                case 0xE2:
+                    //SBCB indexed, 4+
+                    ea = indexedEa();
+                    regB = helperSbc(regB, readByte(ea));
+                    break;
+                case 0xE3:
+                    //ADDD indexed, 6+
+                    ea = indexedEa();
+                    setDReg(helperAdd16(getDReg(), readWord(ea)));
+                    break;
+                case 0xE4:
+                    //ANDB indexed, 4+
+                    ea = indexedEa();
+                    regB = helperAnd(regB, readByte(ea));
+                    break;
+                case 0xE5:
+                    //BITB indexed, 4+
+                    ea = indexedEa();
+                    helperAnd(regB, readByte(ea));
+                    break;
+                case 0xE6:
+                    //LDB indexed, 4+
+                    ea = indexedEa();
+                    regB = helperLd(readByte(ea));
+                    break;
+                case 0xE7:
+                    //STB indexed, 4+
+                    ea = indexedEa();
+                    helperLd(regB);
+                    writeByte(ea, regB);
+                    break;
+                case 0xE8:
+                    //EORB indexed, 4+
+                    ea = indexedEa();
+                    regB = helperEor(regB, readByte(ea));
+                    break;
+                case 0xE9:
+                    //ADCB indexed, 4+
+                    ea = indexedEa();
+                    regB = helperAdc(regB, readByte(ea));
+                    break;
+                case 0xEA:
+                    //ORB indexed, 4+
+                    ea = indexedEa();
+                    regB = helperOr(regB, readByte(ea));
+                    break;
+                case 0xEB:
+                    //ADDB indexed, 4+
+                    ea = indexedEa();
+                    regB = helperAdd(regB, readByte(ea));
+                    break;
+                case 0xEC:
+                    //LDD indexed, 5+
+                    ea = indexedEa();
+                    setDReg(helperLd16(readWord(ea)));
+                    break;
+                case 0xED:
+                    //STD indexed, 5+
+                    ea = indexedEa();
+                    helperLd16(getDReg());
+                    writeWord(ea, getDReg());
+                    break;
+                case 0xEE:
+                    //LDU indexed, 5+
+                    ea = indexedEa();
+                    regU = helperLd16(readWord(ea));
+                    break;
+                case 0xEF:
+                    //STU indexed, 5+
+                    ea = indexedEa();
+                    helperLd16(regU);
+                    writeWord(ea, regU);
+                    break;
+                case 0xF0:
+                    //SUBB extended, 5
+                    ea = extendedEA();
+                    regB = helperSub(regB, readByte(ea));
+                    break;
+                case 0xF1:
+                    //CMPB extended, 5
+                    ea = extendedEA();
+                    helperSub(regB, readByte(ea));
+                    break;
+                case 0xF2:
+                    //SBCB extended, 5
+                    ea = extendedEA();
+                    regB = helperSbc(regB, readByte(ea));
+                    break;
+                case 0xF3:
+                    //ADDD extended, 7
+                    ea = extendedEA();
+                    setDReg(helperAdd16(getDReg(), readWord(ea)));
+                    break;
+                case 0xF4:
+                    //ANDB extended, 5
+                    ea = extendedEA();
+                    regB = helperAnd(regB, readByte(ea));
+                    break;
+                case 0xF5:
+                    //BITB extended, 5
+                    ea = extendedEA();
+                    helperAnd(regB, readByte(ea));
+                    break;
+                case 0xF6:
+                    //LDB extended, 5
+                    ea = extendedEA();
+                    regB = helperLd(readByte(ea));
+                    break;
+                case 0xF7:
+                    //STB extended, 5
+                    ea = extendedEA();
+                    helperLd(regB);
+                    writeByte(ea, regB);
+                    break;
+                case 0xF8:
+                    //EORB extended, 5
+                    ea = extendedEA();
+                    regB = helperEor(regB, readByte(ea));
+                    break;
+                case 0xF9:
+                    //ADCB extended, 5
+                    ea = extendedEA();
+                    regB = helperAdc(regB, readByte(ea));
+                    break;
+                case 0xFA:
+                    //ORB extended, 5
+                    ea = extendedEA();
+                    regB = helperOr(regB, readByte(ea));
+                    break;
+                case 0xFB:
+                    //ADDB extended, 5
+                    ea = extendedEA();
+                    regB = helperAdd(regB, readByte(ea));
+                    break;
+                case 0xFC:
+                    //LDD extended, 6
+                    ea = extendedEA();
+                    setDReg(helperLd16(readWord(ea)));
+                    break;
+                case 0xFD:
+                    //STD extended, 6
+                    ea = extendedEA();
+                    helperLd16(getDReg());
+                    writeWord(ea, getDReg());
+                    break;
+                case 0xFE:
+                    //LDU extended, 6
+                    ea = extendedEA();
+                    regU = helperLd16(readWord(ea));
+                    break;
+                case 0xFF:
+                    //STU extended, 6
+                    ea = extendedEA();
+                    helperLd16(getDReg());
+                    writeWord(ea, regU);
+                    break;
+                default:
 
+            }
         }
 
 
@@ -1641,11 +1668,13 @@ public class Cpu6809 {
             case 0xCE:
                 //LDS immediate, 4
                 regS = helperLd16(getImmediateWord());
+                nmiArmed = true;
                 break;
             case 0xDE:
                 //LDS direct, 6
                 ea = getEaDirect();
                 regS = helperLd16(readWord(ea));
+                nmiArmed = true;
                 break;
             case 0xDF:
                 //STS direct, 6
@@ -1657,6 +1686,7 @@ public class Cpu6809 {
                 //LDS indexed, 6+
                 ea = indexedEa();
                 regS = helperLd16(readWord(ea));
+                nmiArmed = true;
                 break;
             case 0xEF:
                 //STS indexed, 6+
@@ -1668,6 +1698,7 @@ public class Cpu6809 {
                 //LDS extended, 7
                 ea = extendedEA();
                 regS = helperLd16(readWord(ea));
+                nmiArmed = true;
                 break;
             case 0xFF:
                 //STS extended, 7
@@ -1957,6 +1988,7 @@ public class Cpu6809 {
                 break;
             case 0x4:
                 regS = value&0xffff;
+                nmiArmed = true;
                 break;
             case 0x5:
                 regPC = value&0xffff;
@@ -2269,10 +2301,11 @@ public class Cpu6809 {
             sp = incWord(sp);
             lo = readByte(sp);
             sp = incWord(sp);
-            if (uStack) {
+            if (!uStack) {
                 regU = (hi<<8)+lo;
             } else {
                 regS = (hi<<8)+lo;
+                nmiArmed = true;
             }
         }
         if ((postByte&0x80)==0x80) {
@@ -2316,13 +2349,17 @@ public class Cpu6809 {
         pushAll();
         do {
             readByteAtFFFF();
-        } while (!(lineNMI||lineIRQ||lineFIRQ));
+        } while (!(lineNMI||
+                (lineIRQ&&(!getCCIRQ()))||
+                (lineFIRQ&&(!getCCFIRQ()))||
+                lineReset));   //also leave loop on reset
         if (lineNMI) {
             regPC = readWord(0xfffc);
-        } else if (lineIRQ) {
-            regPC = readWord(0xfff8);
-        } else {
+        } else if (lineFIRQ) {
             regPC = readWord(0xfff6);
+        } else {
+            //IRQ has lowest priority
+            regPC = readWord(0xfff8);
         }
         readByteAtFFFF();
     }
@@ -2433,6 +2470,54 @@ public class Cpu6809 {
         return value&0xffff;
     }
 
+    private void helperReset() {
+        /*do {
+            readByte(0xfffe);
+        } while (lineReset);
+        there is no reason to follow specification so closely, in our small system reset is end of world
+        */
+        lineReset = false;
+        readByte(0xfffe);
+        readByte(0xfffe);
+        readByte(0xfffe);
+        regPC = readWord(0xfffe);
+        readByteAtFFFF();
+        nmiArmed = false;
+    }
+
+    private void helperNmi() {
+        //NMI is latched and therefore it has to be acked by NMI handler
+        lineNMI = false;
+        readByte(regPC);
+        readByte(regPC);
+        readByteAtFFFF();
+        pushAll();
+        readByteAtFFFF();
+        regPC = readWord(0xfffc);
+        readByteAtFFFF();
+    }
+
+    private void helperFirq() {
+        readByte(regPC);
+        readByte(regPC);
+        readByteAtFFFF();
+        pushWord(regPC);
+        pushByte(regCC);
+        readByteAtFFFF();
+        regPC = readWord(0xfff6);
+        readByteAtFFFF();
+    }
+
+    private void helperIrq() {
+        readByte(regPC);
+        readByte(regPC);
+        readByteAtFFFF();
+        pushAll();
+        readByteAtFFFF();
+        regPC = readWord(0xfff8);
+        readByteAtFFFF();
+    }
+
     private void pushAll() {
         pushWord(regPC);
         pushWord(regU);
@@ -2441,11 +2526,6 @@ public class Cpu6809 {
         pushByte(regDP);
         pushByte(regB);
         pushByte(regA);
-        pushByte(regCC);
-    }
-
-    private void pushPCAndCC() {
-        pushWord(regPC);
         pushByte(regCC);
     }
 
@@ -2498,5 +2578,4 @@ public class Cpu6809 {
     private static int getHighByte(int word) {
         return (word&0xff00)>>8;
     }
-
 }
