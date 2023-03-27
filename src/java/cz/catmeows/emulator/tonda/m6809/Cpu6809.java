@@ -1504,6 +1504,7 @@ public class Cpu6809 {
                 break;
             case 0x22:
                 //LBHI 5/6
+                helperLongBranch(!(getCCCarry()||getCCZero()));
                 break;
             case 0x23:
                 //LBLS 5/6
@@ -1527,9 +1528,11 @@ public class Cpu6809 {
                 break;
             case 0x28:
                 //LBVC 5/6
+                helperLongBranch(!getCCOverflow());
                 break;
             case 0x29:
                 //LBVS 5/6
+                helperLongBranch(getCCOverflow());
                 break;
             case 0x2A:
                 //LBPL 5/6
@@ -1541,15 +1544,19 @@ public class Cpu6809 {
                 break;
             case 0x2C:
                 //LBGE 5/6
+                helperLongBranch(getCCNegative()==getCCOverflow());
                 break;
             case 0x2D:
                 //LBLT 5/6
+                helperLongBranch(getCCNegative()!=getCCOverflow());
                 break;
             case 0x2E:
                 //LBGT 5/6
+                helperLongBranch(!(getCCZero()&&(getCCNegative()!=getCCOverflow())));
                 break;
             case 0x2F:
                 //LBLE 5/6
+                helperLongBranch(getCCZero()||(getCCNegative()!=getCCOverflow()));
                 break;
             case 0x3F:
                 //SWI2 20
