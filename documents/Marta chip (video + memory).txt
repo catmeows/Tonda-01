@@ -41,7 +41,7 @@ mode  memory resolution  buffers  colors
 2     14080  320*176     1        4 of 16  (each pixel has own color, colors hardwired to 0,1,2,3)
 
 
-Colors:
+Default colors:
 
  0-Black    00 00 00 (6bit RGB)
  1-Magenta  AA 00 AA
@@ -59,27 +59,64 @@ Colors:
 13-Yellow   FF FF 00
 14-Tan      FF FF AA
 15-White    FF FF FF
-
-              
-                              
+                                            
 $FFFF +--------+             
       | ROM    |
 $C000 +--------+ 
+$BFFF +--------+
+      | 6821   |
+$BFC0 +--------+
+$BFBF +--------+
+      | MARTA  |
+$BF80 +--------+
+$BF7F +--------+
       | MAIN   |
-$2000 +--------+ +--------+ +--------+  
+$2000 +--------+
+$1FFF +--------+ +--------+ +--------+  
       | VIDEO0 | | VIDEO1 | | EXRAM  |
 $0000 +--------+ +--------+ +--------+ 
 
-
-
 Marta registers
-
-
-registers:
-00     - 1xxBBPMM -> MAP (BB..RAM bank at $0000-$1FFF, P..page used for video buffer i.e. bank 0/1, MM..video mode)
-01     - 1TTTTTTT -> FIRQTIMER (every 1-127 line, 0-never)
-02     - 1xRRGGBB -> BORDERCOL (border color)
-16..31 - 1xRRGGBB -> COLOR0..COLORF (pallette entries)
+$00 CTRL   ...BBPMM BB..bank mapped to $0000-$1FFFF, P..video page displayed, MM..video mode
+$01 FCNT0  CCCCCCCC lower 8 bits of FIRQ counter
+$02 FCNT1  .......C highest bit of FIRQ counter
+$0F BORDR  ..RRGGBB color of border
+$10 COL0   ..RRGGBB color 0
+$11 COL0   ..RRGGBB color 1
+$12 COL0   ..RRGGBB color 2
+$13 COL0   ..RRGGBB color 3
+$14 COL0   ..RRGGBB color 4
+$15 COL0   ..RRGGBB color 5
+$16 COL0   ..RRGGBB color 6
+$17 COL0   ..RRGGBB color 7
+$18 COL0   ..RRGGBB color 8
+$19 COL0   ..RRGGBB color 9
+$1A COL0   ..RRGGBB color A
+$1B COL0   ..RRGGBB color B
+$1C COL0   ..RRGGBB color C
+$1D COL0   ..RRGGBB color D
+$1E COL0   ..RRGGBB color E
+$1F COL0   ..RRGGBB color F
+$20 VOL0   ....NVVV channel 0, N..noise on/off, VVV..volume 0-7
+$21 VOL1   ....NVVV channel 1, N..noise on/off, VVV..volume 0-7
+$22 VOL2   ....NVVV channel 2, N..noise on/off, VVV..volume 0-7
+$23 VOL3   ....NVVV channel 3, N..noise on/off, VVV..volume 0-7
+$40 FLO0   LLLLLLLL channel 0, lower bits of frequency 
+$41 FHI0   ....HHHH channel 0, higher bits of frequency
+$42 SNL0   ssssssss channel 0, lower bits of sample
+$43 SNH0   SSSSSSSS channel 0, higher bits of sample
+$44 FLO1   LLLLLLLL channel 1, lower bits of frequency 
+$45 FHI1   ....HHHH channel 1, higher bits of frequency
+$46 SNL1   ssssssss channel 1, lower bits of sample
+$47 SNH1   SSSSSSSS channel 1, higher bits of sample
+$48 FLO2   LLLLLLLL channel 2, lower bits of frequency 
+$49 FHI2   ....HHHH channel 2, higher bits of frequency
+$4A SNL2   ssssssss channel 2, lower bits of sample
+$4B SNH2   SSSSSSSS channel 2, higher bits of sample
+$4C FLO3   LLLLLLLL channel 3, lower bits of frequency 
+$4D FHI3   ....HHHH channel 3, higher bits of frequency
+$4E SNL3   ssssssss channel 3, lower bits of sample
+$4F SNH3   SSSSSSSS channel 3, higher bits of sample
 
 Pins:
 0-7   In:  D0-D7 (video data in)
@@ -100,4 +137,3 @@ Pins:
 36    Out: PIA chip select for 6821
 37    Out: SOUND
 38,39    : GND, +5V   
-
