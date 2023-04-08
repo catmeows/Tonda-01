@@ -82,21 +82,21 @@ $01 FCNT0  CCCCCCCC lower 8 bits of FIRQ counter
 $02 FCNT1  .......C highest bit of FIRQ counter
 $0F BORDR  ..RRGGBB color of border
 $10 COL0   ..RRGGBB color 0
-$11 COL0   ..RRGGBB color 1
-$12 COL0   ..RRGGBB color 2
-$13 COL0   ..RRGGBB color 3
-$14 COL0   ..RRGGBB color 4
-$15 COL0   ..RRGGBB color 5
-$16 COL0   ..RRGGBB color 6
-$17 COL0   ..RRGGBB color 7
-$18 COL0   ..RRGGBB color 8
-$19 COL0   ..RRGGBB color 9
-$1A COL0   ..RRGGBB color A
-$1B COL0   ..RRGGBB color B
-$1C COL0   ..RRGGBB color C
-$1D COL0   ..RRGGBB color D
-$1E COL0   ..RRGGBB color E
-$1F COL0   ..RRGGBB color F
+$11 COL1   ..RRGGBB color 1
+$12 COL2   ..RRGGBB color 2
+$13 COL3   ..RRGGBB color 3
+$14 COL4   ..RRGGBB color 4
+$15 COL5   ..RRGGBB color 5
+$16 COL6   ..RRGGBB color 6
+$17 COL7   ..RRGGBB color 7
+$18 COL8   ..RRGGBB color 8
+$19 COL9   ..RRGGBB color 9
+$1A COLA   ..RRGGBB color A
+$1B COLB   ..RRGGBB color B
+$1C COLC   ..RRGGBB color C
+$1D COLD   ..RRGGBB color D
+$1E COLE   ..RRGGBB color E
+$1F COLF   ..RRGGBB color F
 $20 VOL0   ....NVVV channel 0, N..noise on/off, VVV..volume 0-7
 $21 VOL1   ....NVVV channel 1, N..noise on/off, VVV..volume 0-7
 $22 VOL2   ....NVVV channel 2, N..noise on/off, VVV..volume 0-7
