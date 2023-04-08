@@ -101,22 +101,22 @@ $20 VOL0   ....NVVV channel 0, N..noise on/off, VVV..volume 0-7
 $21 VOL1   ....NVVV channel 1, N..noise on/off, VVV..volume 0-7
 $22 VOL2   ....NVVV channel 2, N..noise on/off, VVV..volume 0-7
 $23 VOL3   ....NVVV channel 3, N..noise on/off, VVV..volume 0-7
-$40 FLO0   LLLLLLLL channel 0, lower bits of frequency 
-$41 FHI0   ....HHHH channel 0, higher bits of frequency
-$42 SNL0   ssssssss channel 0, lower bits of sample
-$43 SNH0   SSSSSSSS channel 0, higher bits of sample
-$44 FLO1   LLLLLLLL channel 1, lower bits of frequency 
-$45 FHI1   ....HHHH channel 1, higher bits of frequency
-$46 SNL1   ssssssss channel 1, lower bits of sample
-$47 SNH1   SSSSSSSS channel 1, higher bits of sample
-$48 FLO2   LLLLLLLL channel 2, lower bits of frequency 
-$49 FHI2   ....HHHH channel 2, higher bits of frequency
-$4A SNL2   ssssssss channel 2, lower bits of sample
-$4B SNH2   SSSSSSSS channel 2, higher bits of sample
-$4C FLO3   LLLLLLLL channel 3, lower bits of frequency 
-$4D FHI3   ....HHHH channel 3, higher bits of frequency
-$4E SNL3   ssssssss channel 3, lower bits of sample
-$4F SNH3   SSSSSSSS channel 3, higher bits of sample
+$30 FLO0   LLLLLLLL channel 0, lower bits of frequency 
+$31 FHI0   ....HHHH channel 0, higher bits of frequency
+$32 SNL0   ssssssss channel 0, lower bits of sample
+$33 SNH0   SSSSSSSS channel 0, higher bits of sample
+$34 FLO1   LLLLLLLL channel 1, lower bits of frequency 
+$35 FHI1   ....HHHH channel 1, higher bits of frequency
+$36 SNL1   ssssssss channel 1, lower bits of sample
+$37 SNH1   SSSSSSSS channel 1, higher bits of sample
+$38 FLO2   LLLLLLLL channel 2, lower bits of frequency 
+$39 FHI2   ....HHHH channel 2, higher bits of frequency
+$3A SNL2   ssssssss channel 2, lower bits of sample
+$3B SNH2   SSSSSSSS channel 2, higher bits of sample
+$3C FLO3   LLLLLLLL channel 3, lower bits of frequency 
+$3D FHI3   ....HHHH channel 3, higher bits of frequency
+$3E SNL3   ssssssss channel 3, lower bits of sample
+$3F SNH3   SSSSSSSS channel 3, higher bits of sample
 
 Pins:
 0-7   In:  D0-D7 (video data in)
