@@ -24,7 +24,10 @@ $C007   (cat$)          JMP error "Drive not found"
 $C00A   (dload)         JMP error "Drive not found"
 $C00D   (dsave)         JMP error "Drive not found"
 $C010   (erase)         
-$C013   (
+$C013   (rename)
+$C016   (lock)
+$C019   (
+
 
 $C080   (exit)          RTS
 $C081   (trampoline)    PSHS X,A,B,CC   ;X reserves space for return address
