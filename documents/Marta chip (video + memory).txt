@@ -81,9 +81,8 @@ Default colors:
 15-White    FF FF FF
                                             
 Marta registers
-$00 CTRL   ...BBP.M BB..bank mapped to $0000-$1FFFF, P..video page displayed, M..video mode
+$00 CTRL   FC.BBP.M F..firq line interrupt allowed, C..highest bit of FIRQ counter BB..bank mapped to $0000-$1FFFF, P..video page displayed, M..video mode
 $01 FCNT0  CCCCCCCC lower 8 bits of FIRQ counter
-$02 FCNT1  .......C highest bit of FIRQ counter
 $0F BORDR  ..RRGGBB color of border
 $10 COL0   ..RRGGBB color 0
 $11 COL1   ..RRGGBB color 1
