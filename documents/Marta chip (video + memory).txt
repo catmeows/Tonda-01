@@ -12,24 +12,27 @@ FEDCBA98 76543210
 11011111 11xxxxRR - 6821 registers $DFC0 - $DFFF or external device (external decoding and external disable of 6821)
 11xxxxxx xxxxxxxx - 16KB ROM mapped to $C000 - $FFFF, or external device (external decoding and external disable of ROM)
 
-$FFFF +--------+             
-      | ROM    |
-$E000 +--------+ 
-$DFFF +--------+ +--------+
-      | 6821   | | DISK IO|
-$DFC0 +--------+ +--------+
-$DFBF +--------+
-      | ROM    |
-$C000 +--------+
-$BFFF +--------+
-      | MARTA  |
-$BFC0 +--------+
-$BFBF +--------+
-      | MAIN   |
-$2000 +--------+
-$1FFF +--------+ +--------+ +--------+  
-      | VIDEO0 | | VIDEO1 | | EXRAM  |
-$0000 +--------+ +--------+ +--------+ 
+$FFFF +---------+             
+      | ROM     |
+$E000 +---------+ 
+$DFFF +---------+ +---------+
+      | 6821    | | DISKIO  |
+$DFC0 +---------+ +---------+
+$DFBF +---------+
+      | ROM     |
+$D000 +---------+
+$CFFF +---------+ +---------+
+      | ROM     | | DISKROM |
+$C000 +---------+ +---------+
+$BFFF +---------+
+      | MARTA   |
+$BFC0 +---------+
+$BFBF +---------+
+      | MAIN    |
+$2000 +---------+
+$1FFF +---------+ +---------+ +---------+  
+      | VIDEO0  | | VIDEO1  | | EXRAM   |
+$0000 +---------+ +---------+ +---------+ 
 
 
 
