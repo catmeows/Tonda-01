@@ -6,10 +6,10 @@ import java.awt.image.BufferedImage;
 
 public class SwingDisplayImpl extends JPanel implements Runnable, SwingDisplay {
 
-    public static final int DISPLAY_WIDTH = 368;
+    public static final int DISPLAY_WIDTH = 336;
     public static final int DISPLAY_HEIGHT = 288;
-    private final BufferedImage img;
-    private final int rgb[];
+    private final BufferedImage img; // = new BufferedImage(DISPLAY_WIDTH, DISPLAY_HEIGHT, BufferedImage.TYPE_INT_RGB);
+    private int[] rgb;
     private boolean doRefresh = false;
 
     public SwingDisplayImpl() {
@@ -21,6 +21,7 @@ public class SwingDisplayImpl extends JPanel implements Runnable, SwingDisplay {
                 .getDefaultConfiguration();
         img = gfxConfig.createCompatibleImage(DISPLAY_WIDTH, DISPLAY_HEIGHT);
         rgb = new int[DISPLAY_WIDTH * DISPLAY_HEIGHT];
+
     }
 
     protected void paintComponent(Graphics g) {
@@ -28,8 +29,8 @@ public class SwingDisplayImpl extends JPanel implements Runnable, SwingDisplay {
         g.drawImage(img, 0, 0, DISPLAY_WIDTH * 2, DISPLAY_HEIGHT * 2, null);
     }
 
-    public void setPixel(int pixel, int color) {
-        rgb[pixel] = color;
+    public void setPixels(int[] pixels) {
+        rgb = pixels;
     }
 
     public synchronized void requestRefresh() {
