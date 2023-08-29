@@ -243,7 +243,6 @@ public class Cpu6809 {
         int ea, value;
         int opcode = readByte(regPC);
         //TODO debugger
-        //TODO interrupts
         if (lineReset) {
             helperReset();
         } else if (lineNMI&&nmiArmed) {
@@ -560,6 +559,8 @@ public class Cpu6809 {
                 case 0x3F:
                     //SWI, 19
                     helperSwi(0xfffa);
+                    setCCFlag(CC_FIRQ, true);
+                    setCCFlag(CC_IRQ, true);
                     break;
                 case 0x40:
                     //NEGA, 2
@@ -2056,6 +2057,7 @@ public class Cpu6809 {
             return getIndirectEa(addr);
         }
         int ea=-1;
+        int ofs;
         switch (postByte&0x0f) {
             case 0x0:
                 //R+
@@ -2133,7 +2135,7 @@ public class Cpu6809 {
                 break;
             case 0xC:
                 //n,PC
-                int ofs = getImmediate();
+                ofs = getImmediate();
                 ea = addExtended8BitTo16Bit(regPC, ofs);
                 readByteAtFFFF();
                 break;
@@ -2483,10 +2485,14 @@ public class Cpu6809 {
         regPC = readWord(0xfffe);
         readByteAtFFFF();
         nmiArmed = false;
+        setCCFlag(CC_FIRQ, true);
+        setCCFlag(CC_IRQ, true);
     }
 
     private void helperNmi() {
         //NMI is latched and therefore it has to be acked by NMI handler
+        setCCFlag(CC_FIRQ, true);
+        setCCFlag(CC_IRQ, true);
         lineNMI = false;
         readByte(regPC);
         readByte(regPC);
@@ -2498,6 +2504,8 @@ public class Cpu6809 {
     }
 
     private void helperFirq() {
+        setCCFlag(CC_FIRQ, true);
+        setCCFlag(CC_IRQ, true);
         readByte(regPC);
         readByte(regPC);
         readByteAtFFFF();
@@ -2509,6 +2517,7 @@ public class Cpu6809 {
     }
 
     private void helperIrq() {
+        setCCFlag(CC_IRQ, true);
         readByte(regPC);
         readByte(regPC);
         readByteAtFFFF();
