@@ -1,14 +1,39 @@
 
-address decoding
+Address decoding
 
 FEDCBA98 76543210
 000xxxxx xxxxxxxx - selected memory RAM bank mapped to $0000 - $1FFF
-001xxxxx xxxxxxxx .. 
-10111111 10xxxxxx - RAM $2000 - RAM $BFBF
-10111111 0xxxxxxx - MARTA registers
-10111111 1xxxxxxR - Frida registers ($BFC0 - $BFC1) or external device (external decoding and external disable of Frida)
-10111111 1100000R - Frida registers conventions 
-11xxxxxx xxxxxxxx - 16KB ROM - mapped to $C000 - $FFFF
+001xxxxx xxxxxxxx - RAM $2000 - $3FFF
+010xxxxx xxxxxxxx - RAM $4000 - $5FFF
+011xxxxx xxxxxxxx - RAM $6000 - $7FFF
+100xxxxx xxxxxxxx - RAM $8000 - $9FFF
+10111111 11xxxxxR - MARTA registers $BFC0 - $BFFF (mirrored)
+101xxxxx xxxxxxxx - RAM $A000 - $BFBF  
+11011111 11xxxxRR - 6821 registers $DFC0 - $DFFF or external device (external decoding and external disable of 6821)
+11xxxxxx xxxxxxxx - 16KB ROM mapped to $C000 - $FFFF, or external device (external decoding and external disable of ROM)
+
+$FFFF +---------+             
+      | ROM     |
+$E000 +---------+ 
+$DFFF +---------+ +---------+
+      | 6821    | | DISKIO  |
+$DFC0 +---------+ +---------+
+$DFBF +---------+
+      | ROM     |
+$D000 +---------+
+$CFFF +---------+ +---------+
+      | ROM     | | DISKROM |
+$C000 +---------+ +---------+
+$BFFF +---------+
+      | MARTA   |
+$BFC0 +---------+
+$BFBF +---------+
+      | MAIN    |
+$2000 +---------+
+$1FFF +---------+ +---------+ +---------+  
+      | VIDEO0  | | VIDEO1  | | EXRAM   |
+$0000 +---------+ +---------+ +---------+ 
+
 
 
 Video timing
@@ -25,10 +50,10 @@ invisible(25) |             visible(85)                 |inv(4)|
 SYNC(22)   | BORDER(6) |    320/160 PIXELS(80)    | BORDER(6)  |   
 
 Interrupts
-IRQ is kept low for cycles 0 to 3 at the beginning of frame.
-If FIRQTIMER register is not equal 0, then its value is decreased at cycle 104 of line. If value reaches 0, FIRQTIMER is reloaded and 
-FIRQ is kept low for cycle 105, 106, 107, 108.
-As interrupt lines are kept low for 4 cycles, SYNC instruction can be used to wait for inttterupt.
+IRQ is kept low for cycles 0 to 19 at the beginning of frame.
+If FIRQ register is not disabled, then it will be triggered at line given FCNT register 
+FIRQ is kept low for cycle 0 to 19 of line.
+As interrupt lines are kept low for more thab 4 cycles, SYNC instruction can be used to wait for inttterupt.
 
 Memory refresh
 Marta will refresh DRAM on each line, accessing 16 rows in first 16 cycles of line. That secures refresh cycle for 256 rows every 1 ms.
@@ -38,10 +63,8 @@ Video modes
 mode  memory resolution  buffers  colors  
 0      7920  320*176     2        16 of 64 (each group of 8*8 pixels displays 2 colors selected from 16 color palete) 
 1      7040  160*88      2        16 of 16 (each pixel has own color) 
-2     14080  320*176     1        4 of 16  (each pixel has own color, colors hardwired to 0,1,2,3)
 
-
-Colors:
+Default colors:
 
  0-Black    00 00 00 (6bit RGB)
  1-Magenta  AA 00 AA
@@ -59,49 +82,64 @@ Colors:
 13-Yellow   FF FF 00
 14-Tan      FF FF AA
 15-White    FF FF FF
-
-
-memory map
-
-BUILT-IN                   
-                              
-$FFFF +--------+             
-      | ROM    |
-$C000 +--------+ 
-      | MAIN   |
-$2000 +--------+ +--------+ +--------+  
-      | VIDEO0 | | VIDEO1 | | EXRAM  |
-$0000 +--------+ +--------+ +--------+ 
-
-
-
+                                            
 Marta registers
-port $E000 (write only) - register (mapped $E000 - $FFFF)
-write 0xxRRRRR -> select register RRRRR
-write 1VVVVVVV -> write register
-read -> 1xxBBPMM
-
-registers:
-00     - 1xxBBPMM -> MAP (BB..RAM bank at $0000-$1FFF, P..page used for video buffer i.e. bank 0/1, MM..video mode)
-01     - 1TTTTTTT -> FIRQTIMER (every 1-127 line, 0-never)
-02     - 1xRRGGBB -> BORDERCOL (border color)
-16..31 - 1xRRGGBB -> COLOR0..COLORF (pallette entries)
+$00 CTRL   FC.BBP.M F..firq line interrupt allowed, C..highest bit of FIRQ counter BB..bank mapped to $0000-$1FFFF, P..video page displayed, M..video mode
+$01 FCNT0  CCCCCCCC lower 8 bits of FIRQ counter
+$0F BORDR  ..RRGGBB color of border
+$10 COL0   ..RRGGBB color 0
+$11 COL1   ..RRGGBB color 1
+$12 COL2   ..RRGGBB color 2
+$13 COL3   ..RRGGBB color 3
+$14 COL4   ..RRGGBB color 4
+$15 COL5   ..RRGGBB color 5
+$16 COL6   ..RRGGBB color 6
+$17 COL7   ..RRGGBB color 7
+$18 COL8   ..RRGGBB color 8
+$19 COL9   ..RRGGBB color 9
+$1A COLA   ..RRGGBB color A
+$1B COLB   ..RRGGBB color B
+$1C COLC   ..RRGGBB color C
+$1D COLD   ..RRGGBB color D
+$1E COLE   ..RRGGBB color E
+$1F COLF   ..RRGGBB color F
+$20 VOL0   ....NVVV channel 0, N..noise on/off, VVV..volume 0-7
+$21 VOL1   ....NVVV channel 1, N..noise on/off, VVV..volume 0-7
+$22 VOL2   ....NVVV channel 2, N..noise on/off, VVV..volume 0-7
+$23 VOL3   ....NVVV channel 3, N..noise on/off, VVV..volume 0-7
+$30 FLO0   LLLLLLLL channel 0, lower bits of frequency 
+$31 FHI0   ....HHHH channel 0, higher bits of frequency
+$32 SNL0   ssssssss channel 0, lower bits of sample
+$33 SNH0   SSSSSSSS channel 0, higher bits of sample
+$34 FLO1   LLLLLLLL channel 1, lower bits of frequency 
+$35 FHI1   ....HHHH channel 1, higher bits of frequency
+$36 SNL1   ssssssss channel 1, lower bits of sample
+$37 SNH1   SSSSSSSS channel 1, higher bits of sample
+$38 FLO2   LLLLLLLL channel 2, lower bits of frequency 
+$39 FHI2   ....HHHH channel 2, higher bits of frequency
+$3A SNL2   ssssssss channel 2, lower bits of sample
+$3B SNH2   SSSSSSSS channel 2, higher bits of sample
+$3C FLO3   LLLLLLLL channel 3, lower bits of frequency 
+$3D FHI3   ....HHHH channel 3, higher bits of frequency
+$3E SNL3   ssssssss channel 3, lower bits of sample
+$3F SNH3   SSSSSSSS channel 3, higher bits of sample
 
 Pins:
-0-6   Out: Red0,Red1,Green0,Green1,Blue0,Blue1,Sync (RGB video + sync)
-7-8   Out: CAS,RAS (DRAM timing + DRAM refresh), delayed RAS is also used to switch address bus decoder (row/collumn)
-9     Out: WE (DRAM read/write)
-10-17 Out: RA0-RA7 (DRAM adressing)
-18    Out: IRQ (IRQ signal when starting frame)
-19    Out: FIRQ (FIRQ signal at the end of pixel area)
-20-27 In:  D0-D7 (data in)
-28-29 Out: Q,E (6809 clock), E is also used to switch address bus decoder (Marta/6809)
-30    In:  RW (6809 read/write)
-31    In:  Clock (17.734475 MHz main clock)
-32    In:  A15
-33    In:  A14
-34    In:  /IO (octal NAND of A15, A14, A13, A12, A11, A10, A9, A8)
-35    In:  A13
-36    Out: /ROMCS (can be overriden from external bus)
-37    In:  A7 (used in conjuction with /IO to select MARTA)
-38,39 In:  Vss, Vcc (ground, 5V)
+0-7   In :  D0-D7 (video data in)
+8-10  In :  A15,A14,A13 (to decode address)
+11-18 Out: MA0-MA7 (video address)
+19-22 Out: R,G,B (analog), SYNC
+23,24 Out: CAS, RAS (DRAM timing + DRAM refresh), delayed RAS is also used to switch address bus decoder (row/collumn)
+25    In :  RW (6809 read/write)
+26    Out: WE (DRAM read/write)
+27,28 Out: Q,E (6809 clock)
+29    In :  Clock (17.734475 MHz main clock)
+30    Out: IRQ (IRQ signal when starting frame)
+31    Out: FIRQ (FIRQ programmable line interrupt)
+32    In :  IO (A12*A11*A10*A9*A8*A7*A6) to decode memory mapped IO
+33       : +5V (analog) 
+34    In :  A0 register select for MARTA
+35    Out: ROMCS chip select for ROM
+36    Out: PIA chip select for 6821
+37    Out: SOUND
+38,39    : GND, +5V (digital)  

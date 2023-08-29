@@ -2,6 +2,47 @@ Traps for external ROM.
 External interface can monitor state of address bus and disable internal ROM when designated address or address range is selected.
 Internal ROM have a jump table for several services and also table of return points.
 
+Disable ROM: $C000-$C01F
+Enable ROM: $C080-$C0FF
+
+
+
+
+Trampoline:
+Page ROM in, call subroutine, page ROM out
+LDX subroutine
+STX >TRAMPOLINE_VECTOR
+...setup 
+JSR $C080 (trampoline)
+
+Exit:
+Page ROM in, return from subroutine
+$C000   (return)        RTS
+$C001   (hasDisk)       JMP return0
+$C004   (format)        JMP error "Drive not found"
+$C007   (cat$)          JMP error "Drive not found"
+$C00A   (dload)         JMP error "Drive not found"
+$C00D   (dsave)         JMP error "Drive not found"
+$C010   (erase)         
+$C013   (rename)
+$C016   (lock)
+$C019   (
+
+
+$C080   (exit)          RTS
+$C081   (trampoline)    PSHS X,A,B,CC   ;X reserves space for return address
+                        LDD #$C000
+                        STD +3,S        ;replace X on stack by return adress $C000 (return)
+                        PULS A,B,CC     ;restore D and flags
+                        JMP [TRAMPOLINE_VECTOR]
+$C08D   (return 0)      CLRA 
+                        RTS
+$C08F   (return 1)      LDA #$01
+                        RTS
+
+
+
+
 
 
 Entry points:

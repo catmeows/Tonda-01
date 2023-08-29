@@ -1,8 +1,8 @@
-Tonda01 uses 35 track single density single drive.
-Tracks are numbered 0 to 34.
+Tonda01 uses 40 track single density single drive.
+Tracks are numbered 0 to 39.
 Each track has single sector of 3072 bytes.
-Track 0 contains disk catalogue, tracks 1-34 contains data.
-Single side of disk can store 104448 bytes.
+Track 0 contains disk catalogue, tracks 1-39 contains data.
+Single side of disk can store 119808 bytes.
 
 
 Interfacing:
@@ -38,17 +38,16 @@ READ:
 reads shift register
 
 Track structure:
- Header: 16*SYNC + MARK0 + MARK1 + 1 byte with track id + 1 byte with track id (for verification) + MARK0
- Data: 16*SYNC + MARK0 + MARK2 + 3072 bytes of data + 2 bytes of CRC + MARK0
+ Header: 16*SYNC + MARK0 + MARK1 + 1 byte with track id + 1 byte with track id (for verification)
+ Data: 16*SYNC + MARK0 + MARK2 +  2 bytes of CRC + <=3072 bytes of data
   
 Catalogue - track 0 (836B):
  Disk header (16B)
- 34x File entry (782B)
- Track map (34B)
+ 39x File entry (782B)
+ Track map (39B)
  
  Disk header (16B)
  Diskname        12B
- Free             1B how many tracks are free
  Version          1B version of disk format
  Reserved         2B reserved
  
@@ -57,12 +56,12 @@ Catalogue - track 0 (836B):
  Filename        12B 
  Type             1B  B-Basic, C-Code, V-variable, S-Screen, $00-empty, $01-deleted
  Length           2B
- Attribute        2B  
+ Attribute        2B (start adress, start line)  
  Start track      1B
  Flag             1B  00-normal, 01-write protected
  
  Track map:
- 34 bytes
+ 39 bytes
  Values: $00       unused
          $01-$7F   next track
          $80       final track
@@ -143,3 +142,22 @@ Controller has following properties:
                  ;                D  SHL1        SHL1       CLR,JMP D   CLR,JMP D 
                  ;                E  SHL1,JMP 2  SHL1,JMP 2 JMP 0       JMP 0
                  ;                F  JMP 0       JMP 0      JMP 0       JMP 0
+
+
+format:
+  -priprav strukturu prazdneho adresare v pameti
+  -jdi na track 0 [GOTOTRKX]
+  -vymaz stopu zapisem syncu po debo delsi nez jedna otocka [WRSYNCX]
+  -zapis hlavicku 0 tracku [WRHEAD]
+  -zapis adresar [WRDATA]
+  -opakuj 39x
+  --jdi o stopu vyse [STEPIN]
+  --vymaz stopu zapisem syncu po debo delsi nez jedna otocka [WRSYNCX]
+  --zapis hlavicku tracku
+cat$:
+  -
+  
+
+
+
+
