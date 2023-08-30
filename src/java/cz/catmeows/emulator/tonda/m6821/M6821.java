@@ -1,6 +1,8 @@
-package cz.catmeows.emulator.tonda;
+package cz.catmeows.emulator.tonda.m6821;
 
-public class M6821 implements AddressSpace{
+import cz.catmeows.emulator.tonda.AddressSpace;
+
+public class M6821 implements AddressSpace {
     @Override
     public int read(int address) {
         return 0;

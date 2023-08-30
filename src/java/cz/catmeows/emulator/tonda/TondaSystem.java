@@ -1,6 +1,8 @@
 package cz.catmeows.emulator.tonda;
 
 import cz.catmeows.emulator.tonda.m6809.Cpu6809;
+import cz.catmeows.emulator.tonda.m6821.M6821;
+import cz.catmeows.emulator.tonda.marta.Marta;
 
 public class TondaSystem implements Runnable, AddressSpace, TickListener {
 
