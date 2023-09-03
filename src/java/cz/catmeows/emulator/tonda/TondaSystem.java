@@ -1,6 +1,7 @@
 package cz.catmeows.emulator.tonda;
 
 import cz.catmeows.emulator.tonda.m6809.Cpu6809;
+import cz.catmeows.emulator.tonda.m6821.KeyboardMatrix;
 import cz.catmeows.emulator.tonda.m6821.M6821;
 import cz.catmeows.emulator.tonda.marta.Marta;
 
@@ -13,7 +14,7 @@ public class TondaSystem implements Runnable, AddressSpace, TickListener {
     private Rom diskRom = new Rom(4096);
 
     private Marta marta;
-    private M6821 m6821 = new M6821();
+    private M6821 m6821;
     private DiskSystem diskSystem;
     
     private Cpu6809 cpu;
@@ -26,10 +27,11 @@ public class TondaSystem implements Runnable, AddressSpace, TickListener {
 
     private boolean diskRomMapped = false;
 
-    public TondaSystem(SwingDisplay display) {
+    public TondaSystem(SwingDisplay display, KeyboardMatrix keyboardMatrix) {
         this.display = display;
         marta = new Marta(ram, display);
         cpu = new Cpu6809(this, this);
+        m6821 = new M6821(keyboardMatrix);
     }
 
     @Override
@@ -134,7 +136,6 @@ public class TondaSystem implements Runnable, AddressSpace, TickListener {
         if (tickCount==35454) {
             tickCount = 0;
             display.setPixels(marta.getPixels());
-            System.out.println(System.currentTimeMillis() - lastTime);
             while ((System.currentTimeMillis() - lastTime)<20) {
                 try {
                     Thread.sleep(1);
@@ -142,7 +143,6 @@ public class TondaSystem implements Runnable, AddressSpace, TickListener {
                     //do nothing
                 }
             }
-
             lastTime = System.currentTimeMillis();
             display.requestRefresh();
             display.waitForRefresh();
