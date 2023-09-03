@@ -110,6 +110,8 @@ public class KeyboardMatrix implements KeyListener {
         if ((e.getKeyLocation() == KeyEvent.KEY_LOCATION_RIGHT) && (e.getKeyCode() == KeyEvent.VK_SHIFT)) {
             keyMatrix[4] = keyMatrix[4] & 0xbf;
         }
+        System.out.println("Pressed");
+        printKeyboardState();
     }
 
     @Override
@@ -187,6 +189,15 @@ public class KeyboardMatrix implements KeyListener {
         if ((e.getKeyLocation() == KeyEvent.KEY_LOCATION_RIGHT) && (e.getKeyCode() == KeyEvent.VK_SHIFT)) {
             keyMatrix[4] = keyMatrix[4] | 0x40;
         }
+        System.out.println("Released");
+        printKeyboardState();
 
+    }
+
+    private void printKeyboardState() {
+        for (int i=0; i<8; i++) {
+            System.out.println(Integer.toBinaryString(keyMatrix[i]));
+        }
+        System.out.println("------------------");
     }
 }

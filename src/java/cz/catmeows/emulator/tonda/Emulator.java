@@ -1,7 +1,10 @@
 package cz.catmeows.emulator.tonda;
 
+import cz.catmeows.emulator.tonda.m6821.KeyboardMatrix;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyListener;
 
 public class Emulator {
 
@@ -10,9 +13,12 @@ public class Emulator {
 
     private TondaSystem system;
 
+    private KeyListener keyboardMatrix;
+
     public Emulator() {
+        keyboardMatrix = new KeyboardMatrix();
         display = new SwingDisplayImpl();
-        system = new TondaSystem(display);
+        system = new TondaSystem(display, (KeyboardMatrix) keyboardMatrix);
         SwingUtilities.invokeLater(()->startGui());
         System.out.println("Started");
 
@@ -27,6 +33,7 @@ public class Emulator {
         mainWindow.pack();
         mainWindow.setVisible(true);
         mainWindow.setLocationRelativeTo(null);
+        mainWindow.addKeyListener(keyboardMatrix);
 
 
         System.out.println("Will start GUI");
