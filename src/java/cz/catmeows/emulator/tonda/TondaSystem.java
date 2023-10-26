@@ -3,6 +3,7 @@ package cz.catmeows.emulator.tonda;
 import cz.catmeows.emulator.tonda.m6809.Cpu6809;
 import cz.catmeows.emulator.tonda.m6821.KeyboardMatrix;
 import cz.catmeows.emulator.tonda.m6821.M6821;
+import cz.catmeows.emulator.tonda.m6821.TapeInterface;
 import cz.catmeows.emulator.tonda.marta.Marta;
 
 public class TondaSystem implements Runnable, AddressSpace, TickListener {
@@ -31,7 +32,7 @@ public class TondaSystem implements Runnable, AddressSpace, TickListener {
         this.display = display;
         marta = new Marta(ram, display);
         cpu = new Cpu6809(this, this);
-        m6821 = new M6821(keyboardMatrix);
+        m6821 = new M6821(keyboardMatrix, new TapeInterface());
     }
 
     @Override

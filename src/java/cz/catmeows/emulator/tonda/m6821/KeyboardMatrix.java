@@ -22,7 +22,15 @@ public class KeyboardMatrix implements KeyListener {
      */
 
 
-    private int[] keyMatrix = new int [8];
+    private final int[] keyMatrix = new int [8];
+
+    private int latch;
+
+    private boolean latchState = false;
+    boolean clockState = false;
+    boolean oldClockState = false;
+
+    private Chip74LS137 chip137 = new Chip74LS137();
 
     public KeyboardMatrix() {
         for (int i=0; i<8; i++) {
@@ -110,8 +118,9 @@ public class KeyboardMatrix implements KeyListener {
         if ((e.getKeyLocation() == KeyEvent.KEY_LOCATION_RIGHT) && (e.getKeyCode() == KeyEvent.VK_SHIFT)) {
             keyMatrix[4] = keyMatrix[4] & 0xbf;
         }
-        System.out.println("Pressed");
-        printKeyboardState();
+        if (latchState) {
+            doLatch(0);
+        }
     }
 
     @Override
@@ -189,15 +198,66 @@ public class KeyboardMatrix implements KeyListener {
         if ((e.getKeyLocation() == KeyEvent.KEY_LOCATION_RIGHT) && (e.getKeyCode() == KeyEvent.VK_SHIFT)) {
             keyMatrix[4] = keyMatrix[4] | 0x40;
         }
-        System.out.println("Released");
-        printKeyboardState();
-
-    }
-
-    private void printKeyboardState() {
-        for (int i=0; i<8; i++) {
-            System.out.println(Integer.toBinaryString(keyMatrix[i]));
+        if (latchState) {
+            doLatch(0);
         }
-        System.out.println("------------------");
     }
+
+    private void doLatch(int row) {
+        int keybits = 0x7f;
+        keybits = keybits & (((row & 0x01) == 0x00) ? keyMatrix[0] : 0x7f);
+        keybits = keybits & (((row & 0x02) == 0x00) ? keyMatrix[1] : 0x7f);
+        keybits = keybits & (((row & 0x04) == 0x00) ? keyMatrix[2] : 0x7f);
+        keybits = keybits & (((row & 0x08) == 0x00) ? keyMatrix[3] : 0x7f);
+        keybits = keybits & (((row & 0x10) == 0x00) ? keyMatrix[4] : 0x7f);
+        keybits = keybits & (((row & 0x20) == 0x00) ? keyMatrix[5] : 0x7f);
+        keybits = keybits & (((row & 0x40) == 0x00) ? keyMatrix[6] : 0x7f);
+        keybits = keybits & (((row & 0x80) == 0x00) ? keyMatrix[7] : 0x7f);
+        latch = keybits;
+    }
+
+    protected void setLatchState(boolean latchState) {
+        this.latchState = latchState;
+    }
+
+    protected void setClockState(boolean newClockState) {
+        oldClockState = clockState;
+        clockState = newClockState;
+        if  (((oldClockState==false) && (newClockState==true)) && !latchState) {
+            clock();
+        }
+
+    }
+
+    protected boolean getBit() {
+        return (latch & 0x01)==0x01;
+    }
+
+    protected void clock() {
+        int bit = latch & 0x01;
+        latch = latch >> 1;
+    }
+
+    protected void setRow(int line, boolean lineState) {
+        chip137.setRowLine(line, lineState);
+    }
+
+    private class Chip74LS137 {
+        private final boolean[] keyboardRowLines = new boolean[3];
+
+        Chip74LS137() {
+            this.keyboardRowLines[0] = false;
+            this.keyboardRowLines[1] = false;
+            this.keyboardRowLines[2] = false;
+        }
+
+        void setRowLine(int line, boolean lineState) {
+            this.keyboardRowLines[line] = lineState;
+        }
+
+        int computeRow() {
+            return (0x01 << ((keyboardRowLines[2]?4:0) + (keyboardRowLines[1]?2:0) + (keyboardRowLines[0]?1:0)));
+        }
+    }
+
 }
