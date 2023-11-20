@@ -38,22 +38,22 @@ $0000 +---------+ +---------+ +---------+
 
 Video timing
 Each frame 311 lines are generated.
-Frame starts with 71 lines, either sync or border.
-Next 176 lines with pixels are generated.
-And finaly, 64 border lines of border follows.
+Frame starts with 62 lines, either sync or border.
+Next 200 lines with pixels are generated.
+And finaly, 49 border lines of border follows.
 
 Each line takes 114 cycles.
 First 22 cycles are sync and backporch, followed by 92 cycles of picture area. We can expect that about 85 cycles would be really visible on TV.
 
 SYNC(22)   |               PICTURE(92)                         |
 invisible(25) |             visible(85)                 |inv(4)| 
-SYNC(22)   | BORDER(6) |    320/160 PIXELS(80)    | BORDER(6)  |   
+SYNC(22)   | BORDER(10) |   288/144 PIXELS(72)   | BORDER(10)  |
 
 Interrupts
 IRQ is kept low for cycles 0 to 19 at the beginning of frame.
 If FIRQ register is not disabled, then it will be triggered at line given FCNT register 
 FIRQ is kept low for cycle 0 to 19 of line.
-As interrupt lines are kept low for more thab 4 cycles, SYNC instruction can be used to wait for inttterupt.
+As interrupt lines are kept low for more than 4 cycles, SYNC instruction can be used to wait for inttterupt.
 
 Memory refresh
 Marta will refresh DRAM on each line, accessing 16 rows in first 16 cycles of line. That secures refresh cycle for 256 rows every 1 ms.
@@ -61,8 +61,8 @@ Marta will refresh DRAM on each line, accessing 16 rows in first 16 cycles of li
 Video modes
 
 mode  memory resolution  buffers  colors  
-0      7920  320*176     2        16 of 64 (each group of 8*8 pixels displays 2 colors selected from 16 color palete) 
-1      7040  160*88      2        16 of 16 (each pixel has own color) 
+0      8100  288*200     2        16 of 64 (each group of 8*8 pixels displays 2 colors selected from 16 color palete)
+1      7200  144*100     2        16 of 16 (each pixel has own color)
 
 Default colors:
 
@@ -103,26 +103,20 @@ $1C COLC   ..RRGGBB color C
 $1D COLD   ..RRGGBB color D
 $1E COLE   ..RRGGBB color E
 $1F COLF   ..RRGGBB color F
-$20 VOL0   ....NVVV channel 0, N..noise on/off, VVV..volume 0-7
-$21 VOL1   ....NVVV channel 1, N..noise on/off, VVV..volume 0-7
-$22 VOL2   ....NVVV channel 2, N..noise on/off, VVV..volume 0-7
-$23 VOL3   ....NVVV channel 3, N..noise on/off, VVV..volume 0-7
-$30 FLO0   LLLLLLLL channel 0, lower bits of frequency 
-$31 FHI0   ....HHHH channel 0, higher bits of frequency
-$32 SNL0   ssssssss channel 0, lower bits of sample
-$33 SNH0   SSSSSSSS channel 0, higher bits of sample
-$34 FLO1   LLLLLLLL channel 1, lower bits of frequency 
-$35 FHI1   ....HHHH channel 1, higher bits of frequency
-$36 SNL1   ssssssss channel 1, lower bits of sample
-$37 SNH1   SSSSSSSS channel 1, higher bits of sample
-$38 FLO2   LLLLLLLL channel 2, lower bits of frequency 
-$39 FHI2   ....HHHH channel 2, higher bits of frequency
-$3A SNL2   ssssssss channel 2, lower bits of sample
-$3B SNH2   SSSSSSSS channel 2, higher bits of sample
-$3C FLO3   LLLLLLLL channel 3, lower bits of frequency 
-$3D FHI3   ....HHHH channel 3, higher bits of frequency
-$3E SNL3   ssssssss channel 3, lower bits of sample
-$3F SNH3   SSSSSSSS channel 3, higher bits of sample
+$20 VOL0   ....VVVV channel 0, VVVV..volume 0-15
+$21 FLO0   LLLLLLLL channel 0, lower bits of frequency
+$22 FHI0   ....HHHH channel 0, higher bits of frequency
+$23 SMP0   SSSSSSSS channel 0, sample bits
+$24 VOL1   ...LVVVV channel 1, L..lock to frequency of channel1 on/off, VVVV..volume 0-15
+$25 FLO1   LLLLLLLL channel 1, lower bits of frequency
+$26 FHI1   ....HHHH channel 1, higher bits of frequency
+$27 SNL1   SSSSSSSS channel 1, smaple bits
+$28 VOL2   ...NVVVV channel 2, N..noise on/off, VVVV..volume 0-7
+$29 FLO2   LLLLLLLL channel 2, lower bits of frequency
+$2A FHI2   ....HHHH channel 2, higher bits of frequency
+$2B SNL2   SSSSSSSS channel 2, sample bits
+
+
 
 Pins:
 0-7   In :  D0-D7 (video data in)
