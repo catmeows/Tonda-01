@@ -38,9 +38,9 @@ $0000 +---------+ +---------+ +---------+
 
 Video timing
 Each frame 311 lines are generated.
-Frame starts with 62 lines, either sync or border.
+Frame starts with 63 lines, either sync or border.
 Next 200 lines with pixels are generated.
-And finaly, 49 border lines of border follows.
+And finaly, 50 border lines follow.
 
 Each line takes 114 cycles.
 First 22 cycles are sync and backporch, followed by 92 cycles of picture area. We can expect that about 85 cycles would be really visible on TV.
@@ -60,9 +60,50 @@ Marta will refresh DRAM on each line, accessing 16 rows in first 16 cycles of li
 
 Video modes
 
-mode  memory resolution  buffers  colors  
-0      8100  288*200     2        16 of 64 (each group of 8*8 pixels displays 2 colors selected from 16 color palete)
-1      7200  144*100     2        16 of 16 (each pixel has own color)
+mode  start memory resolution  buffers  colors
+0         0   8100    288*200        2  16 of 64 (each group of 8*8 pixels displays 2 colors selected from 16 color palete)
+1         0   7200    144*100        2  16 of 16 (each pixel has own color)
+
+Video mode 0
+
+This video mode has picture 288 pixels wide and 200 pixels tall. Each group of 8x8 pixels share same color information.
+Pixels are in linear fashion starting at address 0. First 36 bytes describe first pixel line, next 36 bytes describe
+second pixel line and so on. If a bit in byte is set, then foreground color is displayed, if a bit is reset
+background color is displayed.
+Background and foreground colors are defined by attribute bytes, bits 0 to 3 give color of foreground, bits 4 to 7
+give color of background. Each octet of pixel lines shares same attribute line i.e. first eight pixel lines use first
+attribute line, second eight pixels use second attribute line and so on.
+Attributes are stored right after pixels.
+
+address
+dec  hex
+0000 0000 first pixel line (32 bytes, colored by 1st attribute line)
+0036 0024 second pixel line (32 bytes, colored by 1st attribute line)
+0072 0048 third pixel line (32 bytes, colored by 1st attribute line)
+  .....
+0252 00FC 7th pixel line (32 bytes, colored by 1st attribute line)
+0280 0120 8th pixel line (32 bytes, colored by 2nd attribute line)
+0540 021c 15th pixel line (32 bytes, colored by 2nd attribute line)
+  .....
+7164 1BFC 199th pixel line (32 bytes, colored by 25th attribute line)
+7200 1C20 first attribute line
+7236 1c44 second attribute line
+  .....
+8064 1f80 25th (last) attribute line
+
+Video mode 1
+
+This video mode has pixture 144 pixels wide and 100 pixels tall. Pixel are bigger than in mode 0, each pixel in mode 1
+covers same are as 2x2 pixels in mode 0. A pixel can have its own color, selected
+from palette of 16. Bytes in memory divided into two halves of four bits amd each quartet gives number of pixel color.
+Bytes are layed out in linear fasion as 100 lines of 72 bytes. This video mode does not use attribute area.
+
+address
+dec  hex
+0000 0000 first pixel line (76 bytes)
+0072 0024 second pixel line (76 bytes)
+  .....
+7128 1BD8 99th (last) pixel line (76 bytes)
 
 Default colors:
 
@@ -85,8 +126,8 @@ Default colors:
                                             
 Marta registers
 $00 CTRL   FC.BBP.M F..firq line interrupt allowed, C..highest bit of FIRQ counter BB..bank mapped to $0000-$1FFFF, P..video page displayed, M..video mode
-$01 FCNT0  CCCCCCCC lower 8 bits of FIRQ counter
-$0F BORDR  ..RRGGBB color of border
+$01 FCNT   CCCCCCCC lower 8 bits of FIRQ counter
+$0F BRDR   ..RRGGBB color of border
 $10 COL0   ..RRGGBB color 0
 $11 COL1   ..RRGGBB color 1
 $12 COL2   ..RRGGBB color 2
