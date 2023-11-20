@@ -2,10 +2,7 @@ package cz.catmeows.emulator.tonda.marta;
 
 import cz.catmeows.emulator.tonda.AddressSpace;
 import cz.catmeows.emulator.tonda.Ram;
-import cz.catmeows.emulator.tonda.SwingDisplay;
-import cz.catmeows.emulator.tonda.marta.MartaColors;
-import cz.catmeows.emulator.tonda.marta.MartaRegisters;
-import cz.catmeows.emulator.tonda.marta.MartaVideo;
+import cz.catmeows.emulator.tonda.ui.SwingDisplay;
 
 public class Marta implements AddressSpace {
 

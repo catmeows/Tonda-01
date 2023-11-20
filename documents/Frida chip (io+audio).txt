@@ -15,11 +15,11 @@ Pins:
 39 - SELECT, register select
 
 PA..PA7 (in/out) are connected to data lines of printer port
-PB0 (out) is connected to tape out
-PB1 (in) is connected to tape in
-PB2 (in) is connected to keyboard serial data input
-PB3 (in) is connected to joystick 0 serial data input
-PB4 (in) is connected to joystick 1 serial data input
+PB0 (out) is connected to keyboard serial data input
+PB1 (in) is connected to joystick 0 serial data input
+PB2 (in) is connected to joystick 1 serial data input
+PB3 (in) is connected to tape out
+PB4 (in) is connected to tape in
 PB5 (out) is connected to keyboard latch, joystick 0 latch, joystick 1 latch
 PB6 (out) is connected to keyboard clock, joystick 0 clock, joystick 1 clock
 PB7 (out) is connected to caps lock led
@@ -32,14 +32,14 @@ PC7 not connected
 
 
 Registers:
-$BFC0 SELECT      - register select (register remains selected till change)
-$BFC1 REGISTER    - register write/read
+$BF80 SELECT      - register select (register remains selected till change)
+$BF81 REGISTER    - register write/read
 
 $00 - DIRA        - b7|b6|b5|b4|b3|b2|b1|b0 - direction of PORTA lines, 0..read, 1..write
 $01 - DIRB        - b7|b6|b5|b4|b3|b2|b1|b0 - direction of PORTB lines, 0..read, 1..write
 $02 - DIRB        - b7|b6|b5|b4|b3|b2|b1|b0 - direction of PORTC lines, 0..read, 1..write
 $04 - PORTA       - d7|d6|d5|d4|d3|d2|d1|d0 - printer data 
-$05 - PORTB       - cl|sc|sl|j1|j0|ks|ti|to - tape out (to), tape in (ti), keyboard serial data (ks), joystick 1 serial data (j1), joystick 0 serial data (j0), serial latch (sl), serial clock (sc), caps lock led (cl)  
+$05 - PORTB       - cl|sc|sl|ti|to|j1|j0|ks - keyboard serial data (ks), joystick 1 serial data (j1), joystick 0 serial data (j0), tape out (to), tape in (ti), serial latch (sl), serial clock (sc), caps lock led (cl)
 $06 - PORTC       - --|--|--|r2|r1|r0|pb|ps - printer busy (pb), printer strobe (ps), select key row (s2-s0)
 
 $10 - FREQHI1     - ....FFFF - FFFF..high 4 bits of frequency

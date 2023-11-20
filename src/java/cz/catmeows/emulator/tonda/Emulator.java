@@ -1,6 +1,9 @@
 package cz.catmeows.emulator.tonda;
 
+import cz.catmeows.emulator.tonda.m6809.Debugger;
 import cz.catmeows.emulator.tonda.m6821.KeyboardMatrix;
+import cz.catmeows.emulator.tonda.ui.SwingDisplay;
+import cz.catmeows.emulator.tonda.ui.SwingDisplayImpl;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,10 +18,12 @@ public class Emulator {
 
     private KeyListener keyboardMatrix;
 
+    private Debugger debugger = new Debugger(mainWindow);
+
     public Emulator() {
         keyboardMatrix = new KeyboardMatrix();
         display = new SwingDisplayImpl();
-        system = new TondaSystem(display, (KeyboardMatrix) keyboardMatrix);
+        system = new TondaSystem(display, (KeyboardMatrix) keyboardMatrix, debugger);
         SwingUtilities.invokeLater(()->startGui());
         System.out.println("Started");
 
@@ -107,12 +112,15 @@ public class Emulator {
         toolsMenu.add(tapeBrowserItem);
         JMenuItem diskBrowserItem = new JMenuItem("Disk Browser");
         toolsMenu.add(diskBrowserItem);
-        JMenuItem basicEditorItem = new JMenuItem("BASIC editor");
-        toolsMenu.add(basicEditorItem);
         JMenuItem debuggerItem = new JMenuItem("Debugger");
+        debuggerItem.addActionListener(debugger);
         toolsMenu.add(debuggerItem);
         JMenuItem printoutBrowserItem = new JMenuItem("Printout browser");
         toolsMenu.add(printoutBrowserItem);
+        JMenuItem quickTypeItem = new JMenuItem("QuickType");
+        toolsMenu.add(quickTypeItem);
+        JMenuItem keyboardHelperItem = new JMenuItem("Keyboard");
+        toolsMenu.add(keyboardHelperItem);
 
         bar.add(fileMenu);
         bar.add(machineMenu);

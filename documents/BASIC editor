@@ -1,78 +1,23 @@
-LINE EDITOR:
+;LINE EDITOR:
+;
+;lineEditorInit
+;    currentLine=0
+;lineEditorLoop
+;    lastListedLine = list(currentLine, noScroll)
+;    key = readKey
+;    if key==UP
+;        if (currentLine>1)
+;            currentLine=currentLine-1
+;    if key==DOWN
+;        if (lineExists(currentLine+1))
+;            currentLine=currentLine+1
+;    if key==RIGHT
+;        if (currentLine>1)
+;            editLine(currentLine)
+;    if key==CTRL&DOWN
+;        currentLine = lastListedLine
+;    if key==CTRL&UP
+;        if (currentLine>5)
+;            currentLine = currentLine - 5
+;    if
 
-leInit:
-  lineCursor=0
-le1:
-  list(lineCursor)
-  readKey
-  if key==CTRL&B
-    
-  if key==UP
-    if (lineCursor<>0) 
-      lineCursor=lineCursor-1
-  if key==DOWN
-    if lastLine-lineCursor>0
-      lineCursor=lineCursor+1
-  if key==CTRL&UP
-    if (lineCursor>10)
-      lineCursor=lineCursor-10
-  if key==CTRL&DOWN
-    if (lastLine-lineCursor>9)
-      lineCursor=lineCursor+10
-  if key==CTRL&1
-    if (lineCursor<>0)
-      lineEdit=lineCursor
-      goto @leEdit
-  if key==NOCHAR     
-    goto @le1
-  else
-    lineEdit=0
-    goto @leEdit
-    
-leEdit:
-  if (lineEdit==0)
-    gosub @newEmptyLine
-  else   
-    gosub @copyEditLine
-  goto @inputLine
-  
-newEmptyLine:
-  gosub @reserveSpace
-  return
-  
-copyEditLine:
-  gosub @findLine(lineCursor)
-  gosub @reserveSpace
-  return
-  
-inputLine:
-  cursorPos=0
-  
-
-
-reserveSpace:
-
-
-
-      
-findLine:
-//LINE FORMAT:
-//lineNum=2B, lineLen=1B, tokens, EOL
-//returns with Z=true if line is found
-//returns with Z=false if line in not found
-    ldx basicStart
-findLine2    
-    ldd ,x++
-    cmpa #$ff
-    beq findLine1
-    cmpd lineToFind
-    beq findLine2
-    lda ,x+
-    leax a,x
-    bra findLine2
-findLine1
-    tsta
-findLine2
-    rts
-
-  

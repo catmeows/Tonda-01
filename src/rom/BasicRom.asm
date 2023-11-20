@@ -5,15 +5,40 @@
 ;
 
 
+
+; MEMORY BASED I/0
+
+MARTA                          EQU $BFC0       ;Marta register select
+                                               ;data register is at $BFC1
+                                               ;STD writes MSB to EA in 4th cycle
+                                               ;and LSB to EA+1 in 5th cycle
+                                               ;therefore by setting
+                                               ;A to register
+                                               ;B to data
+                                               ;we can write Marta register by single 16 bit instruction
+                                               ; e.g. STD, STX, STY, STU (and even STS)
+
+MARTA_BORDR                    EQU $0F         ;Marta register: border color
+MARTA_COL0                     EQU $10         ;Marta register: color 0
+
+
 ; DEFAULT DIRECT PAGE SYSTEM VARIABLES
 ; $BE00 - $BEFF
 
-SETDP $BE                                      ;Basic always assume direct page at $BE00
+                               SETDP $BE       ;Basic always assume direct page at $BE00
 
-SYS_CHARS                      EQU $BE00       ;pointer to character patterns
-SYS_UDG                        EQU $BE02       ;pointer to udg patterns
-SYS_PIP                        EQU $BE04       ;length of keyboard click
-SYS_BUZZ                       EQU $BE05       ;lenght of warning buzz
+DP_CHARS                      EQU $BE00       ;pointer to character patterns
+DP_UDG                        EQU $BE02       ;pointer to udg patterns
+DP_PIP                        EQU $BE04       ;length of keyboard click
+DP_BUZZ                       EQU $BE05       ;lenght of warning buzz
+DP_FONT                       EQU $BE07       ;pointer to character patterns
+DP_PROG                       EQU $BE09       ;pointer to start of Basic program
+DP_BORDER                     EQU $BE0B       ;color of border
+DP_VIDEO                      EQU $BE0C       ;current video mode
+DP_ATTR                       EQU $BE0D       ;current colors
+DP_INVERSE                    EQU $BE0E       ;current inverse mode
+DP_PRINTX                     EQU $BE0F       ;current x position for print
+DP_PRINTY                     EQU $BE10       ;current y position for print
 
 ; DEFAULT OTHER SYSTEM VARIABLES
 ; $BF00 - $BFBF
@@ -25,6 +50,8 @@ SWI2_VECTOR		               EQU $BF06       ;vector for SWI2
 SWI3_VECTOR		               EQU $BF08       ;vector for SWI3
 NMI_VECTOR                     EQU $BF0A       ;vector for NMI
 SYS_RAMTOP                     EQU $BF0C       ;address of last byte usable for Basic
+SYS_TIMER                      EQU $BF0E       ;24 bit time counter
+SYS_ERRNO                      EQU $BF11       ;current error
 
 
 ; ROM TRAPS
@@ -38,6 +65,62 @@ SYS_RAMTOP                     EQU $BF0C       ;address of last byte usable for 
 ; $C100 - $C1FF
 
     ORG $C100
+
+skipWhiteCont
+    ;loop point for skipWhite
+    LEAY +1,Y
+skipWhite
+    ;skipWhite
+    ;in: Y pointer to current character
+    ;out: Y pointer to first non-white character
+    LDA ,Y
+    CMPA #$21                          ;space+1
+    BLO skipWhiteNext                  ;branch if lower (possible white space)
+    RTS                                ;non-white so leave
+skipWhiteNext
+    CMPA #$20                          ;space ?
+    BEQ skipWhiteCont
+    CMPA #$04                          ;true video
+    BEQ skipWhiteCont
+    CMPA #$05                          ;inverse video
+    BEQ skipWhiteCont
+    RTS
+
+isAlphaNum
+    ;compare character in A to ranges 0..9, A..Z, a..z
+    ;return carry set if true
+    ;in: A character to test
+    ;out: CC(carry flag) CY
+    BSR isNum                          ;check range '0'..'9'
+    BCC isAlpha                        ;continue to isAlpha
+    RTS                                ;return with carry set as digit was found
+isAlpha
+    CMPA #$7B                          ;A > 'z' ?
+    BCC isAlphaReturn                  ;bigger than 'z', return with carry reset
+    CMPA #$61                          ;compare with 'a'
+    BCC isAlphaSetCarrry               ;in range 'a'..'z', go to carry set
+    CMPA #$5B                          ;compare with '['
+    BCC isAlphaReturn                  ;bigger than 'Z' return with carry reset
+    CMPA #$41                          ;compare with 'A'
+    BCS isAlphaResetCarry              ;in range 'A'..'Z',
+isAlphaSetCarry
+    ORCC #$01                          ;set carry
+isAlphaReturn
+    RTS
+isAlphaResetCarry
+    CMPA #$00                          ;reset carry
+    RTS
+
+isNum
+    ;compare character in A to range 0..9
+    ;return carry set if true
+    ;in: A character to test
+    ;out: CC(carry flag) CY
+    CMPA #$3A                          ;compare with ':', the character after '9'
+    BCC isAlphaReturn
+    CMPA #$30                          ;compare with '0'
+    BCS isAlphaResetCarry
+    BRA isAlphaSetCarry
 
 
 
@@ -58,7 +141,14 @@ SYS_RAMTOP                     EQU $BF0C       ;address of last byte usable for 
 
     ORG $E000
 
-
+defaultIrq
+    LDD SYS_TIMER+1                            ;update 24 bit SYS_TIMER
+    ADDD #$0001
+    STD SYS_TIMER+1
+    LDA SYS_TIMER
+    ADCA #$01
+    STA SYS_TIMER
+    ;and exit through emptyIrq
 
     ; EMPTY IRQ HANDLER
     ; does nothing
@@ -74,8 +164,6 @@ resetHandler
     TFR A, DP                                  ;set DP register
     LDD #resetHandler
     STD NMI_VECTOR                             ;set NMI vector to reset
-    LDD #defaultIrq
-    STD IRQ_VECTOR                             ;set default IRQ vector
     LDD #emptyIrq
     STD FIRQ_VECTOR                            ;set empty FIRQ vector
     LDD #$3205
@@ -89,6 +177,54 @@ resetHandler
     LDY #charA
     LDU SYS_UDG
     JSR copyBytes                              ;copy character patterns to UDG area
+execNew
+    ; execute NEW command
+    LDD #defaultIrq
+    STD IRQ_VECTOR                             ;set default IRQ vector
+    LDX SYS_RAMTOP
+    LEAX +1,X
+    TFR X, S                                   ;re-set stack pointer bellow SYS_RAMTOP
+    LDD #font
+    STS SYS_FONT                               ;set character font to default
+    LDB #$02                                   ;color 002 (dark blue)
+    JSR writeBorder                            ;set color as border
+
+    LDA #$0F                                   ;start with color register COLF
+    LDX #defaultColors                         ;pointer to color data
+execNew1
+    LDB ,X+                                    ;read single color
+    EORA #$10                                  ;map color register to values $1F..$10
+    STD MARTA                                  ;write color data
+    EORA #$10                                  ;restore color counter
+    BNE execNew1                               ;loop until COL0 is written
+
+    CLRB                                       ;disable FIRQ, set bank at $0000 to bank 0
+    CLRA                                       ;display page 0, set video mode 0
+    STD MARTA                                  ;write MARTA CTRL register
+
+
+
+    ; REPORT ERROR
+    ; report error
+    PULS X                                     ;pick up return address, we are not going to return from error
+    LDA ,X                                     ;read error code
+    STA SYS_ERRNO                              ;save error code for later use
+    JSR findMessage                            ;find error message
+    JSR printMessage                           ;print error message
+
+
+    ; FIND MESSAGE
+    ; find message by its number
+    ; A .. number of message
+    ; returns address of message in X
+findMessage
+    LDX #messages
+findMessage1
+    LDB ,X+                                    ;read a character
+    BPL findMessage1                           ;last character has bit 7 set
+    DECA                                       ;is it n-th message ?
+    BNE findMessage1                           ;if no, then find another one
+    RTS
 
 
     ; COPY BYTES
@@ -99,6 +235,18 @@ copyBytes
     LEAU -1,X
     BNE copyBytes
     RTS
+
+    ; WRITE BORDER
+    ; write border
+    ; B .. color
+writeBorder
+    STB <DP_BORDER
+    STA #MARTA_BORDR
+    STD MARTA
+    RTS
+
+
+
 
 irqHandler
     JMP [IRQ_VECTOR]		                   ;jump vector from IRQ_VECTOR
@@ -113,6 +261,25 @@ swi3Handler
 nmiHandler
     JMP [NMI_VECTOR]                           ;jump vector from NMI_VECTOR
 
+
+; MESSAGES
+; list of various messages
+;        0123456789012345678901234567890123456789
+    FCS "c 2023 TONDA BASIC"
+    FCS "Start tape, press a key"
+    FCS "Edit line"
+    FCS "List line"
+    FCS "Delete line (, how many)"
+    FCS "Copy line, to new line (, how many)"
+    FCS "Merge to line"
+    FCS "Find "
+    ; E[nnnn]
+    ; L[nnnn]
+    ; Dnnnn[,nnnn]
+
+; DEFAULT COLORS
+    FCB $3F                                    ;white 333
+    FCB $00                                    ;black 000
 
 ; CHARACTER PATTERNS
 ;

@@ -2,6 +2,7 @@ package cz.catmeows.emulator.tonda.m6809.test;
 
 import cz.catmeows.emulator.tonda.Ram;
 import cz.catmeows.emulator.tonda.m6809.Cpu6809;
+import cz.catmeows.emulator.tonda.m6809.Debugger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +12,7 @@ public class Main {
     public static void main(String[] args) {
         Ram ram = new Ram();
         TickCounter tickCounter = new TickCounter();
-        Cpu6809 cpu = new Cpu6809(ram, tickCounter);
+        Cpu6809 cpu = new Cpu6809(ram, tickCounter, new Debugger(null));
 
         long start = System.currentTimeMillis();
         long times = 0;

@@ -1,4 +1,4 @@
-package cz.catmeows.emulator.tonda;
+package cz.catmeows.emulator.tonda.ui;
 
 import javax.swing.*;
 import java.awt.*;

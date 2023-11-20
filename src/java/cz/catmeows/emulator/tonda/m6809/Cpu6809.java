@@ -36,10 +36,13 @@ public class Cpu6809 {
     private AddressSpace mem;
     private TickListener tickListener;
 
+    private Debugger debugger;
 
-    public Cpu6809(AddressSpace memory, TickListener tickListener) {
+
+    public Cpu6809(AddressSpace memory, TickListener tickListener, Debugger debugger) {
         this.mem = memory;
         this.tickListener = tickListener;
+        this.debugger = debugger;
         lineReset = true;
     }
 
@@ -242,7 +245,13 @@ public class Cpu6809 {
     public void nextInstruction() {
         int ea, value;
         int opcode = readByte(regPC);
-        //TODO debugger
+        if (debugger.isEnabled()) {
+            debugger.setCanContinue(false);
+            boolean cont = debugger.displayState(getPCReg(),getDReg(),getXreg(),getYReg(),getSReg(),getUReg(),getCCReg(), getDPReg(), mem);
+            if (!cont) {
+                return;
+            }
+        }
         if (lineReset) {
             helperReset();
         } else if (lineNMI&&nmiArmed) {

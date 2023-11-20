@@ -1,10 +1,14 @@
 package cz.catmeows.emulator.tonda;
 
 import cz.catmeows.emulator.tonda.m6809.Cpu6809;
+import cz.catmeows.emulator.tonda.m6809.Debugger;
 import cz.catmeows.emulator.tonda.m6821.KeyboardMatrix;
 import cz.catmeows.emulator.tonda.m6821.M6821;
 import cz.catmeows.emulator.tonda.m6821.TapeInterface;
 import cz.catmeows.emulator.tonda.marta.Marta;
+import cz.catmeows.emulator.tonda.ui.SwingDisplay;
+
+import java.io.IOException;
 
 public class TondaSystem implements Runnable, AddressSpace, TickListener {
 
@@ -28,11 +32,17 @@ public class TondaSystem implements Runnable, AddressSpace, TickListener {
 
     private boolean diskRomMapped = false;
 
-    public TondaSystem(SwingDisplay display, KeyboardMatrix keyboardMatrix) {
+    public TondaSystem(SwingDisplay display, KeyboardMatrix keyboardMatrix, Debugger debugger) {
         this.display = display;
         marta = new Marta(ram, display);
-        cpu = new Cpu6809(this, this);
+        cpu = new Cpu6809(this, this, debugger);
         m6821 = new M6821(keyboardMatrix, new TapeInterface());
+        try {
+            sysRom.load("bin/TondaSystemRom.bin");
+            diskRom.load("bin/TondaDiskRom.bin");
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @Override

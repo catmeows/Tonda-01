@@ -41,31 +41,50 @@ Track structure:
  Header: 16*SYNC + MARK0 + MARK1 + 1 byte with track id + 1 byte with track id (for verification)
  Data: 16*SYNC + MARK0 + MARK2 +  2 bytes of CRC + <=3072 bytes of data
   
-Catalogue - track 0 (836B):
+Catalogue - track 0 (876B):
  Disk header (16B)
  39x File entry (782B)
- Track map (39B)
- 
+ Track map (79B)
+
  Disk header (16B)
  Diskname        12B
  Version          1B version of disk format
- Reserved         2B reserved
+ Trackcount       1B number of tracks on disk side
+ Reserved         1B reserved
  
   
  File entry (23B):
  Filename        12B 
- Type             1B  B-Basic, C-Code, V-variable, S-Screen, $00-empty, $01-deleted
+ Type             1B  B-Basic, C-Code, V-variable, S-Screen, T-Text, R-Record, $00-empty, >$80-deleted
  Length           2B
  Attribute        2B (start adress, start line)  
  Start track      1B
  Flag             1B  00-normal, 01-write protected
+
+ Record: Attribute
+
+
+ CREATE "filename", record count, valuesize
+ PUT$ "filename", record, "value"
+ GET$ "filename", record
+ CAT$ mask
+ FORMAT "filedisk"
+ ERASE "filename"
+ LOCK "filename", lock
+ SAVE "filename" TO "filename"
+ RENAME "filename" TO "filename"
+
+
+ Errors:
+ Integer out of range
+ Record too big
+
  
  Track map:
  39 bytes
  Values: $00       unused
          $01-$7F   next track
          $80       final track
-         $FE       deleted
          $FF       bad  
  
  
@@ -146,7 +165,7 @@ Controller has following properties:
 
 format:
   -priprav strukturu prazdneho adresare v pameti
-  -jdi na track 0 [GOTOTRKX]
+  -jdi na track 0 [GOTOTRK0]
   -vymaz stopu zapisem syncu po debo delsi nez jedna otocka [WRSYNCX]
   -zapis hlavicku 0 tracku [WRHEAD]
   -zapis adresar [WRDATA]
@@ -155,8 +174,9 @@ format:
   --vymaz stopu zapisem syncu po debo delsi nez jedna otocka [WRSYNCX]
   --zapis hlavicku tracku
 cat$:
-  -
-  
+  -jdi na track 0 [GOTOTRK0]
+  -precti hlavicku [RDHEAD]
+  -reservuj
 
 
 

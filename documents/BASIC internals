@@ -1,22 +1,28 @@
 
 
 BAS_PROG       1st line
-               line: line=2B,length=1B,tokens,EOL
+               line: line=2B,length=2B,tokens,EOL
                $FFFF
+
+TOKENS         ASCII, KEYWORDS
+               13($0D) - EOL
+               14($0E) - NUMBER: 14, exponent, mantisa 4, mantisa 3, mantisa 2, mantisa 1
+               15($0F) - SHORT: 15, hi, lo
+
                
 BAS_IDS        1st id
                id: length=1B, characters
                $00
                        
 BAS_VARS       ptr to procedures/labels
-               ptr to global ints=2B
-               ptr to global floats=2B
-               ptr to global for loop=2B
-               ptr to global int arrays=2B
-               ptr to global float arrays=2B
-               ptr to global strings=2B
-               ptr to global string arrays=2B
-               ptr to procedure frames=2B
+               ptr to global numbers
+               ptr to global numbers arrays
+               ptr to global string arrays
+               ptr to global string
+               ptr to global lists
+               ptr to local variables
+               ptr to edit line
+
                
 (PROCEDURES)   procedure: id=2B, length=1B, type=1B, ptr=2B, paramCount=1B, paramItems=xB
                           id...item in id table
@@ -187,6 +193,16 @@ Executing procedure
 
 *COMMANDS
 
+noArgument   nothingOrNumber   number        number,number    variable
+
+DO           RUN               PAUSE         POKE
+ENDIF        LIST              BORDER        DOKE
+STOP         RESTORE           PAPER         COLOR
+RESUME       CLEAR             INK
+REPEAT       CLS               INVERSE
+EXIT         RANDOMIZE         CSIZE
+NEW
+
 BEEP(C) - two integer numbers
 CLS(A) - no argument
 CLSW(A) - no argument
@@ -339,3 +355,14 @@ BEEP
 PLAY 
  
  
+calcStackConst
+    LDB #$05                      ;2
+    LEAU -5, U                    ;5
+    LDX ,S                        ;5
+calcStackConst1
+    LDA ,X+                       ; 6
+    STA ,U+                       ; 6
+    DECB                          ; 2 * 5 = 70
+    BNE calcStackConst1           ;3
+    STX ,S                        ;5
+    RTS                           ;5 = 95

@@ -1,22 +1,23 @@
 package cz.catmeows.emulator.tonda.marta;
 
 import cz.catmeows.emulator.tonda.Ram;
-import cz.catmeows.emulator.tonda.SwingDisplay;
+import cz.catmeows.emulator.tonda.ui.SwingDisplay;
 
 public class MartaVideo {
 
     private static final int TICKS_IN_LINE = 114;
     private static final int FIRST_TOP_BORDER_LINE = 15;
-    private static final int LAST_TOP_BORDER_LINE = FIRST_TOP_BORDER_LINE + 55;
-    private static final int FIRST_BOTTOM_BORDER_LINE = LAST_TOP_BORDER_LINE + 177;
-    private static final int LAST_BOTTOM_BORDER_LINE = FIRST_BOTTOM_BORDER_LINE + 55;
+    private static final int LAST_TOP_BORDER_LINE = FIRST_TOP_BORDER_LINE + 47;
+    private static final int FIRST_BOTTOM_BORDER_LINE = LAST_TOP_BORDER_LINE + 201;
+    private static final int LAST_BOTTOM_BORDER_LINE = FIRST_BOTTOM_BORDER_LINE + 39;
 
+    private static final int BYTE_WIDTH = 36;
     private static final int PIXELS_WIDTH = 336;
     private static final int PIXEL_HEIGHT = 288;
     private static final int HZ_FIRST_VISIBLE_CYCLE = 26;
     private static final int HZ_LAST_VISIBLE_CYCLE = 109;
     private static final int BORDER_COLOR_IDX = 0;
-    private static final int ATTR_OFFSET = 40*176;
+    private static final int ATTR_OFFSET = 36*200;
 
 
     private MartaRegisters martaRegisters;
@@ -38,8 +39,14 @@ public class MartaVideo {
         this.martaColors = martaColors;
         this.ram = ram;
         this.display = display;
-        martaColors.setColor(0, 6);
-        martaColors.setColor(1, 12);
+        for (int i=0; i<17; i++) {
+            martaColors.setColor(i, i*2+1);
+        }
+        //martaColors.setColor(0, 6);
+        //martaColors.setColor(1, 12);
+        for (int i=0; i<8000;i++) {
+            ram.write(i, i % 0xfe);
+        }
     }
 
     public int[] getPixels() {
@@ -47,12 +54,12 @@ public class MartaVideo {
     }
 
     public void drawPixels(int tick) {
-        //visible area: 336 (8+320+8) x 288 (56+176+56)
+        //visible area: 336 (24+288+24) x 288 (48+200+40)
         //15 lines invisible
-        //56 lines border
-        //176 lines pixel area (26 cycles invisible, 2 cycles of border, 80 cycles of pixel area, 2 cycles of border,
+        //48 lines border
+        //200 lines pixel area (26 cycles invisible, 6 cycles of border, 72 cycles of pixel area, 6 cycles of border,
         // 4 cycles invisible)
-        //56 lines of border
+        //40 lines of border
         int line = tick / TICKS_IN_LINE;
         if ((line < FIRST_TOP_BORDER_LINE ) || (line > LAST_BOTTOM_BORDER_LINE)) {
             return;
@@ -81,15 +88,13 @@ public class MartaVideo {
     private void drawScreen(int tick) {
         int cycleInLine = tick % TICKS_IN_LINE;
         int pixelLine = (tick / TICKS_IN_LINE) - LAST_TOP_BORDER_LINE - 1;
-        if (    (cycleInLine == HZ_FIRST_VISIBLE_CYCLE) ||
-                (cycleInLine == (HZ_FIRST_VISIBLE_CYCLE+1)) ||
-                (cycleInLine == (HZ_LAST_VISIBLE_CYCLE-1)) ||
-                (cycleInLine == (HZ_LAST_VISIBLE_CYCLE)) ) {
+        if (    ((cycleInLine >= HZ_FIRST_VISIBLE_CYCLE) && (cycleInLine <= HZ_FIRST_VISIBLE_CYCLE +5 )) ||
+                ((cycleInLine >= (HZ_LAST_VISIBLE_CYCLE-5)) && (cycleInLine <= HZ_LAST_VISIBLE_CYCLE)) ) {
             drawBorders(tick);
         }
 
         if (martaRegisters.getVideoMode()==0) {
-            if ((cycleInLine >= HZ_FIRST_VISIBLE_CYCLE) && (cycleInLine < (HZ_LAST_VISIBLE_CYCLE - 3))) {
+            if ((cycleInLine >= (HZ_FIRST_VISIBLE_CYCLE+4)) && (cycleInLine < (HZ_LAST_VISIBLE_CYCLE - 7))) {
                 if ((cycleInLine % 2)==0) {
                     latchOneTemp = latchOne;
                     latchOne = getPixelByteMode0(pixelLine, cycleInLine);
@@ -97,11 +102,11 @@ public class MartaVideo {
                     latchTwo = getAttrByteMode0(pixelLine, cycleInLine);
                 }
             }
-            if ((cycleInLine >= (HZ_FIRST_VISIBLE_CYCLE+2)) && (cycleInLine < (HZ_LAST_VISIBLE_CYCLE - 1))
+            if ((cycleInLine >= (HZ_FIRST_VISIBLE_CYCLE+6)) && (cycleInLine < (HZ_LAST_VISIBLE_CYCLE - 6))
                 && ((cycleInLine % 2) == 0)) {
                 int inkColor = martaColors.getColor((latchTwo & 0x0f) + 1);
                 int paperColor = martaColors.getColor((latchTwo >> 4) + 1);
-                int pixelBase = (pixelLine + 56) * PIXELS_WIDTH + (cycleInLine - HZ_FIRST_VISIBLE_CYCLE)*4;
+                int pixelBase = (pixelLine + 48) * PIXELS_WIDTH + (cycleInLine - HZ_FIRST_VISIBLE_CYCLE)*4;
                 pixels[pixelBase] = ( latchOneTemp & 0x80) == 0 ? paperColor : inkColor;
                 pixels[pixelBase + 1] = (latchOneTemp & 0x40) == 0 ? paperColor : inkColor;
                 pixels[pixelBase + 2] = (latchOneTemp & 0x20) == 0 ? paperColor : inkColor;
@@ -113,7 +118,7 @@ public class MartaVideo {
             }
         } else {
             //mode 1
-            if ((cycleInLine >= HZ_FIRST_VISIBLE_CYCLE) && (cycleInLine < (HZ_LAST_VISIBLE_CYCLE - 3))) {
+            if ((cycleInLine >= HZ_FIRST_VISIBLE_CYCLE+4) && (cycleInLine < (HZ_LAST_VISIBLE_CYCLE - 7))) {
                 if ((cycleInLine % 2)==0) {
                     latchOneTemp = latchOne;
                     latchOne = getPixelByteMode1(pixelLine, cycleInLine);
@@ -121,9 +126,9 @@ public class MartaVideo {
                     latchTwo = getPixelByteMode1(pixelLine, cycleInLine);
                 }
             }
-            if ((cycleInLine >= (HZ_FIRST_VISIBLE_CYCLE+2)) && (cycleInLine < (HZ_LAST_VISIBLE_CYCLE - 1))
+            if ((cycleInLine >= (HZ_FIRST_VISIBLE_CYCLE+6)) && (cycleInLine < (HZ_LAST_VISIBLE_CYCLE - 5))
                     && ((cycleInLine % 2) == 0)) {
-                int pixelBase = (pixelLine + 56) * PIXELS_WIDTH + (cycleInLine - HZ_FIRST_VISIBLE_CYCLE*4);
+                int pixelBase = (pixelLine + 48) * PIXELS_WIDTH + (cycleInLine - HZ_FIRST_VISIBLE_CYCLE*4);
                 int pixel0 = martaColors.getColor(((latchOneTemp & 0xf0) >> 4) + 1);
                 int pixel1 = martaColors.getColor((latchOneTemp & 0x0f) + 1);
                 int pixel2 = martaColors.getColor(((latchTwo & 0xf0) >> 4) + 1);
@@ -143,19 +148,19 @@ public class MartaVideo {
 
     private int getPixelByteMode0(int pixelLine, int cycleInLine) {
         int basePtr = martaRegisters.getVideoPage();
-        return ram.read(basePtr + pixelLine*40 +
-                (cycleInLine-HZ_FIRST_VISIBLE_CYCLE)>>1 );
+        return ram.read(basePtr + pixelLine*BYTE_WIDTH +
+                (cycleInLine-HZ_FIRST_VISIBLE_CYCLE)>>1 + 4 );
 
     }
 
     private int getAttrByteMode0(int pixelLine, int cycleInLine) {
         int basePtr = martaRegisters.getVideoPage();
         return ram.read(basePtr + ATTR_OFFSET +
-                (pixelLine>>3)*40 + (cycleInLine - HZ_FIRST_VISIBLE_CYCLE)>>1 + 1);
+                (pixelLine>>3)*BYTE_WIDTH + (cycleInLine - HZ_FIRST_VISIBLE_CYCLE)>>1 + 5);
     }
 
     private int getPixelByteMode1(int pixelLine, int cycleInLine) {
         int basePtr = martaRegisters.getVideoPage();
-        return ram.read(basePtr + (pixelLine>>1)*40 + cycleInLine - HZ_FIRST_VISIBLE_CYCLE);
+        return ram.read(basePtr + (pixelLine>>1)*BYTE_WIDTH + cycleInLine - HZ_FIRST_VISIBLE_CYCLE + 4);
     }
 }
