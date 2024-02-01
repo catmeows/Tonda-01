@@ -372,6 +372,7 @@ public class Cpu6809 {
                     break;
                 case 0x13:
                     //SYNC, 4+
+                    //FIXME opposite state of irq lines
                     readByte(regPC);
                     do {
                         //while waiting for interrupt, address lines are in high impendance state
@@ -2354,6 +2355,7 @@ public class Cpu6809 {
     }
 
     private void helperCwai() {
+        //FIXME opposite state of irq lines
         regCC = (regCC&getImmediate())|CC_ENTIRE;
         readByte(regPC);
         readByteAtFFFF();
