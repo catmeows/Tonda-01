@@ -128,7 +128,7 @@ public class MartaVideo {
             }
             if ((cycleInLine >= (HZ_FIRST_VISIBLE_CYCLE+6)) && (cycleInLine < (HZ_LAST_VISIBLE_CYCLE - 5))
                     && ((cycleInLine % 2) == 0)) {
-                int pixelBase = (pixelLine + 48) * PIXELS_WIDTH + (cycleInLine - HZ_FIRST_VISIBLE_CYCLE*4);
+                int pixelBase = (pixelLine + 48) * PIXELS_WIDTH + (cycleInLine - HZ_FIRST_VISIBLE_CYCLE)*4;
                 int pixel0 = martaColors.getColor(((latchOneTemp & 0xf0) >> 4) + 1);
                 int pixel1 = martaColors.getColor((latchOneTemp & 0x0f) + 1);
                 int pixel2 = martaColors.getColor(((latchTwo & 0xf0) >> 4) + 1);
@@ -161,6 +161,6 @@ public class MartaVideo {
 
     private int getPixelByteMode1(int pixelLine, int cycleInLine) {
         int basePtr = martaRegisters.getVideoPage();
-        return ram.read(basePtr + (pixelLine>>1)*BYTE_WIDTH + cycleInLine - HZ_FIRST_VISIBLE_CYCLE + 4);
+        return ram.read(basePtr + (pixelLine>>1)*(BYTE_WIDTH<<1) + cycleInLine - HZ_FIRST_VISIBLE_CYCLE  - 4);
     }
 }
